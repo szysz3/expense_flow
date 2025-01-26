@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import sys
+import os
 from ollama import Client
 from typing import Dict, Any
 from datetime import datetime
@@ -8,8 +9,48 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
+from azure.ai.documentintelligence import DocumentIntelligenceClient
+from azure.core.credentials import AzureKeyCredential
 
 console = Console()
+
+def analyze_receipt_image(image_path: str, endpoint: str, key: str) -> Dict[Any, Any]:
+    try:
+        with console.status("[bold green]Analyzing receipt image..."):
+            client = DocumentIntelligenceClient(endpoint=endpoint, credential=AzureKeyCredential(key))
+            
+            with open(image_path, "rb") as image:
+                poller = client.begin_analyze_document("prebuilt-receipt", image)
+            result = poller.result()
+            
+            if not result.documents:
+                raise ValueError("No receipt data found in the image")
+
+            doc = result.documents[0]
+            receipt_dict = {
+                'analyzeResult': {
+                    'documents': [{
+                        'fields': {
+                            'MerchantName': {'content': doc.fields.get('MerchantName', {}).value_string if doc.fields.get('MerchantName') else ''},
+                            'MerchantAddress': {'content': doc.fields.get('MerchantAddress', {}).value_string if doc.fields.get('MerchantAddress') else ''},
+                            'TransactionDate': {'valueDate': doc.fields.get('TransactionDate', {}).value_date if doc.fields.get('TransactionDate') else ''},
+                            'TransactionTime': {'valueTime': doc.fields.get('TransactionTime', {}).value_time if doc.fields.get('TransactionTime') else ''},
+                            'Items': {'valueArray': [
+                                {'valueObject': {
+                                    'Description': {'content': item.value_object.get('Description', {}).value_string if item.value_object.get('Description') else ''},
+                                    'Quantity': {'valueNumber': item.value_object.get('Quantity', {}).value_number if item.value_object.get('Quantity') else 0},
+                                    'TotalPrice': {'valueCurrency': {'amount': item.value_object.get('TotalPrice', {}).value_currency.amount if item.value_object.get('TotalPrice') else 0}}
+                                }} for item in doc.fields.get('Items', {}).value_array
+                            ]},
+                            'Total': {'valueCurrency': {'amount': doc.fields.get('Total', {}).value_currency.amount if doc.fields.get('Total') else 0}}
+                        }
+                    }]
+                }
+            }
+            return receipt_dict
+    except Exception as e:
+        console.print(f"[bold red]Error analyzing receipt: {e}[/]")
+        sys.exit(1)
 
 def preprocess_receipt(raw_data: Dict[Any, Any]) -> Dict[Any, Any]:
     result = raw_data['analyzeResult']
@@ -40,18 +81,6 @@ def preprocess_receipt(raw_data: Dict[Any, Any]) -> Dict[Any, Any]:
         "total": fields.get('Total', {}).get('valueCurrency', {}).get('amount', 0),
         "transaction_datetime": transaction_datetime
     }
-
-def load_receipt_data(file_path: str) -> Dict[Any, Any]:
-    try:
-        with console.status("[bold green]Loading receipt data..."):
-            with open(file_path, 'r', encoding='utf-8') as f:
-                raw_data = json.load(f)
-                processed_data = preprocess_receipt(raw_data)
-                console.print("[bold green]✓[/] Receipt data loaded successfully")
-                return processed_data
-    except Exception as e:
-        console.print(f"[bold red]Error loading receipt data: {e}[/]")
-        sys.exit(1)
 
 def analyze_with_llm(receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
     client = Client(host='http://localhost:11434')
@@ -155,13 +184,24 @@ def save_result(analysis_result: Dict[Any, Any], original_filename: str):
 
 def main():
     if len(sys.argv) != 2:
-        console.print("[bold red]Usage: python receipt_analyzer.py <receipt_json_file>[/]")
+        console.print("[bold red]Usage: python receipt_analyzer.py <receipt_image_file>[/]")
+        sys.exit(1)
+        
+    endpoint = os.getenv("AZURE_DOCUMENT_ENDPOINT")
+    key = os.getenv("AZURE_DOCUMENT_KEY")
+    
+    if not endpoint or not key:
+        console.print("[bold red]Error: Azure credentials not found in environment variables[/]")
+        console.print("Please set AZURE_DOCUMENT_ENDPOINT and AZURE_DOCUMENT_KEY")
         sys.exit(1)
     
-    receipt_data = load_receipt_data(sys.argv[1])
+    image_path = sys.argv[1]
+    raw_data = analyze_receipt_image(image_path, endpoint, key)
+    receipt_data = preprocess_receipt(raw_data)
+    
     try:
         analysis_result = analyze_with_llm(receipt_data)
-        save_result(analysis_result, sys.argv[1])
+        save_result(analysis_result, image_path)
     except Exception as e:
         console.print(f"[bold red]Error during analysis: {e}[/]")
         sys.exit(1)
