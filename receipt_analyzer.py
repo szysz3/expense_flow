@@ -97,24 +97,34 @@ class ReceiptAnalyzer:
 
     def analyze_with_llm(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
         prompt = self._get_llm_prompt()
-        
         self._display_input_data(receipt_data)
         
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=self.console
-        ) as progress:
-            task = progress.add_task("[cyan]Analyzing with LLM...", total=None)
-            response = self.ollama_client.generate(
-                model=self.config.model,
-                prompt=f"{prompt}\n\nInput:\n{json.dumps(receipt_data, indent=2)}"
-            )
-            progress.update(task, completed=True)
+        max_retries = 3
+        attempt = 0
+        
+        while attempt < max_retries:
+            try:
+                with Progress(
+                    SpinnerColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    console=self.console
+                ) as progress:
+                    task = progress.add_task(f"[cyan]Analyzing with LLM (Attempt {attempt + 1}/{max_retries})...", total=None)
+                    response = self.ollama_client.generate(
+                        model=self.config.model,
+                        prompt=f"{prompt}\n\nInput:\n{json.dumps(receipt_data, indent=2)}"
+                    )
+                    progress.update(task, completed=True)
 
-        result = self._parse_llm_response(response['response'])
-        self._display_output_data(result)
-        return result
+                result = self._parse_llm_response(response['response'])
+                self._display_output_data(result)
+                return result
+                
+            except (ValueError, json.JSONDecodeError) as e:
+                attempt += 1
+                if attempt == max_retries:
+                    raise ValueError(f"Failed to get valid response after {max_retries} attempts: {str(e)}")
+                self.console.print(f"[yellow]Attempt {attempt} failed. Retrying...[/]")
 
     def _get_llm_prompt(self) -> str:
         return """
@@ -124,7 +134,7 @@ class ReceiptAnalyzer:
         Output: Same structure and values with added "category" field for each item.
         
         Categories:
-        - groceries (examples: food, non-alcoholic drinks, ingredients, species, meat, fish, chicken, turkey, pork and similar)
+        - groceries (examples: food, fruits, vegetables, non-alcoholic beverages, ingredients, species, meat, fish, chicken, turkey, pork, coffee, tea and similar)
         - alcoholic_beverages (examples: beer, wine, whisky, vodka, gin and similar)
         - personal_care (examples: hygiene, cosmetics, medications, medical care, soap, deodorant and similar)
         - household (examples: cleaning, decorative items, plants, utilities, tools, maintenance items, soil, feritilizer and similar)
