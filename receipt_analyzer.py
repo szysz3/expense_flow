@@ -12,12 +12,14 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from azure.core.credentials import AzureKeyCredential
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
 @dataclass
 class Config:
     endpoint: str
     key: str
-    model: str = 'deepseek-r1:8b'
+    model: str = 'llama3.1'
+    # model: str = 'deepseek-r1:8b'
     ollama_host: str = 'http://localhost:11434'
 
 class ReceiptAnalyzer:
@@ -76,7 +78,7 @@ class ReceiptAnalyzer:
         date = fields.get('TransactionDate', {}).get('valueDate', '')
         time = fields.get('TransactionTime', {}).get('valueTime', '')
         
-        return {
+        json_data = {
             "merchant": {
                 "name": fields.get('MerchantName', {}).get('content', ''),
                 "address": fields.get('MerchantAddress', {}).get('content', '')
@@ -87,6 +89,9 @@ class ReceiptAnalyzer:
             "total": fields.get('Total', {}).get('valueCurrency', {}).get('amount', 0),
             "transaction_datetime": f"{date} {time}" if date and time else ""
         }
+        
+        return json.loads(json.dumps(json_data, ensure_ascii=True))
+
 
     def _process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
         return {
@@ -95,42 +100,141 @@ class ReceiptAnalyzer:
             "total_price": item['valueObject'].get('TotalPrice', {}).get('valueCurrency', {}).get('amount', 0)
         }
 
+    def _validate_analysis_result(self, original_data: Dict[Any, Any], result: Dict[Any, Any]) -> bool:
+        self.console.print("\n[bold]Validation Results:[/]")
+        
+        # Check basic structure
+        for key in original_data.keys():
+            if key not in result:
+                self.console.print(f"[red]❌ Missing key '{key}' in result[/]")
+                return False
+                
+        # Validate merchant data
+        if result.get('merchant') != original_data.get('merchant'):
+            self.console.print("[red]❌ Merchant data mismatch[/]")
+            self.console.print(f"Expected: {original_data.get('merchant')}")
+            self.console.print(f"Got: {result.get('merchant')}")
+            return False
+                
+        # Validate total and transaction_datetime
+        if result.get('total') != original_data.get('total'):
+            self.console.print("[red]❌ Total amount mismatch[/]")
+            self.console.print(f"Expected: {original_data.get('total')}")
+            self.console.print(f"Got: {result.get('total')}")
+            return False
+
+        if result.get('transaction_datetime') != original_data.get('transaction_datetime'):
+            self.console.print("[red]❌ Transaction datetime mismatch[/]")
+            self.console.print(f"Expected: {original_data.get('transaction_datetime')}")
+            self.console.print(f"Got: {result.get('transaction_datetime')}")
+            return False
+                
+        # Validate items
+        if len(result.get('items', [])) != len(original_data.get('items', [])):
+            self.console.print("[red]❌ Items count mismatch[/]")
+            self.console.print(f"Expected {len(original_data.get('items', []))} items")
+            self.console.print(f"Got {len(result.get('items', []))} items")
+            return False
+                
+        valid_categories = {
+            'groceries', 'alcoholic_beverages', 'personal_care', 'household',
+            'clothing', 'entertainment', 'transportation', 'pet', 'other'
+        }
+                
+        for idx, (orig_item, result_item) in enumerate(zip(original_data['items'], result['items'])):
+            self.console.print(f"\n[bold]Validating item {idx + 1}:[/]")
+            
+            # Check description
+            if orig_item.get('description') != result_item.get('description'):
+                self.console.print(f"[red]❌ Description mismatch for item {idx + 1}[/]")
+                self.console.print(f"Expected: {orig_item.get('description')}")
+                self.console.print(f"Got: {result_item.get('description')}")
+                return False
+                
+            # Check quantity
+            if orig_item.get('quantity') != result_item.get('quantity'):
+                self.console.print(f"[red]❌ Quantity mismatch for item {idx + 1}[/]")
+                self.console.print(f"Expected: {orig_item.get('quantity')}")
+                self.console.print(f"Got: {result_item.get('quantity')}")
+                return False
+                
+            # Check price
+            if orig_item.get('total_price') != result_item.get('total_price'):
+                self.console.print(f"[red]❌ Price mismatch for item {idx + 1}[/]")
+                self.console.print(f"Expected: {orig_item.get('total_price')}")
+                self.console.print(f"Got: {result_item.get('total_price')}")
+                return False
+                    
+            # Verify category
+            if 'category' not in result_item:
+                self.console.print(f"[red]❌ Missing category for item {idx + 1}[/]")
+                return False
+                
+            if result_item['category'] not in valid_categories:
+                self.console.print(f"[red]❌ Invalid category '{result_item['category']}' for item {idx + 1}[/]")
+                self.console.print(f"Valid categories are: {valid_categories}")
+                return False
+                
+            self.console.print(f"[green]✓ Item {idx + 1} validated successfully[/]")
+                    
+        self.console.print("\n[green]✓ All validation checks passed[/]")
+        return True
+
     def analyze_with_llm(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
         prompt = self._get_llm_prompt()
         self._display_input_data(receipt_data)
         
-        max_retries = 3
+        max_retries = 5
         attempt = 0
+        total_start_time = datetime.now()
         
         while attempt < max_retries:
             try:
+                start_time = datetime.now()
+                
                 with Progress(
                     SpinnerColumn(),
-                    TextColumn("[progress.description]{task.description}"),
-                    console=self.console
+                    TimeElapsedColumn(),
+                    TextColumn("{task.description}"),            
+                    refresh_per_second=4,
+                    console=self.console,
+                    transient=True
                 ) as progress:
-                    task = progress.add_task(f"[cyan]Analyzing with LLM (Attempt {attempt + 1}/{max_retries})...", total=None)
+                    task = progress.add_task(f"[cyan]Analyzing with LLM (Attempt {attempt + 1}/{max_retries})...")
                     response = self.ollama_client.generate(
                         model=self.config.model,
                         prompt=f"{prompt}\n\nInput:\n{json.dumps(receipt_data, indent=2)}"
                     )
-                    progress.update(task, completed=True)
-
-                result = self._parse_llm_response(response['response'])
-                self._display_output_data(result)
-                return result
                 
-            except (ValueError, json.JSONDecodeError) as e:
+                duration = (datetime.now() - start_time).total_seconds()
+                total_elapsed = (datetime.now() - total_start_time).total_seconds()
+
+                try:
+                    result = self._parse_llm_response(response['response'])
+                except (ValueError, json.JSONDecodeError):
+                    raise ValueError("Invalid JSON response")
+
+                if self._validate_analysis_result(receipt_data, result):
+                    self._display_output_data(result)
+                    final_elapsed = (datetime.now() - total_start_time).total_seconds()
+                    self.console.print(f"[green]✓ Analysis successful (Total time: {final_elapsed:.1f}s)[/]")
+                    return result
+                else:
+                    raise ValueError("Validation failed: Result contains modified or invalid data")
+                        
+            except Exception as e:
                 attempt += 1
+                duration = (datetime.now() - start_time).total_seconds()
+                total_elapsed = (datetime.now() - total_start_time).total_seconds()
                 if attempt == max_retries:
-                    raise ValueError(f"Failed to get valid response after {max_retries} attempts: {str(e)}")
-                self.console.print(f"[yellow]Attempt {attempt} failed. Retrying...[/]")
+                    raise ValueError(f"Failed after {max_retries} attempts ({total_elapsed:.1f}s): {str(e)}")
+                self.console.print(f"[yellow]Attempt {attempt} failed after {duration:.1f}s (Total: {total_elapsed:.1f}s): {str(e)}. Retrying...[/]")
 
     def _get_llm_prompt(self) -> str:
         return """
         Task: Extend receipt JSON with item categories
         
-        Input: JSON with merchant and receipt items
+        Input: JSON with merchant and receipt items. In Polish language.
         Output: Same structure and values with added "category" field for each item.
         
         Categories:
@@ -175,12 +279,12 @@ class ReceiptAnalyzer:
 
     def _parse_llm_response(self, response: str) -> Dict[Any, Any]:
         try:
-            return json.loads(response)
+            return json.loads(response, strict=False) if isinstance(response, str) else json.loads(response.decode(), strict=False)
         except json.JSONDecodeError:
             start = response.find('{')
             end = response.rfind('}') + 1
             if start >= 0 and end > start:
-                return json.loads(response[start:end])
+                return json.loads(response[start:end], strict=False)
             raise ValueError("No valid JSON found in response")
 
     def _display_input_data(self, data: Dict[Any, Any]):
