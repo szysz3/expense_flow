@@ -62,13 +62,13 @@ def analyze_with_llm(receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
     Output: Same structure with added "category" field for each item.
     
     Categories:
-    - groceries (examples: food, non-alcoholic drinks, ingredients, species, meat, fish, chicken, turkey, pork)
-    - alcoholic_beverages (examples: beer, wine, whisky, vodka, gin)
-    - personal_care (examples: hygiene, cosmetics, medications, medical care, soap, deodorant)
-    - household (examples: cleaning, decorative items, plants, utilities, tools, maintenance items, soil, feritilizer)
-    - clothing (examples: apparel, shoes, bags, sneakers, shirts)
-    - entertainment (examples: books, electronics, games)
-    - transportation (examples: gas, parking tickets, car wash)
+    - groceries (examples: food, non-alcoholic drinks, ingredients, species, meat, fish, chicken, turkey, pork and similar)
+    - alcoholic_beverages (examples: beer, wine, whisky, vodka, gin and similar)
+    - personal_care (examples: hygiene, cosmetics, medications, medical care, soap, deodorant and similar)
+    - household (examples: cleaning, decorative items, plants, utilities, tools, maintenance items, soil, feritilizer and similar)
+    - clothing (examples: apparel, shoes, bags, sneakers, shirt, scarf and similar)
+    - entertainment (examples: books, electronics, games and similar)
+    - transportation (examples: gas, parking tickets, car wash and similar)
     - pet (examples: cat food)
     - other
     
