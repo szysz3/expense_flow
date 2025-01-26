@@ -1,0 +1,44 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+echo -e "\033[33mUsage: $0 path/to/receipt.json\033[0m"
+exit 1
+fi
+
+RECEIPT_PATH="$1"
+
+if [ ! -f "$RECEIPT_PATH" ]; then
+echo -e "\033[31mError: File $RECEIPT_PATH does not exist!\033[0m"
+exit 1
+fi
+
+VENV_PATH="$HOME/ai_venv"
+
+if [ ! -d "$VENV_PATH" ]; then
+echo -e "\033[31mError: Virtual environment not found in $VENV_PATH\033[0m"
+echo -e "\033[33mFirst create environment using:\033[0m"
+echo -e "\033[36mpython3 -m venv ~/ai_venv\033[0m"
+exit 1
+fi
+
+echo -e "\033[32mActivating virtual environment...\033[0m"
+source "$VENV_PATH/bin/activate"
+
+if [ $? -ne 0 ]; then
+echo -e "\033[31mError: Failed to activate virtual environment!\033[0m"
+exit 1
+fi
+
+echo -e "\033[32mStarting receipt analysis...\033[0m"
+python receipt_analyzer.py "$RECEIPT_PATH"
+SCRIPT_STATUS=$?
+
+echo -e "\033[32mDeactivating virtual environment...\033[0m"
+deactivate
+
+if [ $SCRIPT_STATUS -ne 0 ]; then
+echo -e "\033[31mError: Receipt analysis failed!\033[0m"
+exit 1
+fi
+
+echo -e "\033[32mAnalysis complete\033[0m"
