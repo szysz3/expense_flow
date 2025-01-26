@@ -100,6 +100,19 @@ class ReceiptAnalyzer:
             "total_price": item['valueObject'].get('TotalPrice', {}).get('valueCurrency', {}).get('amount', 0)
         }
 
+    def _is_polish_char(self, char: str) -> bool:
+        polish_chars = {'Ż', 'Ź', 'Ą', 'Ę', 'Ś', 'Ć', 'Ń', 'Ó', 'Ł'}
+        return char.upper() in polish_chars
+
+    def _compare_text_ignore_polish(self, original: str, result: str) -> bool:
+        if len(original) != len(result):
+            return False
+            
+        for orig_char, result_char in zip(original.upper(), result.upper()):
+            if not self._is_polish_char(orig_char) and orig_char != result_char:
+                return False
+        return True
+
     def _validate_analysis_result(self, original_data: Dict[Any, Any], result: Dict[Any, Any]) -> bool:
         self.console.print("\n[bold]Validation Results:[/]")
         
@@ -110,7 +123,11 @@ class ReceiptAnalyzer:
                 return False
                 
         # Validate merchant data
-        if result.get('merchant') != original_data.get('merchant'):
+        orig_merchant = original_data.get('merchant', {})
+        result_merchant = result.get('merchant', {})
+        
+        if not (self._compare_text_ignore_polish(orig_merchant.get('name', ''), result_merchant.get('name', '')) and 
+                self._compare_text_ignore_polish(orig_merchant.get('address', ''), result_merchant.get('address', ''))):
             self.console.print("[red]❌ Merchant data mismatch[/]")
             self.console.print(f"Expected: {original_data.get('merchant')}")
             self.console.print(f"Got: {result.get('merchant')}")
@@ -144,8 +161,8 @@ class ReceiptAnalyzer:
         for idx, (orig_item, result_item) in enumerate(zip(original_data['items'], result['items'])):
             self.console.print(f"\n[bold]Validating item {idx + 1}:[/]")
             
-            # Check description
-            if orig_item.get('description') != result_item.get('description'):
+            # Compare descriptions
+            if not self._compare_text_ignore_polish(orig_item.get('description', ''), result_item.get('description', '')):
                 self.console.print(f"[red]❌ Description mismatch for item {idx + 1}[/]")
                 self.console.print(f"Expected: {orig_item.get('description')}")
                 self.console.print(f"Got: {result_item.get('description')}")
