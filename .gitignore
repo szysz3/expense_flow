@@ -1,33 +1,76 @@
-# Gradle files
-.gradle/
+/sample_receipts
+/results
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
 build/
+*.egg-info/
 
-# Local configuration file (sdk path, etc)
-local.properties
+# Virtual environments
+venv/
+env/
+.env/
+.venv/
 
-# Log/OS Files
-*.log
-
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.apk
-output.json
-
-# IntelliJ
-*.iml
+# IDE specific files
 .idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
+.vscode/
+*.swp
+*.swo
+.DS_Store
 
-# Keystore files
-*.jks
-*.keystore
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.pytest_cache/
 
-# Google Services (e.g. APIs or Firebase)
-google-services.json
+# Jupyter Notebook
+.ipynb_checkpoints
 
-# Android Profiling
-*.hprof
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Log files
+*.log
+logs/
+log/
+
+# Database files
+*.db
+*.sqlite3
+
+# Documentation
+/site
+/docs/_build/
+
+# Dependencies
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Profiling data
+.prof
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pylint
+.pylint.d/
+
+# Poetry
+poetry.lock
+
+# Local development settings
+local_settings.py
