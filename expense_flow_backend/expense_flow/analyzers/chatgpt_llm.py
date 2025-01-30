@@ -3,8 +3,8 @@ from datetime import datetime
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from openai import OpenAI
 from .base import BaseAnalyzer
-from config import Config
-from utils.validator import ResponseValidator
+from expense_flow.config import Config
+from expense_flow.utils.validator import ResponseValidator
 import json
 
 class ChatGPTAnalyzer(BaseAnalyzer):

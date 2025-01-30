@@ -2,7 +2,7 @@ from typing import Dict, Any
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from azure.core.credentials import AzureKeyCredential
 from rich.console import Console
-from config import Config
+from expense_flow.config import Config
 import json
 
 class AzureDocumentProcessor:

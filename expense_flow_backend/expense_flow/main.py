@@ -3,11 +3,11 @@ import os
 from datetime import datetime 
 import json
 from rich.console import Console
-from config import Config
-from document_processor.azure_processor import AzureDocumentProcessor
-from document_processor.image_processor import ImagePreprocessor
-from analyzers.local_llm import LocalLLMAnalyzer
-from analyzers.chatgpt_llm import ChatGPTAnalyzer
+from expense_flow.config import Config
+from expense_flow.document_processor.azure_processor import AzureDocumentProcessor
+from expense_flow.document_processor.image_processor import ImagePreprocessor
+from expense_flow.analyzers.local_llm import LocalLLMAnalyzer
+from expense_flow.analyzers.chatgpt_llm import ChatGPTAnalyzer
 
 def save_result(analysis_result: dict, console: Console):
     results_dir = "results"
