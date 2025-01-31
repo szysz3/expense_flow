@@ -248,10 +248,8 @@ async def get_receipt(
     """
     Retrieve a specific receipt by ID
     """
-    try:
-        with repository.transaction() as repo:
-            receipt = repo.get_receipt(receipt_id)
-            
+    try:            
+        receipt = repository.get_receipt(receipt_id)
         if not receipt:
             raise HTTPException(
                 status_code=404,
@@ -282,13 +280,12 @@ async def search_receipts(
     Search receipts with various filters
     """
     try:
-        with repository.transaction() as repo:
-            receipts = repo.search_receipts(
-                merchant_name=query.merchant_name,
-                start_date=query.start_date,
-                end_date=query.end_date,
-                categories=query.categories,
-                item_description=query.item_description
+        receipts = repository.search_receipts(
+            merchant_name=query.merchant_name,
+            start_date=query.start_date,
+            end_date=query.end_date,
+            categories=query.categories,
+            item_description=query.item_description
             )
         return receipts
         
@@ -316,13 +313,12 @@ async def calculate_spending(
     Calculate total spending based on various filters
     """
     try:
-        with repository.transaction() as repo:
-            total = repo.calculate_spending(
-                start_date=start_date,
-                end_date=end_date,
-                categories=categories,
-                item_description=item_description
-            )
+        total = repository.calculate_spending(
+            start_date=start_date,
+            end_date=end_date,
+            categories=categories,
+            item_description=item_description
+        )
         return {"total": str(total)}
         
     except DatabaseError as e:

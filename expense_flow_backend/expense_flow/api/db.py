@@ -99,27 +99,27 @@ class ReceiptRepository:
         item_description: Optional[str] = None
     ) -> List[Receipt]:
         """Search receipts with various filters"""
-        Receipt = Query()
+        ReceiptQuery = Query()
         queries = []
         
         if merchant_name:
-            queries.append(Receipt.merchant.name.search(merchant_name, flags=re.IGNORECASE))
+            queries.append(ReceiptQuery.merchant.name.search(merchant_name, flags=re.IGNORECASE))
             
         if start_date:
-            queries.append(Receipt.transaction_datetime.test(
+            queries.append(ReceiptQuery.transaction_datetime.test(
                 lambda x: datetime.fromisoformat(x) >= start_date
             ))
             
         if end_date:
-            queries.append(Receipt.transaction_datetime.test(
+            queries.append(ReceiptQuery.transaction_datetime.test(
                 lambda x: datetime.fromisoformat(x) <= end_date
             ))
             
         if categories:
-            queries.append(Receipt.items.any(lambda x: x['category'] in [c.value for c in categories]))
+            queries.append(ReceiptQuery.items.any(lambda x: x['category'] in [c.value for c in categories]))
             
         if item_description:
-            queries.append(Receipt.items.any(
+            queries.append(ReceiptQuery.items.any(
                 lambda x: item_description.lower() in x['description'].lower()
             ))
 
