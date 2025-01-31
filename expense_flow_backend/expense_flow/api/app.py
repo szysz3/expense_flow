@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, validator
 
 from .models import (
     LLMType, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
-    Receipt, ReceiptQuery, Category
+    Receipt, ReceiptQuery, Category, SearchResult
 )
 from .security import verify_api_key
 from .db import ReceiptRepository, DatabaseError
@@ -266,7 +266,7 @@ async def get_receipt(
 
 @app.post(
     "/api/receipts/search",
-    response_model=List[Receipt],
+    response_model=SearchResult,
     responses={
         500: {"model": ErrorDetail}
     }

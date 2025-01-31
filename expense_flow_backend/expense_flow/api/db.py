@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Dict, Union
 from datetime import datetime
 from sympy import re
 from tinydb import TinyDB, Query
@@ -7,7 +7,7 @@ import uuid
 from contextlib import contextmanager
 from functools import reduce, wraps
 
-from .models import Receipt, Category
+from .models import Receipt, Category, SearchResult, SearchResultItem
 
 class DatabaseError(Exception):
     pass
@@ -41,13 +41,11 @@ class ReceiptRepository:
         """Serialize receipt data for database storage"""
         serialized = receipt_dict.copy()
         
-        # Convert datetime objects to ISO format strings
         if 'transaction_datetime' in serialized:
             serialized['transaction_datetime'] = serialized['transaction_datetime'].isoformat()
         if 'added_datetime' in serialized:
             serialized['added_datetime'] = serialized['added_datetime'].isoformat()
             
-        # Convert decimal values to strings
         serialized['total'] = str(serialized['total'])
         for item in serialized['items']:
             item['total_price'] = str(item['total_price'])
@@ -89,6 +87,27 @@ class ReceiptRepository:
             return Receipt(**result)
         return None
 
+    def _filter_items_by_categories(self, receipts: List[Receipt], categories: List[Category]) -> Dict:
+        """Filter receipt items by categories and calculate total"""
+        matching_items = []
+        total = Decimal('0')
+        
+        for receipt in receipts:
+            for item in receipt.items:
+                if item.category in categories:
+                    matching_items.append({
+                        "description": item.description,
+                        "quantity": item.quantity,
+                        "total_price": str(item.total_price),
+                        "category": item.category.value  # Convert enum to string value
+                    })
+                    total += item.total_price
+                    
+        return {
+            "items": matching_items,
+            "total": str(total)
+        }
+
     @handle_db_errors
     def search_receipts(
         self,
@@ -97,7 +116,7 @@ class ReceiptRepository:
         end_date: Optional[datetime] = None,
         categories: Optional[List[Category]] = None,
         item_description: Optional[str] = None
-    ) -> List[Receipt]:
+    ) -> SearchResult:
         """Search receipts with various filters"""
         ReceiptQuery = Query()
         queries = []
@@ -116,23 +135,28 @@ class ReceiptRepository:
             ))
             
         if categories:
-            queries.append(ReceiptQuery.items.any(lambda x: x['category'] in [c.value for c in categories]))
+            queries.append(ReceiptQuery.items.any(
+                lambda x: x['category'] in [c.value for c in categories]
+            ))
             
         if item_description:
             queries.append(ReceiptQuery.items.any(
                 lambda x: item_description.lower() in x['description'].lower()
             ))
 
-        # Combine all queries with logical AND
         query = reduce(lambda x, y: x & y, queries) if queries else lambda _: True
         results = self.db.search(query)
 
-        # Convert stored strings back to appropriate types
+        receipts = []
         for result in results:
             result['transaction_datetime'] = datetime.fromisoformat(result['transaction_datetime'])
             result['added_datetime'] = datetime.fromisoformat(result['added_datetime'])
             result['total'] = Decimal(result['total'])
             for item in result['items']:
                 item['total_price'] = Decimal(item['total_price'])
-                
-        return [Receipt(**r) for r in results]
+            receipts.append(Receipt(**result))
+
+        if categories:
+            return self._filter_items_by_categories(receipts, categories)
+            
+        return receipts 

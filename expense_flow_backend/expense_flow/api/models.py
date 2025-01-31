@@ -58,3 +58,13 @@ class ReceiptQuery(BaseModel):
     end_date: Optional[datetime] = None
     categories: Optional[List[Category]] = None
     item_description: Optional[str] = None
+
+class SearchResultItem(BaseModel):
+    description: str
+    quantity: float
+    total_price: str
+    category: str
+
+class SearchResult(BaseModel):
+    items: List[SearchResultItem]
+    total: str    
