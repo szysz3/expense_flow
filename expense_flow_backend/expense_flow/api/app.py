@@ -295,38 +295,6 @@ async def search_receipts(
             detail={"error": "Database error", "detail": str(e)}
         )
 
-@app.get(
-    "/api/statistics/spending",
-    responses={
-        500: {"model": ErrorDetail}
-    }
-)
-async def calculate_spending(
-    start_date: datetime,
-    end_date: datetime,
-    categories: Optional[List[Category]] = None,
-    item_description: Optional[str] = None,
-    api_key: str = Depends(verify_api_key),
-    repository: ReceiptRepository = Depends(get_repository)
-):
-    """
-    Calculate total spending based on various filters
-    """
-    try:
-        total = repository.calculate_spending(
-            start_date=start_date,
-            end_date=end_date,
-            categories=categories,
-            item_description=item_description
-        )
-        return {"total": str(total)}
-        
-    except DatabaseError as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Database error", "detail": str(e)}
-        )
-
 @app.on_event("startup")
 async def startup_event():
     """Ensure database exists on startup"""

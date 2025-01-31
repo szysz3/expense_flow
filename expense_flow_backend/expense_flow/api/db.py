@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import List, Optional, Dict, Union
 from datetime import datetime
-from sympy import re
+import re
 from tinydb import TinyDB, Query
 import uuid
 from contextlib import contextmanager
