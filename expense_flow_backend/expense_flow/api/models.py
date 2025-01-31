@@ -61,7 +61,6 @@ class ReceiptQuery(BaseModel):
 
 class SearchResultItem(BaseModel):
     description: str
-    quantity: float
     total_price: str
     category: str
 

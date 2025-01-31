@@ -97,11 +97,11 @@ class ReceiptRepository:
                 if item.category in categories:
                     matching_items.append({
                         "description": item.description,
-                        "quantity": item.quantity,
                         "total_price": str(item.total_price),
-                        "category": item.category.value  # Convert enum to string value
+                        "category": item.category.value
                     })
-                    total += item.total_price
+                    # Calculate total using the item's total_price directly
+                    total += Decimal(item.total_price)
                     
         return {
             "items": matching_items,
