@@ -1,6 +1,8 @@
-from fastapi import FastAPI, File, Form, UploadFile, Depends, HTTPException, BackgroundTasks
+from fastapi import FastAPI, File, Form, Request, UploadFile, Depends, HTTPException, BackgroundTasks
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
+from fastapi.responses import JSONResponse
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_422_UNPROCESSABLE_ENTITY
 import tempfile
 import os
 from typing import Optional, List, Union
@@ -264,10 +266,47 @@ async def get_receipt(
             detail={"error": "Database error", "detail": str(e)}
         )
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = []
+    for error in exc.errors():
+        # Handle unknown field errors
+        if error["type"] == "value_error":
+            errors.append({
+                "loc": error.get("loc", []),
+                "msg": error["msg"],
+                "type": "value_error"
+            })
+        # Handle type validation errors
+        elif error["type"] == "type_error":
+            field = error["loc"][-1] if error["loc"] else ""
+            errors.append({
+                "loc": error["loc"],
+                "msg": f"Invalid type for field '{field}'. {error['msg']}",
+                "type": "type_error"
+            })
+        # Handle other validation errors
+        else:
+            errors.append({
+                "loc": error["loc"],
+                "msg": error["msg"],
+                "type": error["type"]
+            })
+
+    return JSONResponse(
+        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "detail": errors,
+            "error": "Validation Error",
+            "body": exc.body 
+        }
+    )
+
 @app.post(
     "/api/receipts/search",
     response_model=SearchResult,
     responses={
+        422: {"model": ErrorDetail},
         500: {"model": ErrorDetail}
     }
 )
@@ -276,9 +315,6 @@ async def search_receipts(
     api_key: str = Depends(verify_api_key),
     repository: ReceiptRepository = Depends(get_repository)
 ):
-    """
-    Search receipts with various filters
-    """
     try:
         receipts = repository.search_receipts(
             merchant_name=query.merchant_name,
@@ -286,7 +322,7 @@ async def search_receipts(
             end_date=query.end_date,
             categories=query.categories,
             item_description=query.item_description
-            )
+        )
         return receipts
         
     except DatabaseError as e:
@@ -294,7 +330,7 @@ async def search_receipts(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "Database error", "detail": str(e)}
         )
-
+    
 @app.on_event("startup")
 async def startup_event():
     """Ensure database exists on startup"""
