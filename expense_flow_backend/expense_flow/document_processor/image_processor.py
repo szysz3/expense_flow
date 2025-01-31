@@ -12,9 +12,8 @@ class ImagePreprocessor:
             processed_path = self._get_processed_path(image_path)
             image = self._load_image(image_path)
             image = self._resize_image(image)
-            processed = self._enhance_for_ocr(image)
             
-            cv2.imwrite(processed_path, processed)
+            cv2.imwrite(processed_path, image)
             
             if os.path.getsize(processed_path) / (1024 * 1024) > self.max_size_mb:
                 raise ValueError(f"Processed image exceeds {self.max_size_mb}MB limit")

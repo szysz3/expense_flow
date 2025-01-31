@@ -108,6 +108,25 @@ class ReceiptRepository:
             "total": str(total)
         }
 
+    def _convert_to_search_result(self, receipts: List[Receipt]) -> Dict:
+            """Convert list of receipts to SearchResult format"""
+            matching_items = []
+            total = Decimal('0')
+            
+            for receipt in receipts:
+                for item in receipt.items:
+                    matching_items.append({
+                        "description": item.description,
+                        "total_price": str(item.total_price),
+                        "category": item.category.value
+                    })
+                    total += item.total_price
+                        
+            return {
+                "items": matching_items,
+                "total": str(total)
+            }
+
     @handle_db_errors
     def search_receipts(
         self,
@@ -158,5 +177,5 @@ class ReceiptRepository:
 
         if categories:
             return self._filter_items_by_categories(receipts, categories)
-            
-        return receipts 
+        
+        return self._convert_to_search_result(receipts)
