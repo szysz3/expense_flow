@@ -5,36 +5,30 @@ from fastapi.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_422_UNPROCESSABLE_ENTITY
 import tempfile
 import os
-from typing import Optional, List, Union
+from typing import Optional, Union
 from datetime import datetime
 import asyncio
-from functools import lru_cache
-from pydantic import BaseModel, Field, validator
+import logging
+from contextlib import contextmanager
 
 from .models import (
     LLMType, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
-    Receipt, ReceiptQuery, Category, SearchResult
+    Receipt, ReceiptQuery, SearchResult
 )
 from .security import verify_api_key
 from .db import ReceiptRepository, DatabaseError
 from .api_config import APIConfig, get_api_config
+from .constants import ErrorMessages, LogMessages, FileTypes
+from .logging_config import setup_logging
 from expense_flow.document_processor.azure_processor import AzureDocumentProcessor
 from expense_flow.document_processor.image_processor import ImagePreprocessor
 from expense_flow.analyzers.local_llm import LocalLLMAnalyzer
 from expense_flow.analyzers.chatgpt_llm import ChatGPTAnalyzer
 from expense_flow.config import Config
 
-class ProcessReceiptRequest(BaseModel):
-    llm_type: LLMType = Field(default=LLMType.LOCAL)
-
-    @validator('llm_type')
-    def validate_llm_type(cls, v):
-        if isinstance(v, str):
-            try:
-                return LLMType(v.lower())
-            except ValueError:
-                raise ValueError(f'Invalid LLM type: {v}')
-        return v
+# Setup logging
+setup_logging()
+logger = logging.getLogger("expense_flow")
 
 class ProcessingError(Exception):
     def __init__(self, message: str, retry_count: Optional[int] = None):
@@ -42,16 +36,32 @@ class ProcessingError(Exception):
         self.retry_count = retry_count
         super().__init__(message)
 
-@lru_cache()
-def get_api_config():
-    """Get cached API configuration instance"""
-    return APIConfig.from_env()
-
 def get_repository(api_config: APIConfig = Depends(get_api_config)):
     return ReceiptRepository(db_path=api_config.db_path)
 
-def get_analyzer(config: Config, llm_type: str):
-    return LocalLLMAnalyzer(config) if llm_type == 'local' else ChatGPTAnalyzer(config)
+def get_analyzer(config: Config, llm_type: LLMType) -> Union[LocalLLMAnalyzer, ChatGPTAnalyzer]:
+    """Create the appropriate analyzer based on LLM type"""
+    analyzers = {
+        LLMType.LOCAL: LocalLLMAnalyzer,
+        LLMType.CHATGPT: ChatGPTAnalyzer
+    }
+    analyzer_class = analyzers.get(llm_type)
+    if not analyzer_class:
+        raise ValueError(f"Invalid LLM type: {llm_type}")
+    return analyzer_class(config)
+
+@contextmanager
+def temp_file_handler(suffix: str):
+    """Context manager for handling temporary files"""
+    temp_file = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
+    try:
+        yield temp_file
+    finally:
+        if os.path.exists(temp_file.name):
+            try:
+                os.remove(temp_file.name)
+            except Exception as e:
+                logger.warning(LogMessages.TEMP_FILE_REMOVAL_FAILED.format(e))
 
 app = FastAPI(
     title="Receipt Analysis API",
@@ -61,7 +71,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # TODO: Configure this for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -73,13 +83,13 @@ async def process_receipt_with_retries(
     llm_type: LLMType,
     api_config: APIConfig
 ) -> Receipt:
-    print(f"Starting receipt processing with LLM type: {llm_type.value}")
+    logger.info(LogMessages.RECEIPT_PROCESSING_START.format(llm_type.value))
     
     image_preprocessor = ImagePreprocessor()
     doc_processor = AzureDocumentProcessor(config)
-    analyzer = get_analyzer(config, llm_type.value)
+    analyzer = get_analyzer(config, llm_type)
     
-    print(f"Using analyzer: {analyzer.__class__.__name__}")
+    logger.info(LogMessages.ANALYZER_USED.format(analyzer.__class__.__name__))
     
     retry_count = 0
     last_error = None
@@ -87,36 +97,36 @@ async def process_receipt_with_retries(
     
     while retry_count < api_config.max_retries:
         try:
-            print(f"Processing attempt {retry_count + 1}")
+            logger.info(LogMessages.PROCESSING_ATTEMPT.format(retry_count + 1))
             
             # Process image
             processed_path, success = image_preprocessor.process(file_path)
             if not success:
-                raise ProcessingError("Image preprocessing failed")
+                raise ProcessingError(LogMessages.IMAGE_PREPROCESSING_FAILED)
             
-            print("Image preprocessing successful")
+            logger.info(LogMessages.IMAGE_PREPROCESSING_SUCCESS)
             
             # Run OCR
             raw_data = doc_processor.process_image(processed_path if success else file_path)
             receipt_data = doc_processor.preprocess_receipt(raw_data)
             
-            print("OCR processing successful")
+            logger.info(LogMessages.OCR_PROCESSING_SUCCESS)
             
-            # Analyze with LLM - Convert the dict to Receipt model
+            # Analyze with LLM
             analysis_result = analyzer.analyze(receipt_data)
             return Receipt(**analysis_result)
             
         except Exception as e:
             retry_count += 1
             last_error = str(e)
-            print(f"Attempt {retry_count} failed: {last_error}")
+            logger.error(LogMessages.ATTEMPT_FAILED.format(retry_count, last_error))
             
             if isinstance(e, (ProcessingError, TimeoutError)):
                 if retry_count < api_config.max_retries:
-                    print(f"Waiting {api_config.retry_delay} seconds before retry")
+                    logger.info(LogMessages.WAITING_FOR_RETRY.format(api_config.retry_delay))
                     await asyncio.sleep(api_config.retry_delay)
             else:
-                print(f"Non-retryable error encountered: {type(e).__name__}")
+                logger.error(LogMessages.NON_RETRYABLE_ERROR.format(type(e).__name__))
                 raise
                 
         finally:
@@ -124,27 +134,9 @@ async def process_receipt_with_retries(
                 try:
                     os.remove(processed_path)
                 except Exception as e:
-                    print(f"Warning: Failed to remove processed file: {e}")
+                    logger.warning(LogMessages.TEMP_FILE_REMOVAL_FAILED.format(e))
     
     raise ProcessingError(f"Processing failed after {retry_count} attempts: {last_error}", retry_count)
-
-def get_analyzer(config: Config, llm_type: str) -> Union[LocalLLMAnalyzer, ChatGPTAnalyzer]:
-    """Create the appropriate analyzer based on LLM type string"""
-    if llm_type == LLMType.LOCAL.value:
-        return LocalLLMAnalyzer(config)
-    elif llm_type == LLMType.CHATGPT.value:
-        return ChatGPTAnalyzer(config)
-    else:
-        raise ValueError(f"Invalid LLM type: {llm_type}")
-
-def get_analyzer(config: Config, llm_type: str) -> Union[LocalLLMAnalyzer, ChatGPTAnalyzer]:
-    """Create the appropriate analyzer based on LLM type string"""
-    if llm_type == LLMType.LOCAL.value:
-        return LocalLLMAnalyzer(config)
-    elif llm_type == LLMType.CHATGPT.value:
-        return ChatGPTAnalyzer(config)
-    else:
-        raise ValueError(f"Invalid LLM type: {llm_type}")
 
 async def get_request_form(
     llm_type: str = Form(default='local')
@@ -167,72 +159,71 @@ async def analyze_receipt(
     repository: ReceiptRepository = Depends(get_repository),
     api_config: APIConfig = Depends(get_api_config)
 ):
-    """
-    Analyze receipt image and store results in database
-    """
-    print(f"Received request with LLM type: {request.llm_type}")
+    """Analyze receipt image and store results in database"""
+    logger.info(LogMessages.REQUEST_RECEIVED.format(request.llm_type))
     
-    if not file.content_type in ["image/jpeg", "image/png", "application/pdf"]:
+    if not FileTypes.is_valid(file.content_type):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail={"error": "Invalid file type", "detail": "File must be JPEG, PNG or PDF"}
+            detail={
+                "error": ErrorMessages.INVALID_FILE_TYPE,
+                "detail": ErrorMessages.FILE_TYPE_DETAIL
+            }
         )
     
-    temp_file = None
-    try:
-        # Get appropriate file extension
-        ext = {
-            "image/jpeg": ".jpg",
-            "image/png": ".png",
-            "application/pdf": ".pdf"
-        }.get(file.content_type, ".jpg")
-        
-        temp_file = tempfile.NamedTemporaryFile(suffix=ext, delete=False)
+    ext = FileTypes.EXTENSIONS.get(file.content_type)
+    with temp_file_handler(ext) as temp_file:
         content = await file.read()
         temp_file.write(content)
         temp_file.close()
         
-        config = Config(
-            endpoint=os.getenv("AZURE_DOCUMENT_ENDPOINT"),
-            key=os.getenv("AZURE_DOCUMENT_KEY"),
-            chatgpt_key=os.getenv("CHATGPT_KEY"),
-            llm_type=request.llm_type.value
-        )
-        
-        receipt = await process_receipt_with_retries(
-            temp_file.name,
-            config,
-            request.llm_type,
-            api_config
-        )
-        receipt_id = repository.insert_receipt(receipt)
-        
-        return ProcessReceiptResponse(
-            receipt_id=receipt_id,
-            receipt=receipt
-        )
-        
-    except ProcessingError as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Processing failed", "detail": e.message, "retry_count": e.retry_count}
-        )
-    except DatabaseError as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Database error", "detail": str(e)}
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Internal server error", "detail": str(e)}
-        )
-    finally:
-        if temp_file and os.path.exists(temp_file.name):
-            try:
-                os.remove(temp_file.name)
-            except Exception as e:
-                print(f"Warning: Failed to remove temporary file: {e}")
+        try:
+            config = Config(
+                endpoint=os.getenv("AZURE_DOCUMENT_ENDPOINT"),
+                key=os.getenv("AZURE_DOCUMENT_KEY"),
+                chatgpt_key=os.getenv("CHATGPT_KEY"),
+                llm_type=request.llm_type.value
+            )
+            
+            receipt = await process_receipt_with_retries(
+                temp_file.name,
+                config,
+                request.llm_type,
+                api_config
+            )
+            receipt_id = repository.insert_receipt(receipt)
+            
+            return ProcessReceiptResponse(
+                receipt_id=receipt_id,
+                receipt=receipt
+            )
+            
+        except ProcessingError as e:
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "error": ErrorMessages.PROCESSING_FAILED,
+                    "detail": e.message,
+                    "retry_count": e.retry_count
+                }
+            )
+        except DatabaseError as e:
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "error": ErrorMessages.DATABASE_ERROR,
+                    "detail": str(e)
+                }
+            )
+        except Exception as e:
+            logger.exception("Unexpected error during receipt processing")
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "error": ErrorMessages.INTERNAL_ERROR,
+                    "detail": str(e)
+                }
+            )
 
 @app.get(
     "/api/receipts/{receipt_id}",
@@ -247,15 +238,16 @@ async def get_receipt(
     api_key: str = Depends(verify_api_key),
     repository: ReceiptRepository = Depends(get_repository)
 ):
-    """
-    Retrieve a specific receipt by ID
-    """
+    """Retrieve a specific receipt by ID"""
     try:            
         receipt = repository.get_receipt(receipt_id)
         if not receipt:
             raise HTTPException(
                 status_code=404,
-                detail={"error": "Not found", "detail": f"Receipt {receipt_id} not found"}
+                detail={
+                    "error": ErrorMessages.NOT_FOUND,
+                    "detail": f"Receipt {receipt_id} not found"
+                }
             )
             
         return receipt
@@ -263,21 +255,22 @@ async def get_receipt(
     except DatabaseError as e:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Database error", "detail": str(e)}
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
         )
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = []
     for error in exc.errors():
-        # Handle unknown field errors
         if error["type"] == "value_error":
             errors.append({
                 "loc": error.get("loc", []),
                 "msg": error["msg"],
                 "type": "value_error"
             })
-        # Handle type validation errors
         elif error["type"] == "type_error":
             field = error["loc"][-1] if error["loc"] else ""
             errors.append({
@@ -285,7 +278,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 "msg": f"Invalid type for field '{field}'. {error['msg']}",
                 "type": "type_error"
             })
-        # Handle other validation errors
         else:
             errors.append({
                 "loc": error["loc"],
@@ -297,7 +289,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "detail": errors,
-            "error": "Validation Error",
+            "error": ErrorMessages.VALIDATION_ERROR,
             "body": exc.body 
         }
     )
@@ -315,6 +307,7 @@ async def search_receipts(
     api_key: str = Depends(verify_api_key),
     repository: ReceiptRepository = Depends(get_repository)
 ):
+    """Search receipts with various filters"""
     try:
         receipts = repository.search_receipts(
             merchant_name=query.merchant_name,
@@ -328,17 +321,22 @@ async def search_receipts(
     except DatabaseError as e:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Database error", "detail": str(e)}
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
         )
     
 @app.on_event("startup")
 async def startup_event():
     """Ensure database exists on startup"""
     api_config = get_api_config()
+    logger.info(LogMessages.DB_STARTUP.format(api_config.db_path))
     os.makedirs(os.path.dirname(api_config.db_path) or '.', exist_ok=True)
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Clean up database connection on shutdown"""
+    logger.info(LogMessages.DB_SHUTDOWN)
     repository = get_repository()
     repository.close()

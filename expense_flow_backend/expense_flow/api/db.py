@@ -71,8 +71,8 @@ class ReceiptRepository:
     @handle_db_errors
     def get_receipt(self, receipt_id: str) -> Optional[Receipt]:
         """Retrieve a receipt by ID"""
-        Receipt = Query()
-        result = self.db.get(Receipt.id == receipt_id)
+        receipt_query = Query()
+        result = self.db.get(receipt_query.id == receipt_id)
         
         if result:
             # Convert datetime strings back to datetime objects

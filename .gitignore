@@ -74,3 +74,4 @@ poetry.lock
 
 # Local development settings
 local_settings.py
+expense_flow_backend/expense_flow/:memory:
