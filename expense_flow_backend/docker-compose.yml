@@ -16,6 +16,12 @@ services:
       - RETRY_DELAY=1.0
       - DB_PATH=/app/.data/serve/receipts.db
       - PYTHONPATH=/app
+    deploy:
+      resources:
+        limits:
+          memory: 30G
+        reservations:
+          memory: 2G
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/docs')"]
       interval: 30s
@@ -23,3 +29,5 @@ services:
       retries: 3
       start_period: 40s
     restart: unless-stopped
+    cap_add:
+      - SYS_NICE

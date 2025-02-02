@@ -5,7 +5,7 @@ from typing import Literal
 class Config:
     endpoint: str
     key: str
-    model: str = 'deepseek-r1:8b'
+    model: str = 'phi4'
     ollama_host: str = 'http://localhost:11434'
     chatgpt_key: str = ''
     llm_type: Literal['local', 'chatgpt'] = 'local'
