@@ -9,6 +9,11 @@ usage() {
 }
 
 check_venv() {
+    # Skip venv check if running in Docker
+    if [ -f "/.dockerenv" ]; then
+        return 0
+    }
+
     VENV_PATH="$HOME/ai_venv"
     if [ ! -d "$VENV_PATH" ]; then
         echo -e "\033[31mError: Virtual environment not found in $VENV_PATH\033[0m"
@@ -52,6 +57,11 @@ check_file() {
 }
 
 activate_venv() {
+    # Skip venv activation if running in Docker
+    if [ -f "/.dockerenv" ]; then
+        return 0
+    }
+
     echo -e "\033[32mActivating virtual environment...\033[0m"
     source "$VENV_PATH/bin/activate"
     if [ $? -ne 0 ]; then
@@ -61,6 +71,11 @@ activate_venv() {
 }
 
 deactivate_venv() {
+    # Skip venv deactivation if running in Docker
+    if [ -f "/.dockerenv" ]; then
+        return 0
+    }
+
     echo -e "\033[32mDeactivating virtual environment...\033[0m"
     deactivate
 }

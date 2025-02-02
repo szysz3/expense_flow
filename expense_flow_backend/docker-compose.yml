@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  expense-flow:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./.data:/app/.data
+    environment:
+      - AZURE_DOCUMENT_ENDPOINT
+      - AZURE_DOCUMENT_KEY
+      - CHATGPT_KEY
+      - EXPENSE_FLOW_API_KEY
+      - MAX_RETRIES=3
+      - RETRY_DELAY=1.0
+      - DB_PATH=/app/.data/serve/receipts.db
+      - PYTHONPATH=/app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/docs')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped

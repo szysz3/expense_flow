@@ -1,0 +1,11 @@
+azure-ai-documentintelligence
+azure-core
+rich
+ollama
+openai
+fastapi
+uvicorn
+python-multipart
+opencv-python-headless
+tinydb
+pydantic
