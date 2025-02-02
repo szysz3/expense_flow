@@ -77,7 +77,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo -e "\033[32mStarting receipt analysis using $LLM_TYPE LLM...\033[0m"
-python main.py "$RECEIPT_PATH" --llm-type "$LLM_TYPE"
+python -m expense_flow.main "$RECEIPT_PATH" --llm-type "$LLM_TYPE"
 SCRIPT_STATUS=$?
 
 echo -e "\033[32mDeactivating virtual environment...\033[0m"
