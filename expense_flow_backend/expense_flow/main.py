@@ -64,7 +64,7 @@ def main():
         doc_processor = AzureDocumentProcessor(config)
         raw_data = doc_processor.process_image(processed_path if success else image_path)
         receipt_data = doc_processor.preprocess_receipt(raw_data)
-        
+                
         # Analyze with selected LLM
         analyzer = LocalLLMAnalyzer(config) if llm_type == 'local' else ChatGPTAnalyzer(config)
         analysis_result = analyzer.analyze(receipt_data)

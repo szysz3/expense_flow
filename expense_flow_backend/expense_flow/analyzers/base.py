@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any
-from datetime import datetime
 from rich.console import Console
 from rich.panel import Panel
 from rich.syntax import Syntax
@@ -21,15 +20,15 @@ class BaseAnalyzer(ABC):
         Input: JSON with receipt items.
         Output: Same structure and values with added "category" field for each item.
         
-        Categories:
-        - groceries (examples: food, fruits, vegetables, non-alcoholic beverages, ingredients, species, meat, fish, chicken, turkey, pork, coffee, tea and similar)
-        - alcoholic_beverages (examples: beer, wine, whisky, vodka, gin and similar)
-        - personal_care (examples: hygiene, cosmetics, medications, medical care, soap, deodorant and similar)
-        - household (examples: cleaning, decorative items, plants, utilities, tools, maintenance items, soil, feritilizer and similar)
-        - clothing (examples: apparel, shoes, bags, sneakers, shirt, scarf and similar)
-        - entertainment (examples: books, electronics, games and similar)
+        Categories and examples:
+        - groceries (examples: food, fruits, vegetables, non-alcoholic beverages, soft drinks like cola, ingredients, species, meat, fish, chicken, turkey, pork, coffee, tea and similar)
+        - alcoholic_beverages (examples: beer, wine, whisky, vodka, gin, only drinks with alcohol)
+        - personal_care (examples: hygiene, cosmetics, medications, medical care, soap, deodorant and everything used for personal care)
+        - household (examples: cleaning, decorative items, home decor, plants, utilities, tools, maintenance items, soil, feritilizer, home and garden maintenance)
+        - clothing (examples: apparel, shoes, bags, sneakers, shirt, scarf, everything to wear)
+        - entertainment (examples: books, electronics, games and similar entertaniment related)
         - transportation (examples: gas, parking tickets, car wash and similar)
-        - pet (examples: cat food)
+        - pet (examples: cat food, pet toys)
         - other
         
         Rules:
@@ -39,10 +38,18 @@ class BaseAnalyzer(ABC):
         4. Null values, placeholders or empty values NOT ALLOWED!
         5. Add category field to each item in items array.
         6. Be strict and carefull. Do not change order.
-        7. Do the cross validation and check whether items array contains the same items as original JSON. Adapt and repeat if original items are different from generated items with categories.
+        7. Double check whether categories match item description taking into account this is a shop receipt. Use your common sense.
         
         IMPORTANT! Please output ONLY extended JSON no other text. ONLY JSON ALLOWED. ANY OTHER TEXT PROHIBITED!        
         """
+
+    def _parse_llm_chunnk_response(self, response: str) -> Dict[Any, Any]:
+            if response.startswith('```json'):
+                response = response[7:]
+            if response.endswith('```'):
+                response = response[:-3]
+            return self._parse_llm_response(response)
+
 
     def _parse_llm_response(self, response: str) -> Dict[Any, Any]:
         try:
