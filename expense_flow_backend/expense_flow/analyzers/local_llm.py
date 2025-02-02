@@ -58,43 +58,53 @@ class LocalLLMAnalyzer(BaseAnalyzer):
                 self.console.print(f"[yellow]Chunk {chunk_index + 1} attempt {attempt} failed: {str(e)}. Retrying...[/]")
 
     def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
-        self._display_input_data(receipt_data)
+        max_validation_retries = 3
+        validation_attempt = 0
         
-        # Extract items and split into chunks
-        items = receipt_data.get('items', [])
-        chunks = self._chunk_items(items)
-        
-        total_start_time = datetime.now()
-        processed_items = []
-        
-        try:
-            with Progress(
-                SpinnerColumn(),
-                TimeElapsedColumn(),
-                TextColumn("{task.description}"),
-                refresh_per_second=4,
-                console=self.console,
-                transient=True
-            ) as progress:
-                task = progress.add_task("Processing chunks...", total=len(chunks))
+        while validation_attempt < max_validation_retries:
+            try:
+                self._display_input_data(receipt_data)
                 
-                for i, chunk in enumerate(chunks):
-                    chunk_result = self._process_chunk(chunk, i, progress, task)
-                    processed_items.extend(chunk_result)
-                    progress.advance(task)
-            
-            result = receipt_data.copy()
-            result['items'] = processed_items
-            
-            self._display_output_data(result)
-            
-            if self.validator.validate(receipt_data, result):
-                final_elapsed = (datetime.now() - total_start_time).total_seconds()
-                self.console.print(f"[green]✓ Analysis successful (Total time: {final_elapsed:.1f}s)[/]")
-                return result
-            else:
-                raise ValueError("Validation failed: Result contains modified or invalid data")
+                # Extract items and split into chunks
+                items = receipt_data.get('items', [])
+                chunks = self._chunk_items(items)
                 
-        except Exception as e:
-            total_elapsed = (datetime.now() - total_start_time).total_seconds()
-            raise ValueError(f"Analysis failed ({total_elapsed:.1f}s): {str(e)}")
+                total_start_time = datetime.now()
+                processed_items = []
+                
+                with Progress(
+                    SpinnerColumn(),
+                    TimeElapsedColumn(),
+                    TextColumn("{task.description}"),
+                    refresh_per_second=4,
+                    console=self.console,
+                    transient=True
+                ) as progress:
+                    task = progress.add_task("Processing chunks...", total=len(chunks))
+                    
+                    for i, chunk in enumerate(chunks):
+                        chunk_result = self._process_chunk(chunk, i, progress, task)
+                        processed_items.extend(chunk_result)
+                        progress.advance(task)
+                
+                result = receipt_data.copy()
+                result['items'] = processed_items
+                
+                self._display_output_data(result)
+                
+                if self.validator.validate(receipt_data, result):
+                    final_elapsed = (datetime.now() - total_start_time).total_seconds()
+                    self.console.print(f"[green]✓ Analysis successful (Total time: {final_elapsed:.1f}s)[/]")
+                    return result
+                else:
+                    validation_attempt += 1
+                    if validation_attempt == max_validation_retries:
+                        raise ValueError("Validation failed after maximum retries: Result contains modified or invalid data")
+                    self.console.print(f"[yellow]Validation attempt {validation_attempt} failed. Retrying analysis...[/]")
+                    
+            except Exception as e:
+                validation_attempt += 1
+                if validation_attempt == max_validation_retries:
+                    total_elapsed = (datetime.now() - total_start_time).total_seconds()
+                    raise ValueError(f"Analysis failed after {max_validation_retries} attempts ({total_elapsed:.1f}s): {str(e)}")
+                self.console.print(f"[yellow]Analysis attempt {validation_attempt} failed: {str(e)}. Retrying...[/]")

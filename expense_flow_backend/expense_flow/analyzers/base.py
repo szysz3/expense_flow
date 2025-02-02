@@ -16,31 +16,63 @@ class BaseAnalyzer(ABC):
     def _get_llm_prompt(self) -> str:
         return """
         Task: Extend receipt JSON with item categories
-        
+
         Input: JSON with receipt items.
         Output: Same structure and values with added "category" field for each item.
-        
-        Categories and examples:
-        - groceries (examples: food, fruits, vegetables, non-alcoholic beverages, soft drinks like cola, ingredients, species, meat, fish, chicken, turkey, pork, coffee, tea and similar)
-        - alcoholic_beverages (examples: beer, wine, whisky, vodka, gin, only drinks with alcohol)
-        - personal_care (examples: hygiene, cosmetics, medications, medical care, soap, deodorant and everything used for personal care)
-        - household (examples: cleaning, decorative items, home decor, plants, utilities, tools, maintenance items, soil, feritilizer, home and garden maintenance)
-        - clothing (examples: apparel, shoes, bags, sneakers, shirt, scarf, everything to wear)
-        - entertainment (examples: books, electronics, games and similar entertaniment related)
-        - transportation (examples: gas, parking tickets, car wash and similar)
-        - pet (examples: cat food, pet toys)
+
+        Categories:
+        - groceries
+        - alcoholic_beverages
+        - personal_care
+        - household
+        - clothing
+        - entertainment
+        - transportation
+        - pet
         - other
-        
+
+        Category Definitions and Examples:
+        1. groceries: food, fruits, vegetables, non-alcoholic beverages, soft drinks, ingredients, spices, meat, fish, dairy, bread, coffee, tea
+        2. alcoholic_beverages: beer, wine, whisky, vodka, gin and other alcoholic drinks
+        3. personal_care: hygiene products, cosmetics, medications, medical items, soap, deodorant
+        4. household: cleaning supplies, decorative items, home decor, tools, maintenance items, shopping bags, storage containers
+        5. clothing: apparel, shoes, accessories, bags for wearing
+        6. entertainment: books, electronics, games, toys (non-pet)
+        7. transportation: gas, parking tickets, car supplies
+        8. pet: pet food, pet supplies, pet toys
+        9. other: items not fitting above categories or with empty descriptions
+
+        Category Decision Process:
+        1. Is item a discount (OPUST, rabat)? → Use same category as original item
+        2. Is item a carrying/storage solution (reklamówka, torba)? → household
+        3. Is item food/drink? → If contains alcohol → alcoholic_beverages, else → groceries
+        4. Is description empty or unclear? → other
+        5. Does item clearly match another category? → Use that category
+
         Rules:
-        1. Go through items array and analyze each item description to determine category. 
-        2. Use exact category names as listed. IMPORTANT: use only main categories! Do not choose from examples like: gas, food, fish or apparel!
-        3. Preserve all original fields and values IMPORTANT! DO NOT CHANGE ANY ALERADY EXISTING FIELDS, FOCUS ON ADDING CATEGORIES ONLY!
-        4. Null values, placeholders or empty values NOT ALLOWED!
-        5. Add category field to each item in items array.
-        6. Be strict and carefull. Do not change order.
-        7. Double check whether categories match item description taking into account this is a shop receipt. Use your common sense.
-        
-        IMPORTANT! Please output ONLY extended JSON no other text. ONLY JSON ALLOWED. ANY OTHER TEXT PROHIBITED!        
+        1. Analyze each item description to determine correct category
+        2. Use ONLY the main categories listed above - do not use examples as categories
+        3. Preserve all original fields and values - do not modify existing data
+        4. Null values, placeholders or empty strings NOT ALLOWED for category field
+        5. Add category field to each item in items array
+        6. Maintain original item order
+        7. Consider item's primary purpose, not its location or packaging
+        8. Discounts must match category of original item
+        9. Shopping bags and packaging belong to "household" category
+        10. Empty descriptions must use "other" category
+
+        Validation Requirements:
+        1. Every item MUST have exactly one category assigned
+        2. Category names must exactly match the main categories listed
+        3. Related items (item + its discount) must share the same category
+        4. Categories must reflect item's primary purpose
+        5. Double-check categorizations against real-world shop context
+
+        IMPORTANT:
+        - Output ONLY the extended JSON
+        - No additional text allowed
+        - Only JSON in response
+        - Maintain exact JSON structure with added categories      
         """
 
     def _parse_llm_chunnk_response(self, response: str) -> Dict[Any, Any]:
