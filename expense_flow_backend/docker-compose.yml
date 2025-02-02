@@ -7,6 +7,7 @@ services:
       - "8000:8000"
     volumes:
       - ./.data:/app/.data
+      - ollama_models:/root/.ollama
     environment:
       - AZURE_DOCUMENT_ENDPOINT
       - AZURE_DOCUMENT_KEY
@@ -31,3 +32,6 @@ services:
     restart: unless-stopped
     cap_add:
       - SYS_NICE
+
+volumes:
+  ollama_models:
