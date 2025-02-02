@@ -1,14 +1,28 @@
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime
 from decimal import Decimal
+from pathlib import Path
 from ..api.db import ReceiptRepository, DatabaseError
 from ..api.models import Receipt, Category
 from .mock_data import MOCK_RECEIPTS
 
 @pytest.fixture
 def repository():
-    """Create a new repository instance with in-memory database"""
-    return ReceiptRepository(db_path=":memory:")
+    """Create a repository and ensure the database directory exists"""
+    db_dir = Path("../.data/test")
+    db_path = db_dir / "test.db"
+    
+    db_dir.mkdir(parents=True, exist_ok=True)
+    repo = ReceiptRepository(db_path=str(db_path))
+    
+    yield repo
+    try:
+        if db_path.exists():
+            db_path.unlink()
+        if db_dir.exists() and not any(db_dir.iterdir()):
+            db_dir.rmdir()
+    except Exception as e:
+        print(f"Warning: Could not cleanup test database: {e}")
 
 @pytest.fixture
 def populated_repository(repository):
@@ -24,11 +38,9 @@ def test_insert_and_get_receipt(repository):
     receipt_data = MOCK_RECEIPTS["smazalnia_receipt"]
     receipt = Receipt(**receipt_data)
     
-    # Insert receipt
     receipt_id = repository.insert_receipt(receipt)
     assert receipt_id is not None
     
-    # Retrieve and verify
     stored_receipt = repository.get_receipt(receipt_id)
     assert stored_receipt is not None
     assert stored_receipt.merchant.name == receipt.merchant.name
@@ -46,7 +58,7 @@ def test_search_by_merchant(populated_repository):
     results = populated_repository.search_receipts(merchant_name="Rossmann")
     
     assert results is not None
-    assert len(results["items"]) > 0  # Changed from results.items to results["items"]
+    assert len(results["items"]) > 0
     total = sum(Decimal(item["total_price"]) for item in results["items"])
     assert Decimal(results["total"]) == total
 
@@ -62,9 +74,8 @@ def test_search_by_date_range(populated_repository):
     )
     
     assert results is not None
-    assert len(results["items"]) > 0  # Changed from results.items
+    assert len(results["items"]) > 0 
     
-    # Verify all results are within date range
     for receipt in populated_repository.db.all():
         receipt_date = datetime.fromisoformat(receipt["transaction_datetime"])
         if start_date <= receipt_date <= end_date:
@@ -83,7 +94,6 @@ def test_search_by_category(populated_repository):
     assert results is not None
     assert len(results["items"]) > 0
     
-    # Verify all results are of the correct category
     for item in results["items"]:
         assert item["category"] == Category.ALCOHOLIC_BEVERAGES.value
 

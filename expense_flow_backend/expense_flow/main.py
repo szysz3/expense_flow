@@ -10,7 +10,7 @@ from expense_flow.analyzers.local_llm import LocalLLMAnalyzer
 from expense_flow.analyzers.chatgpt_llm import ChatGPTAnalyzer
 
 def save_result(analysis_result: dict, console: Console):
-    results_dir = "results"
+    results_dir = ".data/analyzis"
     os.makedirs(results_dir, exist_ok=True)
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

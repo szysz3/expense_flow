@@ -1,5 +1,4 @@
-/sample_receipts
-/results
+/.data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -15,7 +15,7 @@ class APIConfig:
         return cls(
             max_retries=int(os.getenv('MAX_RETRIES', '3')),
             retry_delay=float(os.getenv('RETRY_DELAY', '1.0')),
-            db_path=os.getenv('DB_PATH', 'receipts.db')
+            db_path=os.getenv('DB_PATH', '.data/serve/receipts.db')
         )
 
 @lru_cache()
