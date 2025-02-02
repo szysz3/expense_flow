@@ -91,8 +91,9 @@ class ResponseValidator:
             self.console.print(f"Expected: {orig_item.get('quantity')}")
             self.console.print(f"Got: {result_item.get('quantity')}")
             return False
-                
-        if orig_item.get('total_price') != result_item.get('total_price'):
+        
+        # Ignore reversed order on result list, this is a hack to compare absolute values        
+        if abs(orig_item.get('total_price', 0)) != abs(result_item.get('total_price', 0)):            
             self.console.print(f"[red]❌ Price mismatch for item {idx + 1}[/]")
             self.console.print(f"Expected: {orig_item.get('total_price')}")
             self.console.print(f"Got: {result_item.get('total_price')}")

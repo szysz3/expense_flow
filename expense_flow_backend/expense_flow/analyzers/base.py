@@ -4,6 +4,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.syntax import Syntax
 import json
+from typing import Dict, Any, List
 
 class BaseAnalyzer(ABC):
     def __init__(self):
@@ -35,7 +36,7 @@ class BaseAnalyzer(ABC):
         1. groceries: food, fruits, vegetables, non-alcoholic beverages, soft drinks, ingredients, spices, meat, fish, dairy, bread, coffee, tea
         2. alcoholic_beverages: beer, wine, whisky, vodka, gin and other alcoholic drinks
         3. personal_care: hygiene products, cosmetics, medications, medical items, soap, deodorant
-        4. household: cleaning supplies, decorative items, home decor, tools, maintenance items, shopping bags, storage containers
+        4. household: cleaning supplies, decorative items, home decor, tools, maintenance items, shopping bags, storage containers, plants
         5. clothing: apparel, shoes, accessories, bags for wearing
         6. entertainment: books, electronics, games, toys (non-pet)
         7. transportation: gas, parking tickets, car supplies
@@ -55,7 +56,7 @@ class BaseAnalyzer(ABC):
         3. Preserve all original fields and values - do not modify existing data
         4. Null values, placeholders or empty strings NOT ALLOWED for category field
         5. Add category field to each item in items array
-        6. Maintain original item order
+        6. Keep original item order - do not modify item positions
         7. Consider item's primary purpose, not its location or packaging
         8. Discounts must match category of original item
         9. Shopping bags and packaging belong to "household" category
@@ -75,12 +76,28 @@ class BaseAnalyzer(ABC):
         - Maintain exact JSON structure with added categories      
         """
 
-    def _parse_llm_chunnk_response(self, response: str) -> Dict[Any, Any]:
-            if response.startswith('```json'):
-                response = response[7:]
-            if response.endswith('```'):
-                response = response[:-3]
-            return self._parse_llm_response(response)
+    def _parse_llm_chunnk_response(self, response: str) -> List[Dict[Any, Any]]:
+        if response.startswith('```json'):
+            response = response[7:]
+        if response.endswith('```'):
+            response = response[:-3]
+        
+        parsed_data = self._parse_llm_response(response)
+        
+        # Handle both single item and list responses
+        if isinstance(parsed_data, dict):
+            # Single item case
+            if 'items' in parsed_data:
+                # Response includes the 'items' wrapper
+                return parsed_data['items']
+            else:
+                # Single item without wrapper
+                return [parsed_data]
+        elif isinstance(parsed_data, list):
+            # List of items case
+            return parsed_data
+        else:
+            raise ValueError("Invalid response format")
 
 
     def _parse_llm_response(self, response: str) -> Dict[Any, Any]:
