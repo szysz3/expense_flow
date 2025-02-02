@@ -30,7 +30,7 @@ echo "Ollama is running"
 
 # Pull the model with timeout and progress indication
 echo "Pulling model phi4..."
-timeout 300 ollama pull phi4 || {
+timeout 900 ollama pull phi4 || {
     echo "Error: Model pull failed or timed out after 5 minutes"
     exit 1
 }

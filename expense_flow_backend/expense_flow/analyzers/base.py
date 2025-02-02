@@ -18,7 +18,7 @@ class BaseAnalyzer(ABC):
         return """
         Task: Extend receipt JSON with item categories
         
-        Input: JSON with merchant and receipt items. In Polish language.
+        Input: JSON with receipt items.
         Output: Same structure and values with added "category" field for each item.
         
         Categories:
@@ -33,12 +33,13 @@ class BaseAnalyzer(ABC):
         - other
         
         Rules:
-        1. Analyze item description to determine category.
-        2. Use exact category names as listed. IMPORTANT: use only main categories, not examples like: gas, food, fish or apparel!
-        3. Preserve all original fields and values IMPORTANT! DO NOT CHANGE ANY EXISTING FIELDS!
+        1. Go through items array and analyze each item description to determine category. 
+        2. Use exact category names as listed. IMPORTANT: use only main categories! Do not choose from examples like: gas, food, fish or apparel!
+        3. Preserve all original fields and values IMPORTANT! DO NOT CHANGE ANY ALERADY EXISTING FIELDS, FOCUS ON ADDING CATEGORIES ONLY!
         4. Null values, placeholders or empty values NOT ALLOWED!
         5. Add category field to each item in items array.
-        6. Be strict and carefull.
+        6. Be strict and carefull. Do not change order.
+        7. Do the cross validation and check whether items array contains the same items as original JSON. Adapt and repeat if original items are different from generated items with categories.
         
         IMPORTANT! Please output ONLY extended JSON no other text. ONLY JSON ALLOWED. ANY OTHER TEXT PROHIBITED!        
         """
