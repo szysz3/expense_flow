@@ -19,7 +19,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 30G
+          memory: 32G
         reservations:
           memory: 2G
     healthcheck:
