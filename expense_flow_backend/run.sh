@@ -3,7 +3,7 @@
 usage() {
     echo -e "\033[33mUsage: $0 [command] [options]\033[0m"
     echo -e "\033[33mCommands:\033[0m"
-    echo -e "  analyze path/to/receipt.{jpg,png,pdf} [--llm-type local|chatgpt]"
+    echo -e "  analyze path/to/receipt.{jpg,png,pdf,json} [--llm-type local|chatgpt]"
     echo -e "  serve [--host HOST] [--port PORT]"
     exit 1
 }
@@ -51,8 +51,8 @@ check_file() {
         exit 1
     fi
 
-    if [[ ! $1 =~ \.(jpg|jpeg|png|pdf)$ ]]; then
-        echo -e "\033[31mError: File must be an image (jpg, png) or PDF!\033[0m"
+    if [[ ! $1 =~ \.(jpg|jpeg|png|pdf|json)$ ]]; then
+        echo -e "\033[31mError: File must be an image (jpg, png), PDF, or JSON!\033[0m"
         exit 1
     fi
 }
@@ -86,7 +86,12 @@ analyze_receipt() {
     LLM_TYPE="$2"
 
     check_file "$RECEIPT_PATH"
-    check_azure_credentials
+    
+    # Only check Azure credentials for non-JSON files
+    if [[ ! $RECEIPT_PATH =~ \.json$ ]]; then
+        check_azure_credentials
+    fi
+    
     check_chatgpt_key
     
     echo -e "\033[32mStarting receipt analysis using $LLM_TYPE LLM...\033[0m"

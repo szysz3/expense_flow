@@ -21,9 +21,23 @@ def save_result(analysis_result: dict, console: Console):
             json.dump(analysis_result, f, indent=2, ensure_ascii=False)
         console.print(f"[bold green]✓[/] Results saved to [blue]{filename}[/]")
 
+def load_json_data(filepath: str, console: Console) -> dict:
+    with console.status(f"[bold blue]Loading JSON from {filepath}..."):
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            console.print("[bold green]✓[/] JSON data loaded successfully")
+            return data
+        except json.JSONDecodeError as e:
+            console.print(f"[bold red]Error: Invalid JSON file: {e}[/]")
+            sys.exit(1)
+        except Exception as e:
+            console.print(f"[bold red]Error loading file: {e}[/]")
+            sys.exit(1)
+
 def main():
     if len(sys.argv) < 2:
-        Console().print("[bold red]Usage: python receipt_analyzer.py <receipt_image_file> [--llm-type local|chatgpt][/]")
+        Console().print("[bold red]Usage: python receipt_analyzer.py <receipt_file> [--llm-type local|chatgpt][/]")
         sys.exit(1)
         
     llm_type = 'local'
@@ -43,10 +57,15 @@ def main():
 
     console = Console()
     
-    if not config.endpoint or not config.key:
-        console.print("[bold red]Error: Azure credentials not found in environment variables[/]")
-        console.print("Please set AZURE_DOCUMENT_ENDPOINT and AZURE_DOCUMENT_KEY")
-        sys.exit(1)
+    input_file = sys.argv[1]
+    is_json = input_file.lower().endswith('.json')
+
+    # Only check Azure credentials if processing image files
+    if not is_json:
+        if not config.endpoint or not config.key:
+            console.print("[bold red]Error: Azure credentials not found in environment variables[/]")
+            console.print("Please set AZURE_DOCUMENT_ENDPOINT and AZURE_DOCUMENT_KEY")
+            sys.exit(1)
 
     if llm_type == 'chatgpt' and not config.chatgpt_key:
         console.print("[bold red]Error: ChatGPT API key not found in environment variables[/]")
@@ -54,16 +73,17 @@ def main():
         sys.exit(1)
 
     try:
-        image_path = sys.argv[1]
-        
-        # Prepare image
-        image_preprocessor = ImagePreprocessor()
-        processed_path, success = image_preprocessor.process(image_path)
+        if is_json:
+            receipt_data = load_json_data(input_file, console)
+        else:
+            # Image preprocessing (scaling etc.)
+            image_preprocessor = ImagePreprocessor()
+            processed_path, success = image_preprocessor.process(input_file)
 
-        # Run OCR
-        doc_processor = AzureDocumentProcessor(config)
-        raw_data = doc_processor.process_image(processed_path if success else image_path)
-        receipt_data = doc_processor.preprocess_receipt(raw_data)
+            # OCR
+            doc_processor = AzureDocumentProcessor(config)
+            raw_data = doc_processor.process_image(processed_path if success else input_file)
+            receipt_data = doc_processor.preprocess_receipt(raw_data)
                 
         # Analyze with selected LLM
         analyzer = LocalLLMAnalyzer(config) if llm_type == 'local' else ChatGPTAnalyzer(config)
