@@ -33,7 +33,8 @@ class LocalLLMAnalyzer(BaseAnalyzer):
 
                 response = self.client.generate(
                     model=self.config.model,
-                    prompt=f"{self._get_llm_prompt()}\n\nInput:\n{json.dumps(chunk, indent=2)}"
+                    prompt=f"{self._get_llm_prompt()}\n\nInput:\n{json.dumps(chunk, indent=2)}",
+                    options={"num_ctx": 8192}
                 )
                 
                 result = self._parse_llm_chunnk_response(response['response'])
