@@ -9,12 +9,15 @@ from expense_flow.document_processor.image_processor import ImagePreprocessor
 from expense_flow.analyzers.local_llm import LocalLLMAnalyzer
 from expense_flow.analyzers.chatgpt_llm import ChatGPTAnalyzer
 
-def save_result(analysis_result: dict, console: Console):
+def save_result(input_file: str, analysis_result: dict, console: Console):
     results_dir = ".data/analyzis"
+    output_filename = os.path.basename(input_file)
+    output_filename = os.path.splitext(output_filename)[0]
+
     os.makedirs(results_dir, exist_ok=True)
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(results_dir, f"result_{timestamp}.json")
+    filename = os.path.join(results_dir, f"result_{output_filename}.json")
     
     with console.status("[bold green]Saving results..."):
         with open(filename, 'w', encoding='utf-8') as f:
@@ -90,7 +93,7 @@ def main():
         analysis_result = analyzer.analyze(receipt_data)
         
         # Save results
-        save_result(analysis_result, console)
+        save_result(input_file, analysis_result, console)
 
     except Exception as e:
         console.print(f"[bold red]Error: {e}[/]")
