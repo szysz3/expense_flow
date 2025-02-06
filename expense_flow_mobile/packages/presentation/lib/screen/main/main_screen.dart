@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:presentation/navigation/bloc/navigation_bloc.dart';
 import 'package:presentation/navigation/bloc/navigation_state.dart';
 import 'package:presentation/navigation/widget/bottom_navigation.dart';
+import 'package:presentation/screen/receipt_scan/receipt_scan_screen.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -17,7 +18,7 @@ class MainScreen extends StatelessWidget {
             return IndexedStack(
               index: state.currentIndex,
               children: const [
-                Center(child: Text('Scan')),
+                ReceiptScanScreen(),
                 Center(child: Text('Categories')),
                 Center(child: Text('Orders')),
                 Center(child: Text('Summary')),
