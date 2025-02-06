@@ -3,12 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:presentation/navigation/bloc/navigation_bloc.dart';
 import 'package:presentation/navigation/bloc/navigation_event.dart';
 import 'package:presentation/navigation/bloc/navigation_state.dart';
+import 'package:presentation/theme/expense_flow_color_scheme.dart';
 
 class BottomNavigation extends StatelessWidget {
   const BottomNavigation({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return BlocBuilder<NavigationBloc, NavigationState>(
       builder: (context, state) {
         return BottomNavigationBar(
@@ -16,25 +19,25 @@ class BottomNavigation extends StatelessWidget {
           onTap: (index) {
             context.read<NavigationBloc>().add(NavigateToIndex(index));
           },
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.photo),
-              backgroundColor: Colors.deepOrange,
+              icon: const Icon(Icons.photo),
+              backgroundColor: colorScheme.accentDelicate,
               label: 'Scan',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.category),
-              backgroundColor: Colors.blueGrey,
+              backgroundColor: colorScheme.accentMild,
               label: 'Categories',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.money),
-              backgroundColor: Colors.amber,
+              backgroundColor: colorScheme.accentNormal,
               label: 'Orders',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.summarize),
-              backgroundColor: Colors.indigo,
+              backgroundColor: colorScheme.accentIntense,
               label: 'Summary',
             ),
           ],

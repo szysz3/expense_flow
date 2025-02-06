@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:presentation/screen/main/main_screen.dart';
+import 'package:presentation/theme/expense_flow_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +14,9 @@ class ExpenseFlowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Expense Flow',
+      theme: ExpenseFlowTheme.lightTheme,
+      darkTheme: ExpenseFlowTheme.darkTheme,
+      themeMode: ThemeMode.system,
       home: MainScreen(),
     );
   }
