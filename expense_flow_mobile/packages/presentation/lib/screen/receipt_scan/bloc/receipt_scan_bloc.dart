@@ -8,8 +8,8 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, ReceiptScanState> {
 
   ReceiptScanBloc(this._cameraService) : super(ReceiptScanInitial()) {
     on<InitializeCameraEvent>(_initializeCamera);
-    on<ToggleBlurEvent>(_toggleBlur);
     on<TakePhotoEvent>(_takePhoto);
+    on<CameraButtonPressedEvent>(_handleCameraButtonPress);
   }
 
   Future<void> _initializeCamera(
@@ -24,16 +24,17 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, ReceiptScanState> {
     }
   }
 
-  void _toggleBlur(
-    ToggleBlurEvent event,
+  void _handleCameraButtonPress(
+    CameraButtonPressedEvent event,
     Emitter<ReceiptScanState> emit,
   ) {
     if (state is CameraInitialized) {
       final currentState = state as CameraInitialized;
-      emit(CameraInitialized(
-        currentState.controller,
-        isBlurred: !currentState.isBlurred,
-      ));
+      if (currentState.isBlurred) {
+        emit(CameraInitialized(currentState.controller, isBlurred: false));
+      } else {
+        add(TakePhotoEvent());
+      }
     }
   }
 
