@@ -1,35 +1,36 @@
 import 'package:flutter/material.dart';
 
 class ExpenseFlowColors {
-  // Light Theme Colors
-  static const lightPrimary = Color(0xFF5B63B7); // Purple-blue
-  static const lightOnPrimary = Colors.white;
-  static const lightSecondary = Color(0xFF72B5A4); // Mint green
-  static const lightOnSecondary = Colors.white;
-  static const lightAccent = Color(0xFFFF6B6B); // Coral
-  static const lightBackground = Color(0xFFF8F9FC); // Off-white
-  static const lightSurface = Color(0xFFFFFFFF); // Pure white
-  static const lightError = Color(0xFFDC3545); // Red
+  static const lightPrimary = Color(0xFF9580FF);
+  static const lightOnPrimary = Color(0xFF212244);
+  static const lightSecondary = Color(0xFF8AFF80);
+  static const lightOnSecondary = Color(0xFF212244);
+  static const lightAccent = Color(0xFFFF80BF);
+  static const lightAccentVariant = Color(0xFFFFCA80);
+  static const lightBackground = Color(0xFFF8F8F2);
+  static const lightSurface = Color(0xFFF8F8F2);
+  static const lightError = Color(0xFFFF9580);
+  static const lightCyan = Color(0xFF80FFEA);
+  static const lightYellow = Color(0xFFFFFF80);
 
-  // Light Accent Colors
-  static const lightAccentDelicate = Color(0xFFE6E8FF);
-  static const lightAccentMild = Color(0xFFB3B7FF);
-  static const lightAccentNormal = Color(0xFF5B63B7);
-  static const lightAccentIntense = Color(0xFF3B4190);
+  static const lightAccentDelicate = Color(0xFFB8A2FF);
+  static const lightAccentMild = Color(0xFFC0B0A0);
+  static const lightAccentNormal = Color(0xFFFFA6D0);
+  static const lightAccentIntense = Color(0xFFFFD0A0);
 
-  // Dark Theme Colors
-  static const darkPrimary = Color(0xFF8E94D9); // Lighter purple-blue
-  static const darkOnPrimary = Color(0xFF1A1B35); // Deep blue-grey
-  static const darkSecondary = Color(0xFF9ED3C6); // Lighter mint
-  static const darkOnSecondary = Color(0xFF1F332E); // Deep green-grey
-  static const darkAccent = Color(0xFFFF8585); // Lighter coral
-  static const darkBackground = Color(0xFF121212); // Material dark
-  static const darkSurface = Color(0xFF1E1E1E); // Slightly lighter dark
-  static const darkError = Color(0xFFE55C6C); // Light red
-
-  // Dark Accent Colors
-  static const darkAccentDelicate = Color(0xFF2A2D4A);
-  static const darkAccentMild = Color(0xFF4A4F8C);
-  static const darkAccentNormal = Color(0xFF8E94D9);
-  static const darkAccentIntense = Color(0xFFADB2E6);
+  static const darkPrimary = Color(0xFFBD93F9);
+  static const darkOnPrimary = Color(0xFF282A36);
+  static const darkSecondary = Color(0xFF50FA7B);
+  static const darkOnSecondary = Color(0xFF282A36);
+  static const darkAccent = Color(0xFFFF79C6);
+  static const darkAccentVariant = Color(0xFFFFB86C);
+  static const darkBackground = Color(0xFF282A36);
+  static const darkSurface = Color(0xFF44475A);
+  static const darkError = Color(0xFFFF5555);
+  static const darkCyan = Color(0xFF8BE9FD);
+  static const darkYellow = Color(0xFFF1FA8C);
+  static const darkAccentDelicate = Color(0xFF8B92B8);
+  static const darkAccentMild = Color(0xFF8BCBEA);
+  static const darkAccentNormal = Color(0xFF9B8BEA);
+  static const darkAccentIntense = Color(0xFFEABC8B);
 }
