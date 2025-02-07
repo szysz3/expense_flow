@@ -50,13 +50,13 @@ class _CameraPreview extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         AnimatedScale(
-          scale: state.isBlurred ? 0.8 : 1.0,
+          scale: state.isBlurred ? 0.5 : 1.0,
           curve: Curves.easeOutQuart,
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 600),
           child: AnimatedOpacity(
             opacity: state.isBlurred ? 0.0 : 1.0,
             curve: Curves.easeInOutCubic,
-            duration: const Duration(milliseconds: 250),
+            duration: const Duration(milliseconds: 500),
             child: _buildPreview(context),
           ),
         ),
