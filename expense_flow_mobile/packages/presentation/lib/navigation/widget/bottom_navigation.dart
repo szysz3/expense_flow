@@ -25,22 +25,22 @@ class BottomNavigation extends StatelessWidget {
           items: [
             BottomNavigationBarItem(
               icon: const Icon(Icons.photo),
-              backgroundColor: colorScheme.accentDelicate.withAlpha(100),
+              backgroundColor: Colors.transparent,
               label: 'Scan',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.category),
-              backgroundColor: colorScheme.accentMild,
+              backgroundColor: Colors.transparent,
               label: 'Categories',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.money),
-              backgroundColor: colorScheme.accentNormal,
+              backgroundColor: Colors.transparent,
               label: 'Orders',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.summarize),
-              backgroundColor: colorScheme.accentIntense,
+              backgroundColor: Colors.transparent,
               label: 'Summary',
             ),
           ],

@@ -4,6 +4,10 @@ import 'package:flutter/services.dart';
 class CameraService {
   CameraController? _controller;
 
+  static final instance = CameraService._internal();
+
+  CameraService._internal();
+
   Future<CameraController> initialize() async {
     final cameras = await availableCameras();
 
