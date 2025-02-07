@@ -65,34 +65,31 @@ class _CameraPreview extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final controller = state.controller;
     final aspectRatio = controller.value.aspectRatio;
+    final deviceRatio = size.width / size.height;
 
-    return ClipRect(
+    return Center(
       child: Transform.scale(
-        scale: aspectRatio > size.aspectRatio
-            ? size.height / (size.width / aspectRatio)
-            : size.width / (size.height * aspectRatio),
-        child: Center(
-          child: AspectRatio(
-            aspectRatio: aspectRatio,
-            child: state.isBlurred
-                ? ImageFiltered(
-                    imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        Theme.of(context).colorScheme.accentDelicate,
-                        BlendMode.modulate,
-                      ),
-                      child: Transform.rotate(
-                        angle: _getCameraRotation(),
-                        child: CameraPreview(controller),
-                      ),
+        scale: controller.value.aspectRatio / deviceRatio,
+        child: AspectRatio(
+          aspectRatio: aspectRatio,
+          child: state.isBlurred
+              ? ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                  child: ColorFiltered(
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.accentDelicate,
+                      BlendMode.modulate,
                     ),
-                  )
-                : Transform.rotate(
-                    angle: _getCameraRotation(),
-                    child: CameraPreview(controller),
+                    child: Transform.rotate(
+                      angle: _getCameraRotation(),
+                      child: CameraPreview(controller),
+                    ),
                   ),
-          ),
+                )
+              : Transform.rotate(
+                  angle: _getCameraRotation(),
+                  child: CameraPreview(controller),
+                ),
         ),
       ),
     );

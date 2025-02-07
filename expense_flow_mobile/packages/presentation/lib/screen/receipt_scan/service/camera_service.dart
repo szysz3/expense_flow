@@ -22,7 +22,7 @@ class CameraService {
 
     _controller = CameraController(
       backCamera,
-      ResolutionPreset.high,
+      ResolutionPreset.max,
       imageFormatGroup: ImageFormatGroup.jpeg,
       enableAudio: false,
     );
