@@ -35,7 +35,7 @@ class _ReceiptScanView extends StatelessWidget {
             ReceiptScanInitial() =>
               const Center(child: CircularProgressIndicator()),
             CameraInitialized() => _CameraPreview(state),
-            PhotoTaken() => Image.file(File(state.imagePath)),
+            PhotoTaken() => Center(child: Image.file(File(state.imagePath))),
             ReceiptScanError() => Center(child: Text(state.message)),
             _ => const SizedBox.shrink()
           };
@@ -69,7 +69,7 @@ class _CameraPreview extends StatelessWidget {
 
     return Center(
       child: Transform.scale(
-        scale: controller.value.aspectRatio / deviceRatio,
+        scale: 1.2, //controller.value.aspectRatio / deviceRatio,
         child: AspectRatio(
           aspectRatio: aspectRatio,
           child: state.isBlurred
