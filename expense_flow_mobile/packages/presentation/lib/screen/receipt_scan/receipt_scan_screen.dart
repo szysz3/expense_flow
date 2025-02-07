@@ -75,7 +75,7 @@ class _CameraPreview extends StatelessWidget {
         child: AspectRatio(
             aspectRatio: aspectRatio,
             child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: ColorFiltered(
                 colorFilter: ColorFilter.mode(
                   Theme.of(context).colorScheme.accentDelicate,
