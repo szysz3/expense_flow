@@ -15,6 +15,9 @@ class BottomNavigation extends StatelessWidget {
     return BlocBuilder<NavigationBloc, NavigationState>(
       builder: (context, state) {
         return BottomNavigationBar(
+          elevation: 0,
+          selectedItemColor: colorScheme.onSurface,
+          unselectedItemColor: colorScheme.onSurface.withAlpha(100),
           currentIndex: state.currentIndex,
           onTap: (index) {
             context.read<NavigationBloc>().add(NavigateToIndex(index));
@@ -22,7 +25,7 @@ class BottomNavigation extends StatelessWidget {
           items: [
             BottomNavigationBarItem(
               icon: const Icon(Icons.photo),
-              backgroundColor: colorScheme.accentDelicate,
+              backgroundColor: colorScheme.accentDelicate.withAlpha(100),
               label: 'Scan',
             ),
             BottomNavigationBarItem(

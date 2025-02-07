@@ -55,44 +55,67 @@ class _CameraPreview extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        _buildPreview(context),
+        _buildBlurredBackgroundPreview(context),
+        if (!state.isBlurred) _buildPreview(context),
         _buildCameraButton(context),
       ],
     );
   }
 
-  Widget _buildPreview(BuildContext context) {
+  Widget _buildBlurredBackgroundPreview(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final data = MediaQuery.of(context);
     final controller = state.controller;
     final aspectRatio = controller.value.aspectRatio;
-    final deviceRatio = size.width / size.height;
+    final deviceRatio = size.width / size.height + data.padding.bottom;
 
     return Center(
       child: Transform.scale(
-        scale: 1.2, //controller.value.aspectRatio / deviceRatio,
+        scale: controller.value.aspectRatio / deviceRatio,
         child: AspectRatio(
-          aspectRatio: aspectRatio,
-          child: state.isBlurred
-              ? ImageFiltered(
-                  imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                      Theme.of(context).colorScheme.accentDelicate,
-                      BlendMode.modulate,
-                    ),
-                    child: Transform.rotate(
-                      angle: _getCameraRotation(),
-                      child: CameraPreview(controller),
-                    ),
-                  ),
-                )
-              : Transform.rotate(
+            aspectRatio: aspectRatio,
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.accentDelicate,
+                  BlendMode.modulate,
+                ),
+                child: Transform.rotate(
                   angle: _getCameraRotation(),
                   child: CameraPreview(controller),
                 ),
-        ),
+              ),
+            )),
       ),
     );
+  }
+
+  Widget _buildPreview(BuildContext context) {
+    final controller = state.controller;
+
+    return Transform.scale(
+        scale: _getImageZoom(MediaQuery.of(context), controller),
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: controller.value.aspectRatio,
+            child: Transform.rotate(
+              angle: _getCameraRotation(),
+              child: CameraPreview(controller),
+            ),
+          ),
+        ));
+  }
+
+  double _getImageZoom(MediaQueryData data, CameraController controller) {
+    final double logicalWidth = data.size.width;
+    final double logicalHeight = controller.value.aspectRatio * logicalWidth;
+
+    final EdgeInsets padding = data.padding;
+    final double maxLogicalHeight =
+        data.size.height - padding.top - padding.bottom;
+
+    return maxLogicalHeight / logicalHeight;
   }
 
   double _getCameraRotation() {

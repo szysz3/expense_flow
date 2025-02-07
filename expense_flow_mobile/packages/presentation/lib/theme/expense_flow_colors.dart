@@ -29,8 +29,9 @@ class ExpenseFlowColors {
   static const darkError = Color(0xFFFF5555);
   static const darkCyan = Color(0xFF8BE9FD);
   static const darkYellow = Color(0xFFF1FA8C);
-  static const darkAccentDelicate = Color(0xFF8B92B8);
-  static const darkAccentMild = Color(0xFF8BCBEA);
-  static const darkAccentNormal = Color(0xFF9B8BEA);
-  static const darkAccentIntense = Color(0xFFEABC8B);
+
+  static const darkAccentDelicate = Color(0xFF293230);
+  static const darkAccentMild = Color(0xFF333a4a);
+  static const darkAccentNormal = Color(0xFF463a43);
+  static const darkAccentIntense = Color(0xFF373531);
 }
