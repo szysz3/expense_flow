@@ -58,57 +58,70 @@ class _CameraPreview extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         if (isCameraPreviewActive == true || isPhotoPreviewActive == true)
-          _wrappedContent(),
+          _wrappedContent(context),
         if (photoPath == null) _buildCameraButton(context),
       ],
     );
   }
 
-  Widget _buildPreview(BuildContext context) {
-    return Transform.scale(
-        scale: 1, //_getImageZoom(MediaQuery.of(context), cameraController),
-        child: Center(
-            child: AspectRatio(
-          aspectRatio: cameraController.value.aspectRatio,
-          child: _wrappedContent(), //_getContent(),
-        )));
-  }
-
-  Widget _wrappedContent() {
+  Widget _wrappedContent(BuildContext context) {
     return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
+          LayoutBuilder(builder: (context, constraints) {
+            var cameraWidth =
+                cameraController.value.previewSize?.shortestSide ?? 0;
+            var cameraHeight =
+                cameraController.value.previewSize?.longestSide ?? 0;
+
+            var width = min(constraints.maxWidth,
+                constraints.maxHeight * (cameraWidth / cameraHeight));
+
+            var height = min(constraints.maxHeight,
+                constraints.maxWidth * (cameraHeight / cameraWidth));
+
+            return Container(
+              width: width,
+              height: height,
               decoration:
                   BoxDecoration(border: Border.all(color: Colors.yellow)),
-              child: AspectRatio(
-                aspectRatio: cameraController.value.aspectRatio,
-                child: _getContent(), //_getContent(),
-              )),
-          Row(
-            children: [
-              Expanded(
-                flex: 1,
-                child: Center(
-                  child: SvgPicture.asset(
-                    'packages/presentation/assets/icon_back.svg',
-                    width: 48, // customize size
-                    height: 48,
+              child: _getContent(),
+            );
+          }),
+          if (isPhotoPreviewActive ==
+              true) // Only show icons in photo preview mode
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: GestureDetector(
+                      onTap: () => {},
+                      child: SvgPicture.asset(
+                        'packages/presentation/assets/icon_back.svg',
+                        width: 48,
+                        height: 48,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Center(
-                  child: SvgPicture.asset(
-                    'packages/presentation/assets/icon_tick.svg',
-                    width: 48, // customize size
-                    height: 48,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: GestureDetector(
+                      onTap: () => {},
+                      child: SvgPicture.asset(
+                        'packages/presentation/assets/icon_tick.svg',
+                        width: 48,
+                        height: 48,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          )
+            ),
         ],
       ),
     );
@@ -116,26 +129,17 @@ class _CameraPreview extends StatelessWidget {
 
   Widget _getContent() {
     if (isCameraPreviewActive == true) {
-      return Transform.rotate(
-          angle: _getCameraRotation(), child: CameraPreview(cameraController));
+      return AspectRatio(
+        aspectRatio: cameraController.value.previewSize?.aspectRatio ?? 0,
+        child: Transform.rotate(
+            angle: _getCameraRotation(),
+            child: CameraPreview(cameraController)),
+      );
     }
-
     if (isPhotoPreviewActive == true) {
       return Image.file(File(photoPath!));
     }
-
     return SizedBox.shrink();
-  }
-
-  double _getImageZoom(MediaQueryData data, CameraController controller) {
-    final double logicalWidth = data.size.width;
-    final double logicalHeight = controller.value.aspectRatio * logicalWidth;
-
-    final EdgeInsets padding = data.padding;
-    final double maxLogicalHeight =
-        data.size.height - padding.top - padding.bottom;
-
-    return maxLogicalHeight / logicalHeight;
   }
 
   double _getCameraRotation() {
