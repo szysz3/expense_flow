@@ -55,7 +55,6 @@ class _CameraPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      fit: StackFit.expand,
       children: [
         if (isCameraPreviewActive == true || isPhotoPreviewActive == true)
           _wrappedContent(context),
@@ -65,86 +64,101 @@ class _CameraPreview extends StatelessWidget {
   }
 
   Widget _wrappedContent(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          LayoutBuilder(builder: (context, constraints) {
-            var cameraWidth =
-                cameraController.value.previewSize?.shortestSide ?? 0;
-            var cameraHeight =
-                cameraController.value.previewSize?.longestSide ?? 0;
-
-            var width = min(constraints.maxWidth,
-                constraints.maxHeight * (cameraWidth / cameraHeight));
-
-            var height = min(constraints.maxHeight,
-                constraints.maxWidth * (cameraHeight / cameraWidth));
-
-            return Container(
-              width: width,
-              height: height,
-              decoration:
-                  BoxDecoration(border: Border.all(color: Colors.yellow)),
-              child: _getContent(),
-            );
-          }),
-          if (isPhotoPreviewActive ==
-              true) // Only show icons in photo preview mode
-            Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: GestureDetector(
-                      onTap: () => {},
-                      child: SvgPicture.asset(
-                        'packages/presentation/assets/icon_back.svg',
-                        width: 48,
-                        height: 48,
-                      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.yellow),
+          ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(
+                  scale: animation,
+                  child: child,
+                ),
+              );
+            },
+            child: _getContent(),
+          ),
+        ),
+        SizedBox(
+          height: 80,
+          child: Center(
+            child: AnimatedOpacity(
+              opacity: isPhotoPreviewActive == true ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: AnimatedSlide(
+                offset: Offset(0, isPhotoPreviewActive == true ? 0 : 0.5),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildActionButton(
+                      'packages/presentation/assets/icon_back.svg',
+                      () => {},
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: GestureDetector(
-                      onTap: () => {},
-                      child: SvgPicture.asset(
-                        'packages/presentation/assets/icon_tick.svg',
-                        width: 48,
-                        height: 48,
-                      ),
+                    _buildActionButton(
+                      'packages/presentation/assets/icon_tick.svg',
+                      () => {},
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-        ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(String assetPath, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutBack,
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: value,
+            child: child,
+          );
+        },
+        child: GestureDetector(
+          onTap: onTap,
+          child: SvgPicture.asset(
+            assetPath,
+            width: 48,
+            height: 48,
+          ),
+        ),
       ),
     );
   }
 
   Widget _getContent() {
     if (isCameraPreviewActive == true) {
-      return AspectRatio(
-        aspectRatio: cameraController.value.previewSize?.aspectRatio ?? 0,
-        child: Transform.rotate(
-            angle: _getCameraRotation(),
-            child: CameraPreview(cameraController)),
+      return KeyedSubtree(
+        key: const ValueKey('camera_preview'),
+        child: CameraPreview(cameraController),
       );
     }
     if (isPhotoPreviewActive == true) {
-      return Image.file(File(photoPath!));
+      return KeyedSubtree(
+        key: const ValueKey('photo_preview'),
+        child: Image.file(
+          File(photoPath!),
+          fit: BoxFit.cover,
+        ),
+      );
     }
-    return SizedBox.shrink();
-  }
-
-  double _getCameraRotation() {
-    final sensorOrientation = cameraController.description.sensorOrientation;
-    return sensorOrientation * pi / 180;
+    return const SizedBox.shrink();
   }
 
   Widget _buildCameraButton(BuildContext context) {
@@ -153,11 +167,23 @@ class _CameraPreview extends StatelessWidget {
       left: 0,
       right: 0,
       child: Center(
-        child: FloatingActionButton(
-          onPressed: () =>
-              context.read<ReceiptScanBloc>().add(CameraButtonPressedEvent()),
-          child: Icon(
-              isCameraPreviewActive == false ? Icons.visibility : Icons.camera),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.elasticOut,
+          builder: (context, value, child) {
+            return Transform.scale(
+              scale: value,
+              child: child,
+            );
+          },
+          child: FloatingActionButton(
+            onPressed: () =>
+                context.read<ReceiptScanBloc>().add(CameraButtonPressedEvent()),
+            child: Icon(isCameraPreviewActive == false
+                ? Icons.visibility
+                : Icons.camera),
+          ),
         ),
       ),
     );

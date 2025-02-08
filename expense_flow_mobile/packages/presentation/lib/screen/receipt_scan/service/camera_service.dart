@@ -19,20 +19,18 @@ class CameraService {
       await _controller?.dispose();
     }
 
-    final backCamera = cameras.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.back,
-      orElse: () => cameras.first,
-    );
+    // final backCamera = cameras.firstWhere(
+    //   (camera) => camera.lensDirection == CameraLensDirection.back,
+    //   orElse: () => cameras.first,
+    // );
 
     _controller = CameraController(
-      backCamera,
-      ResolutionPreset.max,
-      imageFormatGroup: ImageFormatGroup.jpeg,
-      enableAudio: false,
+      cameras.first,
+      ResolutionPreset.medium,
     );
 
     await _controller!.initialize();
-    await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+    // await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
 
     return _controller!;
   }

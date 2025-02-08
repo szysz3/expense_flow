@@ -6,10 +6,6 @@ import 'package:presentation/theme/expense_flow_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
-
   runApp(const ExpenseFlowApp());
 }
 
