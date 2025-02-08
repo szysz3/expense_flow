@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Decorative geometric elements -->
+  <polygon points="90,50 70,30 70,43 35,43 35,57 70,57 70,70" fill="#00ff99" opacity="0.8"/>
+  <polygon points="88,48 68,28 68,41 33,41 33,55 68,55 68,68" fill="#ff00ff" opacity="0.4"/>
+  
+  <!-- Glitch effects -->
+  <rect x="30" y="45" width="20" height="4" fill="#00ffff" opacity="0.6"/>
+  <rect x="35" y="52" width="15" height="2" fill="#ff00ff" opacity="0.4"/>
+  
+  <!-- Main arrow -->
+  <path d="M85,50 L65,30 L65,43 L30,43 L30,57 L65,57 L65,70 Z" fill="#ffffff"/>
+  
+  <!-- Additional cyberpunk details -->
+  <line x1="15" y1="30" x2="15" y2="70" stroke="#00ff99" stroke-width="2"/>
+  <line x1="20" y1="35" x2="20" y2="65" stroke="#ff00ff" stroke-width="1"/>
+  <circle cx="15" cy="50" r="3" fill="#00ffff"/>
+</svg>

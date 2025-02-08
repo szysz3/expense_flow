@@ -1,22 +1,24 @@
 import 'package:camera/camera.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-abstract class ReceiptScanState {}
+part 'receipt_scan_state.freezed.dart';
 
-class ReceiptScanInitial extends ReceiptScanState {}
+abstract class BaseReceiptScanState {}
 
-class CameraInitialized extends ReceiptScanState {
-  final CameraController controller;
-  final bool isBlurred;
+class ReceiptScanInitState extends BaseReceiptScanState {}
 
-  CameraInitialized(this.controller, {this.isBlurred = true});
+@freezed
+class ReceiptScanState extends BaseReceiptScanState with _$ReceiptScanState {
+  factory ReceiptScanState(
+      {required CameraController controller,
+      bool? isCameraPreviewActive,
+      bool? isPhotoPreviewActive,
+      String? photoPath}) = _ReceiptScanState;
 }
 
-class PhotoTaken extends ReceiptScanState {
-  final String imagePath;
-  PhotoTaken(this.imagePath);
-}
-
-class ReceiptScanError extends ReceiptScanState {
-  final String message;
-  ReceiptScanError(this.message);
+@freezed
+class ReceiptScanErrorState extends BaseReceiptScanState
+    with _$ReceiptScanErrorState {
+  factory ReceiptScanErrorState({required String message}) =
+      _ReceiptScanErrorState;
 }

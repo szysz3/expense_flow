@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Glitch effect layers -->
+  <path d="M20,50 L40,70 L85,25" stroke="#ff00ff" stroke-width="8" fill="none" opacity="0.4"/>
+  <path d="M22,52 L42,72 L87,27" stroke="#00ffff" stroke-width="6" fill="none" opacity="0.6"/>
+  
+  <!-- Main tick mark -->
+  <path d="M25,55 L45,75 L90,30" stroke="#ffffff" stroke-width="6" fill="none"/>
+  
+  <!-- Cyberpunk decorative elements -->
+  <circle cx="25" cy="55" r="4" fill="#00ff99"/>
+  <circle cx="45" cy="75" r="4" fill="#00ff99"/>
+  <circle cx="90" cy="30" r="4" fill="#00ff99"/>
+  
+  <!-- Circuit-like details -->
+  <line x1="15" y1="55" x2="25" y2="55" stroke="#00ff99" stroke-width="2"/>
+  <line x1="45" y1="85" x2="45" y2="75" stroke="#ff00ff" stroke-width="2"/>
+  <line x1="90" y1="20" x2="90" y2="30" stroke="#00ffff" stroke-width="2"/>
+  
+  <!-- Additional geometric elements -->
+  <rect x="20" y="45" width="8" height="8" fill="#ff00ff" opacity="0.3" transform="rotate(45 24 49)"/>
+  <rect x="85" y="25" width="8" height="8" fill="#00ffff" opacity="0.3" transform="rotate(45 89 29)"/>
+</svg>

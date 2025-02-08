@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_bloc.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_events.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
@@ -26,12 +27,15 @@ class _ReceiptScanView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ReceiptScanBloc, ReceiptScanState>(
+    return BlocBuilder<ReceiptScanBloc, BaseReceiptScanState>(
       builder: (context, state) {
         return switch (state) {
-          PhotoTaken() => Center(child: Image.file(File(state.imagePath))),
-          CameraInitialized() => _CameraPreview(state),
-          ReceiptScanError() => Center(child: Text(state.message)),
+          ReceiptScanState() => _CameraPreview(
+              state.controller,
+              state.isCameraPreviewActive,
+              state.photoPath,
+              state.isPhotoPreviewActive),
+          ReceiptScanErrorState() => Center(child: Text(state.message)),
           _ => const SizedBox.shrink()
         };
       },
@@ -40,45 +44,87 @@ class _ReceiptScanView extends StatelessWidget {
 }
 
 class _CameraPreview extends StatelessWidget {
-  final CameraInitialized state;
+  final CameraController cameraController;
+  final bool? isCameraPreviewActive;
+  final bool? isPhotoPreviewActive;
+  final String? photoPath;
 
-  const _CameraPreview(this.state);
+  const _CameraPreview(this.cameraController, this.isCameraPreviewActive,
+      this.photoPath, this.isPhotoPreviewActive);
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        AnimatedScale(
-          scale: state.isBlurred ? 0.5 : 1.0,
-          curve: Curves.easeOutQuart,
-          duration: const Duration(milliseconds: 600),
-          child: AnimatedOpacity(
-            opacity: state.isBlurred ? 0.0 : 1.0,
-            curve: Curves.easeInOutCubic,
-            duration: const Duration(milliseconds: 500),
-            child: _buildPreview(context),
-          ),
-        ),
-        _buildCameraButton(context),
+        if (isCameraPreviewActive == true || isPhotoPreviewActive == true)
+          _wrappedContent(),
+        if (photoPath == null) _buildCameraButton(context),
       ],
     );
   }
 
   Widget _buildPreview(BuildContext context) {
-    final controller = state.controller;
-
     return Transform.scale(
-        scale: _getImageZoom(MediaQuery.of(context), controller),
+        scale: 1, //_getImageZoom(MediaQuery.of(context), cameraController),
         child: Center(
-          child: AspectRatio(
-            aspectRatio: controller.value.aspectRatio,
-            child: Transform.rotate(
-              angle: _getCameraRotation(),
-              child: CameraPreview(controller),
-            ),
-          ),
-        ));
+            child: AspectRatio(
+          aspectRatio: cameraController.value.aspectRatio,
+          child: _wrappedContent(), //_getContent(),
+        )));
+  }
+
+  Widget _wrappedContent() {
+    return Center(
+      child: Column(
+        children: [
+          Container(
+              decoration:
+                  BoxDecoration(border: Border.all(color: Colors.yellow)),
+              child: AspectRatio(
+                aspectRatio: cameraController.value.aspectRatio,
+                child: _getContent(), //_getContent(),
+              )),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: SvgPicture.asset(
+                    'packages/presentation/assets/icon_back.svg',
+                    width: 48, // customize size
+                    height: 48,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: SvgPicture.asset(
+                    'packages/presentation/assets/icon_tick.svg',
+                    width: 48, // customize size
+                    height: 48,
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _getContent() {
+    if (isCameraPreviewActive == true) {
+      return Transform.rotate(
+          angle: _getCameraRotation(), child: CameraPreview(cameraController));
+    }
+
+    if (isPhotoPreviewActive == true) {
+      return Image.file(File(photoPath!));
+    }
+
+    return SizedBox.shrink();
   }
 
   double _getImageZoom(MediaQueryData data, CameraController controller) {
@@ -93,7 +139,7 @@ class _CameraPreview extends StatelessWidget {
   }
 
   double _getCameraRotation() {
-    final sensorOrientation = state.controller.description.sensorOrientation;
+    final sensorOrientation = cameraController.description.sensorOrientation;
     return sensorOrientation * pi / 180;
   }
 
@@ -106,7 +152,8 @@ class _CameraPreview extends StatelessWidget {
         child: FloatingActionButton(
           onPressed: () =>
               context.read<ReceiptScanBloc>().add(CameraButtonPressedEvent()),
-          child: Icon(state.isBlurred ? Icons.visibility : Icons.camera),
+          child: Icon(
+              isCameraPreviewActive == false ? Icons.visibility : Icons.camera),
         ),
       ),
     );
