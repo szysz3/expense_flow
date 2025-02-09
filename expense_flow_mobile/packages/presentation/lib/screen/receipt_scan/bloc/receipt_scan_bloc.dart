@@ -30,10 +30,12 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
   ) {
     if (state is ReceiptScanState) {
       final scanState = state as ReceiptScanState;
-      if (scanState.isCameraPreviewActive == true) {
-        add(TakePhotoEvent());
-      } else {
-        emit(scanState.copyWith(isCameraPreviewActive: true));
+      if (!scanState.isProcessing) {
+        if (scanState.isCameraPreviewActive == true) {
+          add(TakePhotoEvent());
+        } else {
+          emit(scanState.copyWith(isCameraPreviewActive: true));
+        }
       }
     }
   }
@@ -42,17 +44,23 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     TakePhotoEvent event,
     Emitter<BaseReceiptScanState> emit,
   ) async {
-    try {
-      if (state is ReceiptScanState) {
-        final scanState = state as ReceiptScanState;
+    if (state is ReceiptScanState) {
+      final scanState = state as ReceiptScanState;
+
+      emit(scanState.copyWith(isProcessing: true));
+
+      try {
         final imagePath = await _cameraService.takePhoto();
         emit(scanState.copyWith(
-            isPhotoPreviewActive: true,
-            isCameraPreviewActive: false,
-            photoPath: imagePath));
+          isPhotoPreviewActive: true,
+          isCameraPreviewActive: false,
+          photoPath: imagePath,
+          isProcessing: false,
+        ));
+      } catch (e) {
+        emit(scanState.copyWith(isProcessing: false));
+        emit(ReceiptScanErrorState(message: 'Failed to take photo: $e'));
       }
-    } catch (e) {
-      emit(ReceiptScanErrorState(message: 'Failed to take photo: $e'));
     }
   }
 }

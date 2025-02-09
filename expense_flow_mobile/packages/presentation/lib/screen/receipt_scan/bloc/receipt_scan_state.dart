@@ -9,11 +9,13 @@ class ReceiptScanInitState extends BaseReceiptScanState {}
 
 @freezed
 class ReceiptScanState extends BaseReceiptScanState with _$ReceiptScanState {
-  factory ReceiptScanState(
-      {required CameraController controller,
-      bool? isCameraPreviewActive,
-      bool? isPhotoPreviewActive,
-      String? photoPath}) = _ReceiptScanState;
+  factory ReceiptScanState({
+    required CameraController controller,
+    bool? isCameraPreviewActive,
+    bool? isPhotoPreviewActive,
+    String? photoPath,
+    @Default(false) bool isProcessing,
+  }) = _ReceiptScanState;
 }
 
 @freezed

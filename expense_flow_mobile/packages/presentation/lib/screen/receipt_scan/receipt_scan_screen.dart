@@ -33,7 +33,8 @@ class _ReceiptScanView extends StatelessWidget {
               state.controller,
               state.isCameraPreviewActive,
               state.photoPath,
-              state.isPhotoPreviewActive),
+              state.isPhotoPreviewActive,
+              state.isProcessing),
           ReceiptScanErrorState() => Center(child: Text(state.message)),
           _ => const SizedBox.shrink()
         };
@@ -47,9 +48,15 @@ class _CameraPreview extends StatelessWidget {
   final bool? isCameraPreviewActive;
   final bool? isPhotoPreviewActive;
   final String? photoPath;
+  final bool isProcessing;
 
-  const _CameraPreview(this.cameraController, this.isCameraPreviewActive,
-      this.photoPath, this.isPhotoPreviewActive);
+  const _CameraPreview(
+    this.cameraController,
+    this.isCameraPreviewActive,
+    this.photoPath,
+    this.isPhotoPreviewActive,
+    this.isProcessing,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +78,7 @@ class _CameraPreview extends StatelessWidget {
             border: Border.all(color: Colors.yellow),
           ),
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 300),
             transitionBuilder: (Widget child, Animation<double> animation) {
               return FadeTransition(
                 opacity: animation,
@@ -121,7 +128,7 @@ class _CameraPreview extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: TweenAnimationBuilder<double>(
         tween: Tween(begin: 0.0, end: 1.0),
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 600),
         curve: Curves.easeOutBack,
         builder: (context, value, child) {
           return Transform.scale(
@@ -143,18 +150,12 @@ class _CameraPreview extends StatelessWidget {
 
   Widget _getContent() {
     if (isCameraPreviewActive == true) {
-      return KeyedSubtree(
-        key: const ValueKey('camera_preview'),
-        child: CameraPreview(cameraController),
-      );
+      return CameraPreview(cameraController);
     }
     if (isPhotoPreviewActive == true) {
-      return KeyedSubtree(
-        key: const ValueKey('photo_preview'),
-        child: Image.file(
-          File(photoPath!),
-          fit: BoxFit.cover,
-        ),
+      return Image.file(
+        File(photoPath!),
+        fit: BoxFit.cover,
       );
     }
     return const SizedBox.shrink();
@@ -177,8 +178,11 @@ class _CameraPreview extends StatelessWidget {
             );
           },
           child: FloatingActionButton(
-            onPressed: () =>
-                context.read<ReceiptScanBloc>().add(CameraButtonPressedEvent()),
+            onPressed: isProcessing
+                ? null
+                : () => context
+                    .read<ReceiptScanBloc>()
+                    .add(CameraButtonPressedEvent()),
             child: Icon(isCameraPreviewActive == false
                 ? Icons.visibility
                 : Icons.camera),
