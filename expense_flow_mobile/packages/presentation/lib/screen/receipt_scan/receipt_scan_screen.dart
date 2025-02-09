@@ -117,8 +117,8 @@ class _CameraPreview extends StatelessWidget {
         opacity: isPhotoPreviewActive == true ? 1.0 : 0.0,
         duration: _animationDuration,
         curve: Curves.easeInOut,
-        child: AnimatedSlide(
-          offset: Offset(0, isPhotoPreviewActive == true ? 0 : 0.5),
+        child: AnimatedOpacity(
+          opacity: isPhotoPreviewActive == true ? 1 : 0,
           duration: _previewSlideAnimationDuration,
           curve: Curves.easeInOut,
           child: _ActionBar(),
