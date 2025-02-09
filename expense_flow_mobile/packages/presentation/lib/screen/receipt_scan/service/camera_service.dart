@@ -3,48 +3,73 @@ import 'package:flutter/services.dart';
 
 class CameraService {
   CameraController? _controller;
+  bool _isInitializing = false;
 
-  static final instance = CameraService._internal();
+  static CameraService? _instance;
 
-  CameraService._internal();
+  CameraService._();
+
+  factory CameraService() {
+    _instance ??= CameraService._();
+    return _instance!;
+  }
 
   Future<CameraController> initialize() async {
-    final cameras = await availableCameras();
-
-    if (cameras.isEmpty) {
-      throw Exception('No cameras available');
-    }
-
+    // If controller is already initialized, return it
     if (_controller?.value.isInitialized ?? false) {
-      await _controller?.dispose();
+      print('---> CameraService already initialized');
+      return _controller!;
     }
 
-    // final backCamera = cameras.firstWhere(
-    //   (camera) => camera.lensDirection == CameraLensDirection.back,
-    //   orElse: () => cameras.first,
-    // );
+    // If initialization is in progress, wait for it
+    if (_isInitializing) {
+      print('---> CameraService initialization in progress');
+      while (_isInitializing) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      return _controller!;
+    }
 
-    _controller = CameraController(
-      cameras.first,
-      ResolutionPreset.medium,
-    );
+    try {
+      _isInitializing = true;
+      print('---> CameraService init');
 
-    await _controller!.initialize();
-    // await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      final cameras = await availableCameras();
+      if (cameras.isEmpty) {
+        throw Exception('No cameras available');
+      }
 
-    return _controller!;
+      await _controller?.dispose();
+
+      final backCamera = cameras.firstWhere(
+        (camera) => camera.lensDirection == CameraLensDirection.back,
+        orElse: () => cameras.first,
+      );
+
+      _controller = CameraController(
+        backCamera,
+        ResolutionPreset.medium,
+      );
+
+      await _controller!.initialize();
+      await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+
+      return _controller!;
+    } finally {
+      _isInitializing = false;
+    }
   }
 
   Future<String> takePhoto() async {
     if (_controller == null || !_controller!.value.isInitialized) {
       throw Exception('Camera not initialized');
     }
-
     final photo = await _controller!.takePicture();
     return photo.path;
   }
 
   void dispose() {
     _controller?.dispose();
+    _controller = null;
   }
 }

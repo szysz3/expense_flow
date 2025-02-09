@@ -23,7 +23,7 @@ class MainScreen extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => NavigationBloc()),
         BlocProvider(
-            create: (context) => CameraPreviewBloc(CameraService.instance)
+            create: (context) => CameraPreviewBloc(CameraService())
               ..add(InitializeCameraEvent())),
       ],
       child: Scaffold(
@@ -87,24 +87,16 @@ class _CameraPreview extends StatelessWidget {
         child: AspectRatio(
             aspectRatio: aspectRatio,
             child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
               child: ColorFiltered(
                 colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.accentDelicate.withAlpha(180),
+                  Theme.of(context).colorScheme.accentDelicate.withAlpha(250),
                   BlendMode.modulate,
                 ),
-                child: Transform.rotate(
-                  angle: _getCameraRotation(),
-                  child: CameraPreview(controller),
-                ),
+                child: CameraPreview(controller),
               ),
             )),
       ),
     );
-  }
-
-  double _getCameraRotation() {
-    final sensorOrientation = controller.description.sensorOrientation;
-    return sensorOrientation * pi / 180;
   }
 }
