@@ -227,6 +227,8 @@ class _ActionBar extends StatelessWidget {
               flex: 1,
               iconPath: 'packages/presentation/assets/icon_back.svg',
               iconSize: 24,
+              onTap: () =>
+                  context.read<ReceiptScanBloc>().add(BackButtonPressedEvent()),
             ),
             Container(width: 1, color: Colors.white),
             _buildActionButton(
@@ -242,13 +244,14 @@ class _ActionBar extends StatelessWidget {
     required int flex,
     required String iconPath,
     required double iconSize,
+    VoidCallback? onTap,
   }) =>
       Expanded(
         flex: flex,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {},
+            onTap: onTap,
             child: Center(
               child: SvgPicture.asset(
                 iconPath,

@@ -13,3 +13,5 @@ class SetFocusPointEvent extends ReceiptScanEvent {
 
   SetFocusPointEvent(this.point);
 }
+
+class BackButtonPressedEvent extends ReceiptScanEvent {}

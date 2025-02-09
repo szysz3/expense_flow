@@ -12,6 +12,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     on<TakePhotoEvent>(_takePhoto);
     on<CameraButtonPressedEvent>(_handleCameraButtonPress);
     on<SetFocusPointEvent>(_handleSetFocusPoint);
+    on<BackButtonPressedEvent>(_handleBackButtonPress);
   }
 
   Future<void> _initializeCamera(
@@ -39,6 +40,20 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
           emit(scanState.copyWith(isCameraPreviewActive: true));
         }
       }
+    }
+  }
+
+  void _handleBackButtonPress(
+    BackButtonPressedEvent event,
+    Emitter<BaseReceiptScanState> emit,
+  ) {
+    if (state is ReceiptScanState) {
+      final scanState = state as ReceiptScanState;
+      emit(scanState.copyWith(
+        isCameraPreviewActive: true,
+        isPhotoPreviewActive: false,
+        photoPath: null,
+      ));
     }
   }
 
