@@ -77,18 +77,23 @@ class _CameraPreview extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(color: Colors.yellow),
           ),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(
-                  scale: animation,
-                  child: child,
-                ),
-              );
-            },
-            child: _getContent(),
+          child: GestureDetector(
+            onTapUp: isCameraPreviewActive == true
+                ? (TapUpDetails details) => _handleFocusTap(details, context)
+                : null,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: animation,
+                    child: child,
+                  ),
+                );
+              },
+              child: _getContent(),
+            ),
           ),
         ),
         SizedBox(
@@ -121,6 +126,18 @@ class _CameraPreview extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void _handleFocusTap(TapUpDetails details, BuildContext context) {
+    final RenderBox box = context.findRenderObject() as RenderBox;
+    final Offset localPoint = box.globalToLocal(details.globalPosition);
+    final Offset point = Offset(
+      localPoint.dx / box.size.width,
+      localPoint.dy / box.size.height,
+    );
+
+    // Add a new event to handle focus
+    context.read<ReceiptScanBloc>().add(SetFocusPointEvent(point));
   }
 
   Widget _buildActionButton(String assetPath, VoidCallback onTap) {

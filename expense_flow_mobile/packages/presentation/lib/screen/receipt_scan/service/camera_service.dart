@@ -15,13 +15,11 @@ class CameraService {
   }
 
   Future<CameraController> initialize() async {
-    // If controller is already initialized, return it
     if (_controller?.value.isInitialized ?? false) {
       print('---> CameraService already initialized');
       return _controller!;
     }
 
-    // If initialization is in progress, wait for it
     if (_isInitializing) {
       print('---> CameraService initialization in progress');
       while (_isInitializing) {
@@ -49,14 +47,29 @@ class CameraService {
       _controller = CameraController(
         backCamera,
         ResolutionPreset.medium,
+        enableAudio: false,
       );
 
       await _controller!.initialize();
       await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      await _controller!.setFocusMode(FocusMode.auto);
 
       return _controller!;
     } finally {
       _isInitializing = false;
+    }
+  }
+
+  Future<void> setFocusPoint(double x, double y) async {
+    if (_controller == null || !_controller!.value.isInitialized) {
+      throw Exception('Camera not initialized');
+    }
+
+    try {
+      await _controller!.setFocusPoint(Offset(x, y));
+      await _controller!.setFocusMode(FocusMode.auto);
+    } catch (e) {
+      print('Error setting focus point: $e');
     }
   }
 

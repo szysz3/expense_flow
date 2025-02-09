@@ -10,6 +10,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     on<InitializeCameraEvent>(_initializeCamera);
     on<TakePhotoEvent>(_takePhoto);
     on<CameraButtonPressedEvent>(_handleCameraButtonPress);
+    on<SetFocusPointEvent>(_handleSetFocusPoint); // Add this line
   }
 
   Future<void> _initializeCamera(
@@ -36,6 +37,19 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
         } else {
           emit(scanState.copyWith(isCameraPreviewActive: true));
         }
+      }
+    }
+  }
+
+  Future<void> _handleSetFocusPoint(
+    SetFocusPointEvent event,
+    Emitter<BaseReceiptScanState> emit,
+  ) async {
+    if (state is ReceiptScanState) {
+      try {
+        await _cameraService.setFocusPoint(event.point.dx, event.point.dy);
+      } catch (e) {
+        emit(ReceiptScanErrorState(message: 'Failed to set focus: $e'));
       }
     }
   }
