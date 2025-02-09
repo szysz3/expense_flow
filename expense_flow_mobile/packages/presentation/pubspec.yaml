@@ -18,7 +18,6 @@ dependencies:
   flutter_bloc: ^9.0.0
   bloc: ^9.0.0
   camera: ^0.10.5+9
-  # camera: ^0.11.1
   freezed_annotation: ^2.4.4
   freezed: ^2.5.8
   flutter_svg: ^2.0.17
