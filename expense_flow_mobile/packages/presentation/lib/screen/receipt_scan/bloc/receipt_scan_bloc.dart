@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vibration/vibration.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:presentation/screen/receipt_scan/service/camera_service.dart';
 import 'receipt_scan_events.dart';
@@ -10,7 +11,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     on<InitializeCameraEvent>(_initializeCamera);
     on<TakePhotoEvent>(_takePhoto);
     on<CameraButtonPressedEvent>(_handleCameraButtonPress);
-    on<SetFocusPointEvent>(_handleSetFocusPoint); // Add this line
+    on<SetFocusPointEvent>(_handleSetFocusPoint);
   }
 
   Future<void> _initializeCamera(
@@ -64,6 +65,8 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       emit(scanState.copyWith(isProcessing: true));
 
       try {
+        await Vibration.vibrate(duration: 50);
+
         final imagePath = await _cameraService.takePhoto();
         emit(scanState.copyWith(
           isPhotoPreviewActive: true,
