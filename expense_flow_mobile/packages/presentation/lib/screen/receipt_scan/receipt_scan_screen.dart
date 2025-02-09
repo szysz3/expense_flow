@@ -12,23 +12,20 @@ class ReceiptScanScreen extends StatelessWidget {
   const ReceiptScanScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          ReceiptScanBloc(CameraService())..add(InitializeCameraEvent()),
-      child: const _ReceiptScanView(),
-    );
-  }
+  Widget build(BuildContext context) => BlocProvider(
+        create: (_) =>
+            ReceiptScanBloc(CameraService())..add(InitializeCameraEvent()),
+        child: const _ReceiptScanView(),
+      );
 }
 
 class _ReceiptScanView extends StatelessWidget {
   const _ReceiptScanView();
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<ReceiptScanBloc, BaseReceiptScanState>(
-      builder: (context, state) {
-        return switch (state) {
+  Widget build(BuildContext context) =>
+      BlocBuilder<ReceiptScanBloc, BaseReceiptScanState>(
+        builder: (context, state) => switch (state) {
           ReceiptScanState() => _CameraPreview(
               state.controller,
               state.isCameraPreviewActive,
@@ -37,13 +34,15 @@ class _ReceiptScanView extends StatelessWidget {
               state.isProcessing),
           ReceiptScanErrorState() => Center(child: Text(state.message)),
           _ => const SizedBox.shrink()
-        };
-      },
-    );
-  }
+        },
+      );
 }
 
 class _CameraPreview extends StatelessWidget {
+  static const _animationDuration = Duration(milliseconds: 300);
+  static const _buttonAnimationDuration = Duration(milliseconds: 400);
+  static const _previewSlideAnimationDuration = Duration(milliseconds: 600);
+
   final CameraController cameraController;
   final bool? isCameraPreviewActive;
   final bool? isPhotoPreviewActive;
@@ -59,153 +58,167 @@ class _CameraPreview extends StatelessWidget {
   );
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        if (isCameraPreviewActive == true || isPhotoPreviewActive == true)
-          _wrappedContent(context),
-        if (photoPath == null) _buildCameraButton(context),
-      ],
+  Widget build(BuildContext context) => Stack(
+        children: [
+          if (isCameraPreviewActive == true || isPhotoPreviewActive == true)
+            _buildMainContent(context),
+          if (photoPath == null) _buildCameraButton(context),
+        ],
+      );
+
+  Widget _buildMainContent(BuildContext context) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildPreviewContainer(context),
+          _buildActionBar(),
+        ],
+      );
+
+  Widget _buildPreviewContainer(BuildContext context) => Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white),
+          borderRadius: _getPreviewBorderRadius(),
+        ),
+        child: GestureDetector(
+          onTapUp: isCameraPreviewActive == true
+              ? (details) => _handleFocusTap(details, context)
+              : null,
+          child: _buildPreviewContent(),
+        ),
+      );
+
+  BorderRadius _getPreviewBorderRadius() => isPhotoPreviewActive == true
+      ? const BorderRadius.vertical(top: Radius.circular(8))
+      : BorderRadius.circular(8);
+
+  Widget _buildPreviewContent() => AnimatedSwitcher(
+        duration: _animationDuration,
+        transitionBuilder: _buildTransition,
+        child: _getContent(),
+      );
+
+  Widget _buildTransition(Widget child, Animation<double> animation) {
+    final scaleCurve = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeInOut,
+    );
+    final scaleValue = Tween<double>(begin: 0.9, end: 1.0).animate(scaleCurve);
+
+    return FadeTransition(
+      opacity: animation,
+      child: ScaleTransition(
+        scale: scaleValue,
+        child: child,
+      ),
     );
   }
 
-  Widget _wrappedContent(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.yellow),
-          ),
-          child: GestureDetector(
-            onTapUp: isCameraPreviewActive == true
-                ? (TapUpDetails details) => _handleFocusTap(details, context)
-                : null,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: ScaleTransition(
-                    scale: animation,
-                    child: child,
-                  ),
-                );
-              },
-              child: _getContent(),
+  Widget _buildActionBar() => AnimatedOpacity(
+        opacity: isPhotoPreviewActive == true ? 1.0 : 0.0,
+        duration: _animationDuration,
+        curve: Curves.easeInOut,
+        child: AnimatedSlide(
+          offset: Offset(0, isPhotoPreviewActive == true ? 0 : 0.5),
+          duration: _previewSlideAnimationDuration,
+          curve: Curves.easeInOut,
+          child: _ActionBar(),
+        ),
+      );
+
+  Widget _buildCameraButton(BuildContext context) => Positioned(
+        bottom: 30,
+        left: 0,
+        right: 0,
+        child: Center(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: _buttonAnimationDuration,
+            curve: Curves.elasticOut,
+            builder: (_, value, child) => Transform.scale(
+              scale: value,
+              child: child,
+            ),
+            child: FloatingActionButton(
+              onPressed: isProcessing
+                  ? null
+                  : () => context
+                      .read<ReceiptScanBloc>()
+                      .add(CameraButtonPressedEvent()),
+              child: Icon(isCameraPreviewActive == false
+                  ? Icons.visibility
+                  : Icons.camera),
             ),
           ),
         ),
-        SizedBox(
-          height: 80,
-          child: Center(
-            child: AnimatedOpacity(
-              opacity: isPhotoPreviewActive == true ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              child: AnimatedSlide(
-                offset: Offset(0, isPhotoPreviewActive == true ? 0 : 0.5),
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildActionButton(
-                      'packages/presentation/assets/icon_back.svg',
-                      () => {},
-                    ),
-                    _buildActionButton(
-                      'packages/presentation/assets/icon_tick.svg',
-                      () => {},
-                    ),
-                  ],
-                ),
+      );
+
+  void _handleFocusTap(TapUpDetails details, BuildContext context) {
+    final box = context.findRenderObject() as RenderBox;
+    final localPoint = box.globalToLocal(details.globalPosition);
+    final point = Offset(
+      localPoint.dx / box.size.width,
+      localPoint.dy / box.size.height,
+    );
+    context.read<ReceiptScanBloc>().add(SetFocusPointEvent(point));
+  }
+
+  Widget _getContent() {
+    if (isCameraPreviewActive == true) return CameraPreview(cameraController);
+    if (isPhotoPreviewActive == true) {
+      return Image.file(File(photoPath!), fit: BoxFit.cover);
+    }
+    return const SizedBox.shrink();
+  }
+}
+
+class _ActionBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white),
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+          color: Colors.black.withOpacity(0.4),
+        ),
+        transform: Matrix4.translationValues(0, -1, 0),
+        height: 64,
+        child: Row(
+          children: [
+            _buildActionButton(
+              flex: 1,
+              iconPath: 'packages/presentation/assets/icon_back.svg',
+              iconSize: 24,
+            ),
+            Container(width: 1, color: Colors.white),
+            _buildActionButton(
+              flex: 3,
+              iconPath: 'packages/presentation/assets/icon_tick.svg',
+              iconSize: 40,
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildActionButton({
+    required int flex,
+    required String iconPath,
+    required double iconSize,
+  }) =>
+      Expanded(
+        flex: flex,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {},
+            child: Center(
+              child: SvgPicture.asset(
+                iconPath,
+                width: iconSize,
+                height: iconSize,
+                colorFilter:
+                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
               ),
             ),
           ),
         ),
-      ],
-    );
-  }
-
-  void _handleFocusTap(TapUpDetails details, BuildContext context) {
-    final RenderBox box = context.findRenderObject() as RenderBox;
-    final Offset localPoint = box.globalToLocal(details.globalPosition);
-    final Offset point = Offset(
-      localPoint.dx / box.size.width,
-      localPoint.dy / box.size.height,
-    );
-
-    // Add a new event to handle focus
-    context.read<ReceiptScanBloc>().add(SetFocusPointEvent(point));
-  }
-
-  Widget _buildActionButton(String assetPath, VoidCallback onTap) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0.0, end: 1.0),
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeOutBack,
-        builder: (context, value, child) {
-          return Transform.scale(
-            scale: value,
-            child: child,
-          );
-        },
-        child: GestureDetector(
-          onTap: onTap,
-          child: SvgPicture.asset(
-            assetPath,
-            width: 48,
-            height: 48,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _getContent() {
-    if (isCameraPreviewActive == true) {
-      return CameraPreview(cameraController);
-    }
-    if (isPhotoPreviewActive == true) {
-      return Image.file(
-        File(photoPath!),
-        fit: BoxFit.cover,
       );
-    }
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildCameraButton(BuildContext context) {
-    return Positioned(
-      bottom: 30,
-      left: 0,
-      right: 0,
-      child: Center(
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.elasticOut,
-          builder: (context, value, child) {
-            return Transform.scale(
-              scale: value,
-              child: child,
-            );
-          },
-          child: FloatingActionButton(
-            onPressed: isProcessing
-                ? null
-                : () => context
-                    .read<ReceiptScanBloc>()
-                    .add(CameraButtonPressedEvent()),
-            child: Icon(isCameraPreviewActive == false
-                ? Icons.visibility
-                : Icons.camera),
-          ),
-        ),
-      ),
-    );
-  }
 }
