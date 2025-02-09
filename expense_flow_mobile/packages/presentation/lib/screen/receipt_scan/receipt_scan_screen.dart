@@ -138,15 +138,55 @@ class _CameraPreview extends StatelessWidget {
               scale: value,
               child: child,
             ),
-            child: FloatingActionButton(
-              onPressed: isProcessing
-                  ? null
-                  : () => context
-                      .read<ReceiptScanBloc>()
-                      .add(CameraButtonPressedEvent()),
-              child: Icon(isCameraPreviewActive == false
-                  ? Icons.visibility
-                  : Icons.camera),
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.black.withOpacity(0.4),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: isProcessing
+                      ? null
+                      : () => context
+                          .read<ReceiptScanBloc>()
+                          .add(CameraButtonPressedEvent()),
+                  child: Center(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 600),
+                      transitionBuilder: (child, animation) {
+                        final scaleCurve = CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        );
+                        final scaleValue = Tween<double>(
+                          begin: 0.8,
+                          end: 1.0,
+                        ).animate(scaleCurve);
+
+                        return FadeTransition(
+                          opacity: animation,
+                          child: ScaleTransition(
+                            scale: scaleValue,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: SvgPicture.asset(
+                        isCameraPreviewActive == true
+                            ? 'packages/presentation/assets/icon_scan_receipt.svg'
+                            : 'packages/presentation/assets/icon_photo.svg',
+                        width: 40,
+                        height: 40,
+                        key: ValueKey(isCameraPreviewActive),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -214,8 +254,6 @@ class _ActionBar extends StatelessWidget {
                 iconPath,
                 width: iconSize,
                 height: iconSize,
-                colorFilter:
-                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
               ),
             ),
           ),

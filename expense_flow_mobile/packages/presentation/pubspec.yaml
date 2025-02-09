@@ -36,6 +36,12 @@ flutter:
   assets:
     - assets/icon_back.svg
     - assets/icon_tick.svg
+    - assets/icon_categories.svg
+    - assets/icon_orders.svg
+    - assets/icon_scan.svg
+    - assets/icon_summary.svg
+    - assets/icon_scan_receipt.svg
+    - assets/icon_photo.svg
 
   # To add assets to your package, add an assets section, like this:
   # assets:

@@ -1,17 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:presentation/navigation/bloc/navigation_bloc.dart';
 import 'package:presentation/navigation/bloc/navigation_event.dart';
 import 'package:presentation/navigation/bloc/navigation_state.dart';
-import 'package:presentation/theme/expense_flow_color_scheme.dart';
 
 class BottomNavigation extends StatelessWidget {
   const BottomNavigation({super.key});
 
+  // Constants for icon assets
+  static const _iconScan = 'icon_scan.svg';
+  static const _iconCategories = 'icon_categories.svg';
+  static const _iconOrders = 'icon_orders.svg';
+  static const _iconSummary = 'icon_summary.svg';
+
+  // Navigation items configuration
+  static const _navigationItems = [
+    ('Scan', _iconScan),
+    ('Categories', _iconCategories),
+    ('Orders', _iconOrders),
+    ('Summary', _iconSummary),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
     return BlocBuilder<NavigationBloc, NavigationState>(
       builder: (context, state) {
         return BottomNavigationBar(
@@ -22,30 +35,30 @@ class BottomNavigation extends StatelessWidget {
           onTap: (index) {
             context.read<NavigationBloc>().add(NavigateToIndex(index));
           },
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.photo),
-              backgroundColor: Colors.transparent,
-              label: 'Scan',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.category),
-              backgroundColor: Colors.transparent,
-              label: 'Categories',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.money),
-              backgroundColor: Colors.transparent,
-              label: 'Orders',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.summarize),
-              backgroundColor: Colors.transparent,
-              label: 'Summary',
-            ),
-          ],
+          items: _navigationItems
+              .map(
+                (item) => BottomNavigationBarItem(
+                  icon: _buildSvgIcon(
+                    item.$2,
+                  ),
+                  activeIcon: _buildSvgIcon(
+                    item.$2,
+                  ),
+                  backgroundColor: Colors.transparent,
+                  label: item.$1,
+                ),
+              )
+              .toList(),
         );
       },
+    );
+  }
+
+  Widget _buildSvgIcon(String assetName) {
+    return SvgPicture.asset(
+      'packages/presentation/assets/$assetName',
+      width: 24,
+      height: 24,
     );
   }
 }
