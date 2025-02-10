@@ -19,8 +19,78 @@ class BaseAnalyzer(ABC):
         Task: Extend receipt JSON with item categories
 
         Input: JSON with receipt items.
-        Output: Same structure and values with added "category" field for each item.
+        Output: Same structure and values with added "category" field for each item. Json schema for output:
 
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["merchant", "items", "total", "transaction_datetime"],
+  "properties": {
+    "merchant": {
+      "type": "object",
+      "required": ["name", "address"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the merchant"
+        },
+        "address": {
+          "type": "string",
+          "description": "Full address of the merchant"
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["description", "quantity", "total_price", "category"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Description of the purchased item"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Quantity of items purchased"
+          },
+          "total_price": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Total price for this item"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "groceries",
+              "alcoholic_beverages",
+              "personal_care",
+              "household",
+              "clothing",
+              "entertainment",
+              "transportation",
+              "pet",
+              "other"
+            ],
+            "description": "Category of the purchased item"
+          }
+        }
+      }
+    },
+    "total": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Total amount of the transaction"
+    },
+    "transaction_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time of the transaction."
+    }
+  }
+}        
+        
         Categories:
         - groceries
         - alcoholic_beverages
@@ -38,7 +108,7 @@ class BaseAnalyzer(ABC):
         3. personal_care: hygiene products, cosmetics, medications, medical items, soap, deodorant
         4. household: cleaning supplies, decorative items, home decor, tools, maintenance items, shopping bags, storage containers, plants
         5. clothing: apparel, shoes, accessories, bags for wearing
-        6. entertainment: books, electronics, games, toys (non-pet)
+        6. entertainment: books, electronics, games, toys (non-pet), magazines
         7. transportation: gas, parking tickets, car supplies
         8. pet: pet food, pet supplies, pet toys
         9. other: items not fitting above categories or with empty descriptions
@@ -48,7 +118,7 @@ class BaseAnalyzer(ABC):
         2. Is item a carrying/storage solution (reklamówka, torba)? → household
         3. Is item food/drink? → If contains alcohol → alcoholic_beverages, else → groceries
         4. Is description empty or unclear? → other
-        5. Does item clearly match another category? → Use that category
+        5. Does item clearly match another category? → Use that category.
 
         Rules:
         1. Analyze each item description to determine correct category
@@ -61,6 +131,8 @@ class BaseAnalyzer(ABC):
         8. Discounts must match category of original item
         9. Shopping bags and packaging belong to "household" category
         10. Empty descriptions must use "other" category
+        11. Do not create new categories, choose from predefined. 
+        12. If item clearly fits different category but category is not on the list → use other.
 
         Validation Requirements:
         1. Every item MUST have exactly one category assigned
@@ -84,17 +156,12 @@ class BaseAnalyzer(ABC):
         
         parsed_data = self._parse_llm_response(response)
         
-        # Handle both single item and list responses
         if isinstance(parsed_data, dict):
-            # Single item case
             if 'items' in parsed_data:
-                # Response includes the 'items' wrapper
                 return parsed_data['items']
             else:
-                # Single item without wrapper
                 return [parsed_data]
         elif isinstance(parsed_data, list):
-            # List of items case
             return parsed_data
         else:
             raise ValueError("Invalid response format")
