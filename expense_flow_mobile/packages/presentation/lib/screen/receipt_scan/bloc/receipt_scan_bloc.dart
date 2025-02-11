@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:presentation/services/camera/camera_service.dart';
 import 'package:vibration/vibration.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
-import 'package:presentation/screen/receipt_scan/service/camera_service.dart';
 import 'receipt_scan_events.dart';
 
 class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {

@@ -1,18 +1,14 @@
+import 'package:injectable/injectable.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
+import 'package:presentation/services/camera/camera_service.dart';
 
-class CameraService {
+@LazySingleton(as: CameraService)
+class CameraServiceImpl implements CameraService {
   CameraController? _controller;
   bool _isInitializing = false;
-  static CameraService? _instance;
 
-  CameraService._();
-
-  factory CameraService() {
-    _instance ??= CameraService._();
-    return _instance ?? CameraService._();
-  }
-
+  @override
   Future<CameraController> initialize() async {
     if (_controller?.value.isInitialized ?? false) {
       return _controller ?? await _initializeNewController();
@@ -61,6 +57,7 @@ class CameraService {
     }
   }
 
+  @override
   Future<void> setFocusPoint(double x, double y) async {
     final controller = _controller;
     if (controller == null || !controller.value.isInitialized) {
@@ -70,9 +67,12 @@ class CameraService {
     try {
       await controller.setFocusPoint(Offset(x, y));
       await controller.setFocusMode(FocusMode.auto);
-    } catch (e) {}
+    } catch (e) {
+      throw Exception('Failed to set focus point: $e');
+    }
   }
 
+  @override
   Future<String> takePhoto() async {
     final controller = _controller;
     if (controller == null || !controller.value.isInitialized) {
@@ -83,6 +83,7 @@ class CameraService {
     return photo.path;
   }
 
+  @override
   void dispose() {
     _controller?.dispose();
     _controller = null;

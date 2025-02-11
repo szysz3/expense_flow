@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_event.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_state.dart';
-import 'package:presentation/screen/receipt_scan/service/camera_service.dart';
+import 'package:presentation/services/camera/camera_service.dart';
 
 class CameraPreviewBloc extends Bloc<CameraPreviewEvent, CamerawPreviewState> {
   final CameraService _cameraService;

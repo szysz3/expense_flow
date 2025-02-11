@@ -1,9 +1,9 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:presentation/di/di.dart';
 import 'package:presentation/navigation/bloc/navigation_bloc.dart';
 import 'package:presentation/navigation/bloc/navigation_state.dart';
 import 'package:presentation/navigation/widget/bottom_navigation.dart';
@@ -11,7 +11,7 @@ import 'package:presentation/screen/main/bloc/camera_preview_bloc.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_event.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_state.dart';
 import 'package:presentation/screen/receipt_scan/receipt_scan_screen.dart';
-import 'package:presentation/screen/receipt_scan/service/camera_service.dart';
+import 'package:presentation/services/camera/camera_service.dart';
 import 'package:presentation/theme/expense_flow_color_scheme.dart';
 
 class MainScreen extends StatelessWidget {
@@ -23,7 +23,7 @@ class MainScreen extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => NavigationBloc()),
         BlocProvider(
-            create: (context) => CameraPreviewBloc(CameraService())
+            create: (context) => CameraPreviewBloc(getIt<CameraService>())
               ..add(InitializeCameraEvent())),
       ],
       child: Scaffold(

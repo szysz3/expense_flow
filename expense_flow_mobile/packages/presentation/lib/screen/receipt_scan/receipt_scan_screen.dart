@@ -3,18 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:presentation/di/di.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_bloc.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_events.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
-import 'package:presentation/screen/receipt_scan/service/camera_service.dart';
+import 'package:presentation/services/camera/camera_service.dart';
 
 class ReceiptScanScreen extends StatelessWidget {
   const ReceiptScanScreen({super.key});
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (_) =>
-            ReceiptScanBloc(CameraService())..add(InitializeCameraEvent()),
+        create: (_) => ReceiptScanBloc(getIt<CameraService>())
+          ..add(InitializeCameraEvent()),
         child: const _ReceiptScanView(),
       );
 }

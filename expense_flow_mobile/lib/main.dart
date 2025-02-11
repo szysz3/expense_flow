@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:presentation/di/di.dart';
 import 'package:presentation/screen/main/main_screen.dart';
 import 'package:presentation/theme/expense_flow_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  configureDependencies();
   runApp(const ExpenseFlowApp());
 }
 

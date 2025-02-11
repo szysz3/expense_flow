@@ -33,3 +33,6 @@ build/
 #freezed auto gen
 *.freezed.dart
 *.g.dart
+
+#di
+*.config.dart
