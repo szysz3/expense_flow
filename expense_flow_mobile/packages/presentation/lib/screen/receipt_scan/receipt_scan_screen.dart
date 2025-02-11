@@ -79,11 +79,14 @@ class _CameraPreview extends StatelessWidget {
           border: Border.all(color: Colors.white),
           borderRadius: _getPreviewBorderRadius(),
         ),
-        child: GestureDetector(
-          onTapUp: isCameraPreviewActive == true
-              ? (details) => _handleFocusTap(details, context)
-              : null,
-          child: _buildPreviewContent(),
+        child: ClipRRect(
+          borderRadius: _getPreviewBorderRadius(),
+          child: GestureDetector(
+            onTapUp: isCameraPreviewActive == true
+                ? (details) => _handleFocusTap(details, context)
+                : null,
+            child: _buildPreviewContent(),
+          ),
         ),
       );
 

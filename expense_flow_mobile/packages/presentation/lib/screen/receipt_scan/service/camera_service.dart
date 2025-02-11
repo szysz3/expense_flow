@@ -4,34 +4,33 @@ import 'package:flutter/services.dart';
 class CameraService {
   CameraController? _controller;
   bool _isInitializing = false;
-
   static CameraService? _instance;
 
   CameraService._();
 
   factory CameraService() {
     _instance ??= CameraService._();
-    return _instance!;
+    return _instance ?? CameraService._();
   }
 
   Future<CameraController> initialize() async {
     if (_controller?.value.isInitialized ?? false) {
-      print('---> CameraService already initialized');
-      return _controller!;
+      return _controller ?? await _initializeNewController();
     }
 
     if (_isInitializing) {
-      print('---> CameraService initialization in progress');
       while (_isInitializing) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
-      return _controller!;
+      return _controller ?? await _initializeNewController();
     }
 
+    return await _initializeNewController();
+  }
+
+  Future<CameraController> _initializeNewController() async {
     try {
       _isInitializing = true;
-      print('---> CameraService init');
-
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         throw Exception('No cameras available');
@@ -44,40 +43,43 @@ class CameraService {
         orElse: () => cameras.first,
       );
 
-      _controller = CameraController(
+      final controller = CameraController(
         backCamera,
         ResolutionPreset.medium,
         enableAudio: false,
       );
 
-      await _controller!.initialize();
-      await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
-      await _controller!.setFocusMode(FocusMode.auto);
+      await controller.initialize();
+      await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      await controller.setFocusMode(FocusMode.auto);
+      await controller.setFlashMode(FlashMode.off);
 
-      return _controller!;
+      _controller = controller;
+      return controller;
     } finally {
       _isInitializing = false;
     }
   }
 
   Future<void> setFocusPoint(double x, double y) async {
-    if (_controller == null || !_controller!.value.isInitialized) {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
       throw Exception('Camera not initialized');
     }
 
     try {
-      await _controller!.setFocusPoint(Offset(x, y));
-      await _controller!.setFocusMode(FocusMode.auto);
-    } catch (e) {
-      print('Error setting focus point: $e');
-    }
+      await controller.setFocusPoint(Offset(x, y));
+      await controller.setFocusMode(FocusMode.auto);
+    } catch (e) {}
   }
 
   Future<String> takePhoto() async {
-    if (_controller == null || !_controller!.value.isInitialized) {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
       throw Exception('Camera not initialized');
     }
-    final photo = await _controller!.takePicture();
+
+    final photo = await controller.takePicture();
     return photo.path;
   }
 
