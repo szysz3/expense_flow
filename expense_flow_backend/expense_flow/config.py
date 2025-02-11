@@ -5,7 +5,7 @@ from typing import Literal
 class Config:
     endpoint: str
     key: str    
-    model: str = 'hf.co/speakleash/Bielik-11B-v2.3-Instruct-GGUF:Q6_K_classifier'
+    model: str = 'hf.co/speakleash/Bielik-11B-v2.3-Instruct-GGUF:Q6_K_low_temp'
     fallback_model: str = 'hf.co/unsloth/phi-4-GGUF:Q5_K_M'
     ollama_host: str = 'http://localhost:11434'
     chatgpt_key: str = ''
