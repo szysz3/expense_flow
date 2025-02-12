@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
 import 'package:presentation/screen/receipt_scan/widget/preview_content.dart';
 
 class PreviewContainer extends StatelessWidget {
-  final CameraPreviewState state;
+  final CameraPreviewWidgetState state;
   final void Function(TapUpDetails, Size) onFocusTap;
 
   const PreviewContainer({
@@ -22,7 +23,7 @@ class PreviewContainer extends StatelessWidget {
           child: ClipRRect(
             borderRadius: _getPreviewBorderRadius(),
             child: GestureDetector(
-              onTapUp: state.isCameraPreviewActive
+              onTapUp: state.previewState == CameraPreviewState.cameraPreview
                   ? (details) => onFocusTap(details,
                       Size(constraints.maxWidth, constraints.maxHeight))
                   : null,
@@ -32,7 +33,8 @@ class PreviewContainer extends StatelessWidget {
         ),
       );
 
-  BorderRadius _getPreviewBorderRadius() => state.isPhotoPreviewActive
-      ? const BorderRadius.vertical(top: Radius.circular(8))
-      : BorderRadius.circular(8);
+  BorderRadius _getPreviewBorderRadius() =>
+      state.previewState == CameraPreviewState.photoPreview
+          ? const BorderRadius.vertical(top: Radius.circular(8))
+          : BorderRadius.circular(8);
 }

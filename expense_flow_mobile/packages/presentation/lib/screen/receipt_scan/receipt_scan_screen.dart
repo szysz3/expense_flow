@@ -29,10 +29,8 @@ class ReceiptScanView extends StatelessWidget {
         builder: (context, state) => switch (state) {
           ReceiptScanState() => CameraPreviewWidget(
               controller: ReceiptScanController(context),
-              state: CameraPreviewState(
-                isCameraPreviewActive: state.isCameraPreviewActive ?? false,
-                isPhotoPreviewActive: state.isPhotoPreviewActive ?? false,
-                isProcessing: state.isProcessing,
+              state: CameraPreviewWidgetState(
+                previewState: state.cameraPreviewState,
                 photoPath: state.photoPath,
                 cameraController: state.controller,
               ),

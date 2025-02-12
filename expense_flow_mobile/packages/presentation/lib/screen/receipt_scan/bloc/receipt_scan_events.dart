@@ -14,4 +14,6 @@ class SetFocusPointEvent extends ReceiptScanEvent {
   SetFocusPointEvent(this.point);
 }
 
-class BackButtonPressedEvent extends ReceiptScanEvent {}
+class PhotoRejectedEvent extends ReceiptScanEvent {}
+
+class PhotoAcceptedEvent extends ReceiptScanEvent {}

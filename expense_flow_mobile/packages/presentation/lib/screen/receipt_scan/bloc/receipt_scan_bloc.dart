@@ -12,7 +12,8 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     on<TakePhotoEvent>(_takePhoto);
     on<CameraButtonPressedEvent>(_handleCameraButtonPress);
     on<SetFocusPointEvent>(_handleSetFocusPoint);
-    on<BackButtonPressedEvent>(_handleBackButtonPress);
+    on<PhotoRejectedEvent>(_handleBackButtonPress);
+    on<PhotoAcceptedEvent>(_handlePhotoAcceptedEvent);
   }
 
   Future<void> _initializeCamera(
@@ -33,25 +34,54 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
   ) {
     if (state is ReceiptScanState) {
       final scanState = state as ReceiptScanState;
-      if (!scanState.isProcessing) {
-        if (scanState.isCameraPreviewActive == true) {
+      if (scanState.cameraPreviewState != CameraPreviewState.photoProcessing) {
+        if (scanState.cameraPreviewState == CameraPreviewState.cameraPreview) {
           add(TakePhotoEvent());
         } else {
-          emit(scanState.copyWith(isCameraPreviewActive: true));
+          emit(scanState.copyWith(
+              cameraPreviewState: CameraPreviewState.cameraPreview));
         }
       }
     }
   }
 
+  Future<void> _handlePhotoAcceptedEvent(
+    PhotoAcceptedEvent event,
+    Emitter<BaseReceiptScanState> emit,
+  ) async {
+    if (state is ReceiptScanState) {
+      final scanState = state as ReceiptScanState;
+      emit(scanState.copyWith(
+        cameraPreviewState: CameraPreviewState.loading,
+      ));
+    }
+
+    await Future.delayed(Duration(milliseconds: 5000));
+
+    if (state is ReceiptScanState) {
+      final scanState = state as ReceiptScanState;
+      emit(scanState.copyWith(
+        cameraPreviewState: CameraPreviewState.uploadSuccess,
+      ));
+    }
+
+    await Future.delayed(Duration(milliseconds: 1500));
+
+    if (state is ReceiptScanState) {
+      final scanState = state as ReceiptScanState;
+      emit(scanState.copyWith(
+          photoPath: null, cameraPreviewState: CameraPreviewState.idle));
+    }
+  }
+
   void _handleBackButtonPress(
-    BackButtonPressedEvent event,
+    PhotoRejectedEvent event,
     Emitter<BaseReceiptScanState> emit,
   ) {
     if (state is ReceiptScanState) {
       final scanState = state as ReceiptScanState;
       emit(scanState.copyWith(
-        isCameraPreviewActive: true,
-        isPhotoPreviewActive: false,
+        cameraPreviewState: CameraPreviewState.cameraPreview,
         photoPath: null,
       ));
     }
@@ -77,20 +107,20 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     if (state is ReceiptScanState) {
       final scanState = state as ReceiptScanState;
 
-      emit(scanState.copyWith(isProcessing: true));
+      emit(scanState.copyWith(
+          cameraPreviewState: CameraPreviewState.photoProcessing));
 
       try {
         await Vibration.vibrate(duration: 50);
 
         final imagePath = await _cameraService.takePhoto();
         emit(scanState.copyWith(
-          isPhotoPreviewActive: true,
-          isCameraPreviewActive: false,
+          cameraPreviewState: CameraPreviewState.photoPreview,
           photoPath: imagePath,
-          isProcessing: false,
         ));
       } catch (e) {
-        emit(scanState.copyWith(isProcessing: false));
+        emit(scanState.copyWith(
+            cameraPreviewState: CameraPreviewState.cameraPreview));
         emit(ReceiptScanErrorState(message: 'Failed to take photo: $e'));
       }
     }

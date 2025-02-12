@@ -24,12 +24,12 @@ class ReceiptScanController implements CameraPreviewController {
   }
 
   @override
-  void onBackButtonPressed() {
-    context.read<ReceiptScanBloc>().add(BackButtonPressedEvent());
+  void onPhotoRejectButtonPressed() {
+    context.read<ReceiptScanBloc>().add(PhotoRejectedEvent());
   }
 
   @override
-  void onConfirmPressed() {
-    // Implement confirm action
+  void onPhotoAcceptedButtonPressed() {
+    context.read<ReceiptScanBloc>().add(PhotoAcceptedEvent());
   }
 }

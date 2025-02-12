@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:camera/camera.dart';
+import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
 
 class PreviewContent extends StatelessWidget {
   static const _animationDuration = Duration(milliseconds: 300);
 
-  final CameraPreviewState state;
+  final CameraPreviewWidgetState state;
 
   const PreviewContent({required this.state, super.key});
 
@@ -34,12 +35,14 @@ class PreviewContent extends StatelessWidget {
   }
 
   Widget _getContent() {
-    if (state.isCameraPreviewActive) {
-      return CameraPreview(state.cameraController);
-    }
-    if (state.isPhotoPreviewActive && state.photoPath != null) {
+    if (state.previewState == CameraPreviewState.photoPreview &&
+        state.photoPath != null) {
       return Image.file(File(state.photoPath!), fit: BoxFit.cover);
     }
-    return const SizedBox.shrink();
+    if (state.previewState == CameraPreviewState.cameraPreview) {
+      return CameraPreview(state.cameraController);
+    }
+
+    return const SizedBox.expand();
   }
 }
