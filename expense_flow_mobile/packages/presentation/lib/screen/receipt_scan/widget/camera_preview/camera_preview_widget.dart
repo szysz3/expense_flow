@@ -3,6 +3,7 @@ import 'package:presentation/screen/receipt_scan/widget/action_bar/action_bar.da
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_button.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_controller.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
+import 'package:presentation/screen/receipt_scan/widget/loading_indicator_widget.dart';
 import 'package:presentation/screen/receipt_scan/widget/preview_container.dart';
 
 class CameraPreviewWidget extends StatelessWidget {
@@ -20,6 +21,13 @@ class CameraPreviewWidget extends StatelessWidget {
         children: [
           if (state.isCameraPreviewActive || state.isPhotoPreviewActive)
             _buildMainContent(context),
+          // TODO: temporarily
+          Center(
+            child: LoadingIndicatorWidget(
+              isSuccess: state.isPhotoPreviewActive,
+              sizeFactor: 0.5,
+            ),
+          ),
           if (state.photoPath == null) _buildCameraButton(),
         ],
       );
