@@ -35,11 +35,14 @@ class PreviewContent extends StatelessWidget {
   }
 
   Widget _getContent() {
+    print('------> state: ${state.previewState}, file: ${state.photoPath}');
+
     if (state.previewState == CameraPreviewState.photoPreview &&
         state.photoPath != null) {
       return Image.file(File(state.photoPath!), fit: BoxFit.cover);
     }
-    if (state.previewState == CameraPreviewState.cameraPreview) {
+    if ([CameraPreviewState.photoProcessing, CameraPreviewState.cameraPreview]
+        .contains(state.previewState)) {
       return CameraPreview(state.cameraController);
     }
 
