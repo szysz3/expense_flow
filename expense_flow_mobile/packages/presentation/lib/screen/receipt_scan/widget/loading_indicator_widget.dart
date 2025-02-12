@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+// Entirely AI generated
+
 class LoadingIndicatorWidget extends StatefulWidget {
   final bool isSuccess;
   final Duration transitionDuration;
@@ -13,11 +15,10 @@ class LoadingIndicatorWidget extends StatefulWidget {
   });
 
   @override
-  State<LoadingIndicatorWidget> createState() =>
-      _CyberpunkLoadingIndicatorState();
+  State<LoadingIndicatorWidget> createState() => _LoadingIndicatorWidgetState();
 }
 
-class _CyberpunkLoadingIndicatorState extends State<LoadingIndicatorWidget>
+class _LoadingIndicatorWidgetState extends State<LoadingIndicatorWidget>
     with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _loadingOpacity;
@@ -27,6 +28,10 @@ class _CyberpunkLoadingIndicatorState extends State<LoadingIndicatorWidget>
   late Animation<double> _outerRotation;
   late Animation<double> _middleRotation;
   late Animation<double> _innerRotation;
+
+  late AnimationController _entranceController;
+  late Animation<double> _entranceScale;
+  late Animation<double> _entranceOpacity;
 
   @override
   void initState() {
@@ -60,10 +65,47 @@ class _CyberpunkLoadingIndicatorState extends State<LoadingIndicatorWidget>
       ),
     );
 
+    // Faster, springier entrance animation
+    _entranceController = AnimationController(
+      duration: const Duration(milliseconds: 600), // Faster duration
+      vsync: this,
+    );
+
+    // Sharp spring-like scale animation
+    _entranceScale = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.0, end: 1.15)
+            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 40,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.15, end: 0.9)
+            .chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 30,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.9, end: 1.0)
+            .chain(CurveTween(curve: Curves.elasticOut)),
+        weight: 30,
+      ),
+    ]).animate(_entranceController);
+
+    // Quick fade in
+    _entranceOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+    ));
+
     if (widget.isSuccess) {
       _controller.value = 1.0;
       _rotationController.stop();
     }
+
+    // Start entrance animation immediately
+    _entranceController.forward();
   }
 
   @override
@@ -83,39 +125,50 @@ class _CyberpunkLoadingIndicatorState extends State<LoadingIndicatorWidget>
     final screenWidth = MediaQuery.of(context).size.width;
     final size = screenWidth * widget.sizeFactor;
 
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        children: [
-          // Loading State
-          FadeTransition(
-            opacity: _loadingOpacity,
-            child: AnimatedBuilder(
-              animation: _rotationController,
-              builder: (context, child) {
-                return CustomPaint(
-                  painter: LoadingPainter(
-                    outerRotation: _outerRotation.value,
-                    middleRotation: _middleRotation.value,
-                    innerRotation: _innerRotation.value,
+    return AnimatedBuilder(
+      animation: _entranceController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _entranceScale.value,
+          child: FadeTransition(
+            opacity: _entranceOpacity,
+            child: SizedBox(
+              width: size,
+              height: size,
+              child: Stack(
+                children: [
+                  // Loading State
+                  FadeTransition(
+                    opacity: _loadingOpacity,
+                    child: AnimatedBuilder(
+                      animation: _rotationController,
+                      builder: (context, child) {
+                        return CustomPaint(
+                          painter: LoadingPainter(
+                            outerRotation: _outerRotation.value,
+                            middleRotation: _middleRotation.value,
+                            innerRotation: _innerRotation.value,
+                          ),
+                          size: Size(size, size),
+                        );
+                      },
+                    ),
                   ),
-                  size: Size(size, size),
-                );
-              },
-            ),
-          ),
 
-          // Success State
-          FadeTransition(
-            opacity: _successOpacity,
-            child: CustomPaint(
-              painter: SuccessPainter(),
-              size: Size(size, size),
+                  // Success State
+                  FadeTransition(
+                    opacity: _successOpacity,
+                    child: CustomPaint(
+                      painter: SuccessPainter(),
+                      size: Size(size, size),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -123,6 +176,7 @@ class _CyberpunkLoadingIndicatorState extends State<LoadingIndicatorWidget>
   void dispose() {
     _controller.dispose();
     _rotationController.dispose();
+    _entranceController.dispose();
     super.dispose();
   }
 }
