@@ -24,6 +24,7 @@ dependencies:
   vibration: ^1.8.4
   get_it: ^7.6.7
   injectable: ^2.3.2  
+  uuid: ^4.2.1
 
 dev_dependencies:
   flutter_test:
