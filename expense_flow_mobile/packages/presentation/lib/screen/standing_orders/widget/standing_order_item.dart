@@ -28,7 +28,7 @@ class StandingOrderItem extends StatelessWidget {
         direction: DismissDirection.endToStart,
         onDismissed: (_) => onDelete(),
         background: Container(
-          color: Colors.red.withAlpha(200),
+          color: Colors.red.withAlpha(80),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 16),
           child: const Icon(Icons.delete, color: Colors.white),
