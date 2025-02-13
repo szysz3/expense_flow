@@ -11,6 +11,7 @@ import 'package:presentation/screen/main/bloc/camera_preview_bloc.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_event.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_state.dart';
 import 'package:presentation/screen/receipt_scan/receipt_scan_screen.dart';
+import 'package:presentation/screen/standing_orders/standing_orders_screen.dart';
 import 'package:presentation/services/camera/camera_service.dart';
 import 'package:presentation/theme/expense_flow_color_scheme.dart';
 
@@ -46,7 +47,7 @@ class MainScreen extends StatelessWidget {
                   children: const [
                     ReceiptScanScreen(),
                     Center(child: Text('Categories')),
-                    Center(child: Text('Orders')),
+                    StandingOrdersScreen(),
                     Center(child: Text('Summary')),
                   ],
                 );
