@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:presentation/screen/standing_orders/widget/square_icon_button.dart';
 import 'package:presentation/screen/standing_orders/widget/standing_order_item.dart';
 import 'bloc/standing_orders_bloc.dart';
 import 'bloc/standing_orders_events.dart';
@@ -28,11 +29,16 @@ class StandingOrdersView extends StatelessWidget {
               if (index == state.orders.length) {
                 return Padding(
                   padding: const EdgeInsets.all(16),
-                  child: ElevatedButton(
+                  child: SquareIconButton(
+                    isProcessing: false,
                     onPressed: () => context
                         .read<StandingOrdersBloc>()
                         .add(const StandingOrdersEvent.addNewOrderRequested()),
-                    child: const Text('Add Standing Order'),
+                    icon: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    ),
                   ),
                 );
               }
