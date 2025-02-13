@@ -24,6 +24,10 @@ class StandingOrdersBloc
     AddNewOrderRequested event,
     Emitter<StandingOrdersState> emit,
   ) {
+    if (state.orders.any((order) => !order.isConfirmed)) {
+      return;
+    }
+
     final newOrder = StandingOrder(
       id: _uuid.v4(),
       name: '',
@@ -79,7 +83,20 @@ class StandingOrdersBloc
     OrderConfirmed event,
     Emitter<StandingOrdersState> emit,
   ) {
-    emit(state.copyWith(isAddingNew: false));
+    final updatedOrders = state.orders.map((order) {
+      if (order.id == event.orderId) {
+        if (order.name.isNotEmpty && order.amount > 0) {
+          return order.copyWith(isConfirmed: true);
+        }
+        return order;
+      }
+      return order;
+    }).toList();
+
+    emit(state.copyWith(
+      orders: updatedOrders,
+      isAddingNew: false,
+    ));
   }
 
   String _sanitizeName(String name) {

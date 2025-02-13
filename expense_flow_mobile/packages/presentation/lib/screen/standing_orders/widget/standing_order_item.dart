@@ -28,7 +28,7 @@ class StandingOrderItem extends StatelessWidget {
         direction: DismissDirection.endToStart,
         onDismissed: (_) => onDelete(),
         background: Container(
-          color: Colors.red,
+          color: Colors.red.withAlpha(200),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 16),
           child: const Icon(Icons.delete, color: Colors.white),
@@ -38,8 +38,11 @@ class StandingOrderItem extends StatelessWidget {
           title: isEditing
               ? TextField(
                   onChanged: onNameChanged,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Order name',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).hintColor.withOpacity(0.5),
+                    ),
                   ),
                 )
               : Text(name),
@@ -52,8 +55,12 @@ class StandingOrderItem extends StatelessWidget {
                         child: TextField(
                           onChanged: onAmountChanged,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             hintText: 'Amount',
+                            hintStyle: TextStyle(
+                              color:
+                                  Theme.of(context).hintColor.withOpacity(0.5),
+                            ),
                           ),
                         ),
                       ),

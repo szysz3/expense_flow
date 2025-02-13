@@ -8,5 +8,6 @@ class StandingOrder with _$StandingOrder {
     required String id,
     required String name,
     required double amount,
+    @Default(false) bool isConfirmed,
   }) = _StandingOrder;
 }

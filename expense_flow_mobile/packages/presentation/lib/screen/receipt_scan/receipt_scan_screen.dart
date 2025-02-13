@@ -16,7 +16,10 @@ class ReceiptScanScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
         create: (_) => ReceiptScanBloc(getIt<CameraService>())
           ..add(InitializeCameraEvent()),
-        child: const ReceiptScanView(),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: const ReceiptScanView(),
+        ),
       );
 }
 
