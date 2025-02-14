@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 class SquareIconButton extends StatelessWidget {
   static const _buttonAnimationDuration = Duration(milliseconds: 400);

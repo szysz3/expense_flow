@@ -7,6 +7,7 @@ import 'package:presentation/di/di.dart';
 import 'package:presentation/navigation/bloc/navigation_bloc.dart';
 import 'package:presentation/navigation/bloc/navigation_state.dart';
 import 'package:presentation/navigation/widget/bottom_navigation.dart';
+import 'package:presentation/screen/categories/categories_screen.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_bloc.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_event.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_state.dart';
@@ -46,7 +47,7 @@ class MainScreen extends StatelessWidget {
                   index: state.currentIndex,
                   children: const [
                     ReceiptScanScreen(),
-                    Center(child: Text('Categories')),
+                    CategoriesScreen(),
                     StandingOrdersScreen(),
                     Center(child: Text('Summary')),
                   ],
