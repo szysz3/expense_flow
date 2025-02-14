@@ -1,8 +1,9 @@
+// categories/widgets/category_list_item.dart
 import 'package:flutter/material.dart';
 import 'package:presentation/screen/categories/models/category.dart';
 import 'package:presentation/screen/categories/models/category_item.dart';
 
-class CategoryListItem extends StatelessWidget {
+class CategoryListItem extends StatefulWidget {
   final Category category;
   final VoidCallback onToggle;
 
@@ -13,29 +14,77 @@ class CategoryListItem extends StatelessWidget {
   });
 
   @override
+  State<CategoryListItem> createState() => _CategoryListItemState();
+}
+
+class _CategoryListItemState extends State<CategoryListItem>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _rotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _rotationAnimation = Tween<double>(
+      begin: 0,
+      end: 0.25,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void didUpdateWidget(CategoryListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.category.isExpanded) {
+      _controller.forward();
+    } else {
+      _controller.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildCategoryHeader(),
-        if (category.isExpanded) _buildItemsList(),
+        AnimatedCrossFade(
+          firstChild: const SizedBox.shrink(),
+          secondChild: _buildItemsList(),
+          crossFadeState: widget.category.isExpanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 200),
+        ),
       ],
     );
   }
 
   Widget _buildCategoryHeader() {
     return InkWell(
-      onTap: onToggle,
+      onTap: widget.onToggle,
       child: Container(
         height: 60,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            Icon(IconData(int.parse(category.iconName))),
+            Icon(IconData(int.parse(widget.category.iconName))),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
-                category.name,
+                widget.category.name,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -43,16 +92,16 @@ class CategoryListItem extends StatelessWidget {
               ),
             ),
             Text(
-              '\$${category.totalAmount.toStringAsFixed(2)}',
+              '\$${widget.category.totalAmount.toStringAsFixed(2)}',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(width: 8),
-            RotatedBox(
-              quarterTurns: category.isExpanded ? 1 : 3,
-              child: const Icon(Icons.chevron_right),
+            RotationTransition(
+              turns: _rotationAnimation,
+              child: const Icon(Icons.expand_more),
             ),
           ],
         ),
@@ -64,9 +113,10 @@ class CategoryListItem extends StatelessWidget {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: category.items.length,
+      padding: EdgeInsets.zero,
+      itemCount: widget.category.items.length,
       itemBuilder: (context, index) {
-        final item = category.items[index];
+        final item = widget.category.items[index];
         return _buildItemRow(item);
       },
     );
