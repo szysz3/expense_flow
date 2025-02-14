@@ -3,7 +3,7 @@ import 'package:presentation/screen/main/bloc/camera_preview_event.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_state.dart';
 import 'package:presentation/services/camera/camera_service.dart';
 
-class CameraPreviewBloc extends Bloc<CameraPreviewEvent, CamerawPreviewState> {
+class CameraPreviewBloc extends Bloc<CameraPreviewEvent, CameraPreviewState> {
   final CameraService _cameraService;
 
   CameraPreviewBloc(this._cameraService) : super(CameraPreviewInit()) {
@@ -12,7 +12,7 @@ class CameraPreviewBloc extends Bloc<CameraPreviewEvent, CamerawPreviewState> {
 
   Future<void> _initializeCamera(
     InitializeCameraEvent event,
-    Emitter<CamerawPreviewState> emit,
+    Emitter<CameraPreviewState> emit,
   ) async {
     try {
       final controller = await _cameraService.initialize();

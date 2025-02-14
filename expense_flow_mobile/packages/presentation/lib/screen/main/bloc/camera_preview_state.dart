@@ -1,16 +1,16 @@
 import 'package:camera/camera.dart';
 
-abstract class CamerawPreviewState {}
+abstract class CameraPreviewState {}
 
-class CameraPreviewInit extends CamerawPreviewState {}
+class CameraPreviewInit extends CameraPreviewState {}
 
-class CameraPreviewInitialized extends CamerawPreviewState {
+class CameraPreviewInitialized extends CameraPreviewState {
   final CameraController controller;
 
   CameraPreviewInitialized(this.controller);
 }
 
-class CameraInitError extends CamerawPreviewState {
+class CameraInitError extends CameraPreviewState {
   final String message;
   CameraInitError(this.message);
 }

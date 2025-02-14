@@ -13,6 +13,7 @@ import 'package:presentation/screen/main/bloc/camera_preview_event.dart';
 import 'package:presentation/screen/main/bloc/camera_preview_state.dart';
 import 'package:presentation/screen/receipt_scan/receipt_scan_screen.dart';
 import 'package:presentation/screen/standing_orders/standing_orders_screen.dart';
+import 'package:presentation/screen/summary/summary_screen.dart';
 import 'package:presentation/services/camera/camera_service.dart';
 import 'package:presentation/theme/expense_flow_color_scheme.dart';
 
@@ -31,7 +32,7 @@ class MainScreen extends StatelessWidget {
       child: Scaffold(
         body: Stack(
           children: [
-            BlocBuilder<CameraPreviewBloc, CamerawPreviewState>(
+            BlocBuilder<CameraPreviewBloc, CameraPreviewState>(
               builder: (context, state) {
                 return switch (state) {
                   CameraPreviewInitialized() =>
@@ -49,7 +50,7 @@ class MainScreen extends StatelessWidget {
                     ReceiptScanScreen(),
                     CategoriesScreen(),
                     StandingOrdersScreen(),
-                    Center(child: Text('Summary')),
+                    SummaryScreen(),
                   ],
                 );
               },
