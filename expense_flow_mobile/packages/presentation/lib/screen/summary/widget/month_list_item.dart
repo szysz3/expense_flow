@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:presentation/screen/summary/model/category_summary.dart';
-import 'package:presentation/screen/summary/model/month_summary.dart';
+import '../model/category_summary.dart';
+import '../model/month_summary.dart';
 
 class MonthListItem extends StatefulWidget {
   final MonthSummary month;
@@ -139,17 +139,36 @@ class _MonthListItemState extends State<MonthListItem>
   }
 
   Widget _buildCategoryRow(CategorySummary category) {
+    final changePercentage = category.changePercentage.abs().toStringAsFixed(1);
+    final changeColor = category.isIncrease ? Colors.red : Colors.green;
+    final changeIcon = category.isIncrease ? Icons.arrow_upward : Icons.arrow_downward;
+
     return Container(
       height: 50,
       padding: const EdgeInsets.fromLTRB(56, 0, 16, 0),
       child: Row(
         children: [
+          Icon(IconData(int.parse(category.iconName))),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               category.name,
               style: const TextStyle(fontSize: 14),
             ),
           ),
+          if (category.previousMonthAmount > 0 && category.changePercentage != 0) ...[
+            Icon(changeIcon, color: changeColor, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              '$changePercentage%',
+              style: TextStyle(
+                color: changeColor,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           Text(
             '\$${category.amount.toStringAsFixed(2)}',
             style: const TextStyle(fontSize: 14),
