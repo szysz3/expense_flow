@@ -31,8 +31,8 @@ class _MonthListItemState extends State<MonthListItem>
       vsync: this,
     );
     _rotationAnimation = Tween<double>(
-      begin: -0.25,
-      end: 0,
+      begin: 0,
+      end: 0.25,
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
@@ -84,7 +84,7 @@ class _MonthListItemState extends State<MonthListItem>
       onTap: widget.onToggle,
       child: Container(
         height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.only(left: 16),
         child: Row(
           children: [
             Expanded(
@@ -120,9 +120,9 @@ class _MonthListItemState extends State<MonthListItem>
             RotationTransition(
               turns: _rotationAnimation,
               child: SvgPicture.asset(
-                'packages/presentation/icon_chevron.svg',
-                width: 32,
-                height: 32,
+                'packages/presentation/assets/icon_right_chevron.svg',
+                width: 24,
+                height: 24,
               ),
             ),
           ],
@@ -152,7 +152,7 @@ class _MonthListItemState extends State<MonthListItem>
 
     return Container(
       height: 50,
-      padding: const EdgeInsets.fromLTRB(56, 0, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       child: Row(
         children: [
           SvgPicture.asset(
@@ -169,14 +169,14 @@ class _MonthListItemState extends State<MonthListItem>
           ),
           if (category.previousMonthAmount > 0 &&
               category.changePercentage != 0) ...[
-            Icon(changeIcon, color: changeColor, size: 16),
+            Icon(changeIcon, color: changeColor, size: 14),
             const SizedBox(width: 4),
             Text(
               '$changePercentage%',
               style: TextStyle(
                 color: changeColor,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
               ),
             ),
             const SizedBox(width: 8),

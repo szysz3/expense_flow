@@ -30,8 +30,8 @@ class _CategoryListItemState extends State<CategoryListItem>
       vsync: this,
     );
     _rotationAnimation = Tween<double>(
-      begin: -0.25,
-      end: 0,
+      begin: 0,
+      end: 0.25,
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
@@ -106,9 +106,9 @@ class _CategoryListItemState extends State<CategoryListItem>
             RotationTransition(
               turns: _rotationAnimation,
               child: SvgPicture.asset(
-                'packages/presentation/icon_chevron.svg',
-                width: 32,
-                height: 32,
+                'packages/presentation/assets/icon_right_chevron.svg',
+                width: 24,
+                height: 24,
               ),
             ),
           ],
