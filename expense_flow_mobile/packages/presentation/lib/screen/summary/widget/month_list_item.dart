@@ -146,9 +146,11 @@ class _MonthListItemState extends State<MonthListItem>
 
   Widget _buildCategoryRow(CategorySummary category) {
     final changePercentage = category.changePercentage.abs().toStringAsFixed(1);
-    final changeColor = category.isIncrease ? Colors.red : Colors.green;
+    final changeColor =
+        (category.isIncrease ? Colors.red : Colors.green).withAlpha(150);
     final changeIcon =
         category.isIncrease ? Icons.arrow_upward : Icons.arrow_downward;
+    final textColor = Theme.of(context).colorScheme.onSurface.withAlpha(150);
 
     return Container(
       height: 50,
@@ -164,7 +166,7 @@ class _MonthListItemState extends State<MonthListItem>
           Expanded(
             child: Text(
               category.name,
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14, color: textColor),
             ),
           ),
           if (category.previousMonthAmount > 0 &&

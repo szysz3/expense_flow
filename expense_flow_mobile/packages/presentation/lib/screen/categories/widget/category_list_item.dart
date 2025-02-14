@@ -77,7 +77,7 @@ class _CategoryListItemState extends State<CategoryListItem>
       onTap: widget.onToggle,
       child: Container(
         height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.only(left: 16),
         child: Row(
           children: [
             SvgPicture.asset(
@@ -131,20 +131,21 @@ class _CategoryListItemState extends State<CategoryListItem>
   }
 
   Widget _buildItemRow(CategoryItem item) {
+    final textColor = Theme.of(context).colorScheme.onSurface.withAlpha(150);
     return Container(
       height: 50,
-      padding: const EdgeInsets.fromLTRB(56, 0, 16, 0),
+      padding: const EdgeInsets.fromLTRB(32, 0, 16, 0),
       child: Row(
         children: [
           Expanded(
             child: Text(
               item.name,
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14, color: textColor),
             ),
           ),
           Text(
             '\$${item.amount.toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 14, color: textColor),
           ),
         ],
       ),
