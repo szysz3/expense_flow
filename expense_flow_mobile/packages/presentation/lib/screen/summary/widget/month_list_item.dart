@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+
 import '../model/category_summary.dart';
 import '../model/month_summary.dart';
 
@@ -117,7 +119,11 @@ class _MonthListItemState extends State<MonthListItem>
             const SizedBox(width: 8),
             RotationTransition(
               turns: _rotationAnimation,
-              child: const Icon(Icons.expand_more),
+              child: SvgPicture.asset(
+                'packages/presentation/icon_chevron.svg',
+                width: 32,
+                height: 32,
+              ),
             ),
           ],
         ),
@@ -141,14 +147,19 @@ class _MonthListItemState extends State<MonthListItem>
   Widget _buildCategoryRow(CategorySummary category) {
     final changePercentage = category.changePercentage.abs().toStringAsFixed(1);
     final changeColor = category.isIncrease ? Colors.red : Colors.green;
-    final changeIcon = category.isIncrease ? Icons.arrow_upward : Icons.arrow_downward;
+    final changeIcon =
+        category.isIncrease ? Icons.arrow_upward : Icons.arrow_downward;
 
     return Container(
       height: 50,
       padding: const EdgeInsets.fromLTRB(56, 0, 16, 0),
       child: Row(
         children: [
-          Icon(IconData(int.parse(category.iconName))),
+          SvgPicture.asset(
+            category.iconName,
+            width: 24,
+            height: 24,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
@@ -156,7 +167,8 @@ class _MonthListItemState extends State<MonthListItem>
               style: const TextStyle(fontSize: 14),
             ),
           ),
-          if (category.previousMonthAmount > 0 && category.changePercentage != 0) ...[
+          if (category.previousMonthAmount > 0 &&
+              category.changePercentage != 0) ...[
             Icon(changeIcon, color: changeColor, size: 16),
             const SizedBox(width: 4),
             Text(

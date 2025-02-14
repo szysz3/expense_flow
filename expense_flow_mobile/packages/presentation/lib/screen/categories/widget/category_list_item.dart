@@ -1,5 +1,5 @@
-// categories/widgets/category_list_item.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:presentation/screen/categories/models/category.dart';
 import 'package:presentation/screen/categories/models/category_item.dart';
 
@@ -80,7 +80,11 @@ class _CategoryListItemState extends State<CategoryListItem>
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            Icon(IconData(int.parse(widget.category.iconName))),
+            SvgPicture.asset(
+              widget.category.iconName,
+              width: 32,
+              height: 32,
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -101,7 +105,11 @@ class _CategoryListItemState extends State<CategoryListItem>
             const SizedBox(width: 8),
             RotationTransition(
               turns: _rotationAnimation,
-              child: const Icon(Icons.expand_more),
+              child: SvgPicture.asset(
+                'packages/presentation/icon_chevron.svg',
+                width: 32,
+                height: 32,
+              ),
             ),
           ],
         ),

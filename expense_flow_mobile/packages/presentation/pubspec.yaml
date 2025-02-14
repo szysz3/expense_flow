@@ -39,6 +39,18 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+    - assets/icon_alcoholic_beverages.svg
+    - assets/icon_groceries.svg
+    - assets/icon_personal_care.svg
+    - assets/icon_household.svg
+    - assets/icon_clothing.svg
+    - assets/icon_entertainment.svg
+    - assets/icon_transportation.svg
+    - assets/icon_pet.svg
+    - assets/icon_other.svg
+    - assets/icon_add.svg
+    - assets/icon_right_chevron.svg
+    - assets/icon_standing_order.svg
     - assets/icon_back.svg
     - assets/icon_tick.svg
     - assets/icon_categories.svg
@@ -47,6 +59,7 @@ flutter:
     - assets/icon_summary.svg
     - assets/icon_scan_receipt.svg
     - assets/icon_photo.svg
+
 
   # To add assets to your package, add an assets section, like this:
   # assets:

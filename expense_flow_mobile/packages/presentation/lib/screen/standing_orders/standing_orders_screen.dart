@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:presentation/screen/standing_orders/widget/square_icon_button.dart';
 import 'package:presentation/screen/standing_orders/widget/standing_order_item.dart';
+
 import 'bloc/standing_orders_bloc.dart';
 import 'bloc/standing_orders_events.dart';
 import 'bloc/standing_orders_state.dart';
@@ -41,10 +43,10 @@ class StandingOrdersView extends StatelessWidget {
                       isProcessing: hasUnconfirmedOrders,
                       onPressed: () => context.read<StandingOrdersBloc>().add(
                           const StandingOrdersEvent.addNewOrderRequested()),
-                      icon: const Icon(
-                        Icons.add_rounded,
-                        color: Colors.white,
-                        size: 24,
+                      icon: SvgPicture.asset(
+                        'packages/presentation/assets/icon_add.svg',
+                        width: 32,
+                        height: 32,
                       ),
                     ),
                   ),
