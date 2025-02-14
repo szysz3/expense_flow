@@ -30,8 +30,8 @@ class _CategoryListItemState extends State<CategoryListItem>
       vsync: this,
     );
     _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: 0.25,
+      begin: -0.25,
+      end: 0,
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,

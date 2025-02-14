@@ -11,7 +11,10 @@ class CategoriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BlocProvider(
         create: (_) => CategoriesBloc()..add(const CategoriesEvent.init()),
-        child: const CategoriesScreenView(),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: const CategoriesScreenView(),
+        ),
       );
 }
 
