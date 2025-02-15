@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class StandingOrderItem extends StatelessWidget {
   final String orderId;
@@ -34,7 +35,11 @@ class StandingOrderItem extends StatelessWidget {
           child: const Icon(Icons.delete, color: Colors.white),
         ),
         child: ListTile(
-          leading: const Icon(Icons.payment),
+          leading: SvgPicture.asset(
+            'packages/presentation/assets/icon_standing_order.svg',
+            width: 24,
+            height: 24,
+          ),
           title: isEditing
               ? TextField(
                   onChanged: onNameChanged,
@@ -65,7 +70,11 @@ class StandingOrderItem extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.check),
+                        icon: SvgPicture.asset(
+                          'packages/presentation/assets/icon_tick.svg',
+                          width: 24,
+                          height: 24,
+                        ),
                         onPressed: onConfirmed,
                       ),
                     ],
