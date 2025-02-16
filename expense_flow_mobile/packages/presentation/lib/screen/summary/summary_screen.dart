@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:presentation/screen/summary/bloc/summary_bloc.dart';
 import 'package:presentation/screen/summary/bloc/summary_events.dart';
 import 'package:presentation/screen/summary/bloc/summary_state.dart';
-import 'package:presentation/screen/summary/widget/month_list_item.dart';
+import 'package:presentation/screen/summary/widget/summary_item_widget.dart';
 
 class SummaryScreen extends StatelessWidget {
   const SummaryScreen({super.key});
@@ -33,7 +33,7 @@ class SummaryScreenView extends StatelessWidget {
           itemCount: state.months.length,
           itemBuilder: (context, index) {
             final month = state.months[index];
-            return MonthListItem(
+            return SummaryItemWidget(
               month: month,
               onToggle: () => context.read<SummaryBloc>().add(
                     SummaryEvent.toggleMonth(month.id),
