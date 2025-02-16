@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:presentation/screen/categories/models/category.dart';
-import 'package:presentation/screen/categories/models/category_item.dart';
+import 'package:flutter/widgets.dart';
+import 'package:presentation/screen/categories/widget/category_item_data.dart';
+import 'package:presentation/screen/categories/widget/category_item_header_data.dart';
 
-class CategoryListItem extends StatefulWidget {
+import '../../../common/widget/expandable_list_item.dart';
+import '../models/category.dart';
+
+class CategoryListItem extends StatelessWidget {
   final Category category;
   final VoidCallback onToggle;
 
@@ -14,141 +16,11 @@ class CategoryListItem extends StatefulWidget {
   });
 
   @override
-  State<CategoryListItem> createState() => _CategoryListItemState();
-}
-
-class _CategoryListItemState extends State<CategoryListItem>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _rotationAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: 0.25,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void didUpdateWidget(CategoryListItem oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.category.isExpanded) {
-      _controller.forward();
-    } else {
-      _controller.reverse();
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildCategoryHeader(),
-        AnimatedCrossFade(
-          firstChild: const SizedBox.shrink(),
-          secondChild: _buildItemsList(),
-          crossFadeState: widget.category.isExpanded
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 200),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoryHeader() {
-    return InkWell(
-      onTap: widget.onToggle,
-      child: Container(
-        height: 60,
-        padding: const EdgeInsets.only(left: 16),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              widget.category.iconName,
-              width: 32,
-              height: 32,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                widget.category.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Text(
-              '\$${widget.category.totalAmount.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(width: 8),
-            RotationTransition(
-              turns: _rotationAnimation,
-              child: SvgPicture.asset(
-                'packages/presentation/assets/icon_right_chevron.svg',
-                width: 24,
-                height: 24,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItemsList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.zero,
-      itemCount: widget.category.items.length,
-      itemBuilder: (context, index) {
-        final item = widget.category.items[index];
-        return _buildItemRow(item);
-      },
-    );
-  }
-
-  Widget _buildItemRow(CategoryItem item) {
-    final textColor = Theme.of(context).colorScheme.onSurface.withAlpha(150);
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.fromLTRB(32, 0, 16, 0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              item.name,
-              style: TextStyle(fontSize: 14, color: textColor),
-            ),
-          ),
-          Text(
-            '\$${item.amount.toStringAsFixed(2)}',
-            style: TextStyle(fontSize: 14, color: textColor),
-          ),
-        ],
-      ),
+    return ExpandableListItem<CategoryItemHeaderData, CategoryItemData>(
+      headerData: CategoryItemHeaderData(category),
+      items: category.items.map((i) => CategoryItemData(i)).toList(),
+      onToggle: onToggle,
     );
   }
 }
