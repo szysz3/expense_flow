@@ -19,7 +19,6 @@ class LocalLLMAnalyzer(BaseAnalyzer):
         prompt = self._get_llm_prompt()
         attempt = 0
         start_time = datetime.now()
-        
         while attempt < max_retries:
             try:
                 with Progress(

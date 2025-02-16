@@ -38,24 +38,38 @@ def load_json_data(filepath: str, console: Console) -> dict:
             console.print(f"[bold red]Error loading file: {e}[/]")
             sys.exit(1)
 
+def analyze_with_fallback_chain(config: Config, receipt_data: dict, console: Console) -> dict:
+    """Attempt analysis with local LLM, fallback LLM, and finally ChatGPT"""
+    
+    try:
+        local_analyzer = LocalLLMAnalyzer(config)
+        return local_analyzer.analyze(receipt_data)
+    except Exception as e:
+        console.print(f"[yellow]Primary local LLM failed: {str(e)}[/]")
+        
+        console.print("[yellow]Both local LLMs failed. Falling back to ChatGPT...[/]")
+        
+        if not config.chatgpt_key:
+            console.print("[bold red]Error: ChatGPT API key not found in environment variables[/]")
+            console.print("Please set CHATGPT_KEY for fallback functionality")
+            raise
+        
+        try:
+            chatgpt_analyzer = ChatGPTAnalyzer(config)
+            return chatgpt_analyzer.analyze(receipt_data)
+        except Exception as chatgpt_error:
+            console.print("[bold red]ChatGPT analysis also failed[/]")
+            raise Exception(f"All analysis attempts failed. Last error: {str(chatgpt_error)}")
+
 def main():
     if len(sys.argv) < 2:
-        Console().print("[bold red]Usage: python receipt_analyzer.py <receipt_file> [--llm-type local|chatgpt][/]")
+        Console().print("[bold red]Usage: python receipt_analyzer.py <receipt_file>[/]")
         sys.exit(1)
-        
-    llm_type = 'local'
-    if len(sys.argv) > 2 and sys.argv[2] == '--llm-type':
-        if len(sys.argv) > 3 and sys.argv[3] in ['local', 'chatgpt']:
-            llm_type = sys.argv[3]
-        else:
-            Console().print("[bold red]Invalid LLM type. Use 'local' or 'chatgpt'[/]")
-            sys.exit(1)
 
     config = Config(
         endpoint=os.getenv("AZURE_DOCUMENT_ENDPOINT"),
         key=os.getenv("AZURE_DOCUMENT_KEY"),
-        chatgpt_key=os.getenv("CHATGPT_KEY"),
-        llm_type=llm_type
+        chatgpt_key=os.getenv("CHATGPT_KEY")
     )
 
     console = Console()
@@ -63,36 +77,25 @@ def main():
     input_file = sys.argv[1]
     is_json = input_file.lower().endswith('.json')
 
-    # Only check Azure credentials if processing image files
     if not is_json:
         if not config.endpoint or not config.key:
             console.print("[bold red]Error: Azure credentials not found in environment variables[/]")
             console.print("Please set AZURE_DOCUMENT_ENDPOINT and AZURE_DOCUMENT_KEY")
             sys.exit(1)
 
-    if llm_type == 'chatgpt' and not config.chatgpt_key:
-        console.print("[bold red]Error: ChatGPT API key not found in environment variables[/]")
-        console.print("Please set CHATGPT_KEY")
-        sys.exit(1)
-
     try:
         if is_json:
             receipt_data = load_json_data(input_file, console)
         else:
-            # Image preprocessing (scaling etc.)
             image_preprocessor = ImagePreprocessor()
             processed_path, success = image_preprocessor.process(input_file)
 
-            # OCR
             doc_processor = AzureDocumentProcessor(config)
             raw_data = doc_processor.process_image(processed_path if success else input_file)
             receipt_data = doc_processor.preprocess_receipt(raw_data)
                 
-        # Analyze with selected LLM
-        analyzer = LocalLLMAnalyzer(config) if llm_type == 'local' else ChatGPTAnalyzer(config)
-        analysis_result = analyzer.analyze(receipt_data)
+        analysis_result = analyze_with_fallback_chain(config, receipt_data, console)
         
-        # Save results
         save_result(input_file, analysis_result, console)
 
     except Exception as e:
