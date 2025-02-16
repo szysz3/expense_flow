@@ -1,21 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-abstract class ExpandableHeaderData {
-  String get title;
-
-  String? get iconPath;
-
-  bool get isExpanded;
-
-  double get totalAmount;
-}
-
-abstract class ExpandableItemData {
-  String get name;
-
-  double get amount;
-}
+import 'expandable_header_data.dart';
+import 'expandable_item_data.dart';
 
 class ExpandableListItem<T extends ExpandableHeaderData,
     I extends ExpandableItemData> extends StatefulWidget {

@@ -1,5 +1,5 @@
-import '../../../common/widget/expandable_list_item.dart';
-import '../model/category_summary.dart';
+import '../../../common/widget/expandable_list_item/expandable_item_data.dart';
+import 'category_summary.dart';
 
 class SummaryItemData implements ExpandableItemData {
   final CategorySummary category;

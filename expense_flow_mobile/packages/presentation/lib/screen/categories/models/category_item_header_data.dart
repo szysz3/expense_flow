@@ -1,5 +1,5 @@
-import '../../../common/widget/expandable_list_item.dart';
-import '../models/category.dart';
+import '../../../common/widget/expandable_list_item/expandable_header_data.dart';
+import 'category.dart';
 
 class CategoryItemHeaderData implements ExpandableHeaderData {
   final Category category;
