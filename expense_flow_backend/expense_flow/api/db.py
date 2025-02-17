@@ -168,7 +168,7 @@ class ReceiptRepository:
             
             # Convert to CategoryItem models, using most common items by spend
             category_items = []
-            for idx, item in enumerate(sorted(items, key=lambda x: x['total_price'], reverse=True)[:3]): # Get top 3 items
+            for idx, item in enumerate(sorted(items, key=lambda x: x['total_price'], reverse=True)):
                 category_items.append(CategoryItem(
                     id=f"{category.value}_{idx + 1}",
                     name=item['description'],
