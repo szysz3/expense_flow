@@ -1,0 +1,21 @@
+import 'package:dartz/dartz.dart';
+
+import '../model/category_with_items.dart';
+import '../model/failure/failures.dart';
+import '../model/month_summary.dart';
+import '../model/receipt.dart';
+import '../model/receipt_query.dart';
+import '../model/search_result.dart';
+
+abstract class ReceiptRepository {
+  Future<Either<Failure, Receipt>> analyzeReceipt(String filePath,
+      {String llmType = 'local'});
+
+  Future<Either<Failure, Receipt>> getReceipt(String id);
+
+  Future<Either<Failure, SearchResult>> searchReceipts(ReceiptQuery query);
+
+  Future<Either<Failure, List<CategoryWithItems>>> getCategories();
+
+  Future<Either<Failure, List<MonthSummary>>> getMonthsSummary();
+}
