@@ -1,14 +1,18 @@
+import 'package:domain/use_case/base/base_use_case.dart';
+import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:presentation/screen/categories/service/mock_data_service.dart';
+
+import '../models/category.dart';
+import '../models/category_item.dart';
 import 'categories_events.dart';
 import 'categories_state.dart';
 
 class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
-  final CategoriesDataService _dataService;
+  final GetCategoriesUseCase _getCategoriesUseCase;
 
   CategoriesBloc({
-    CategoriesDataService? dataService,
-  })  : _dataService = dataService ?? MockCategoriesDataService(),
+    required GetCategoriesUseCase getCategoriesUseCase,
+  })  : _getCategoriesUseCase = getCategoriesUseCase,
         super(const CategoriesState()) {
     on<InitEvent>(_handleInit);
     on<ToggleCategoryEvent>(_handleToggleCategory);
@@ -20,11 +24,37 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
   ) async {
     try {
       emit(state.copyWith(isLoading: true));
-      final categories = await _dataService.getCategories();
-      emit(state.copyWith(
-        categories: categories,
-        isLoading: false,
-      ));
+
+      final result = await _getCategoriesUseCase(const NoParams());
+
+      result.fold(
+        (failure) {
+          // Handle failure case - you might want to add an error state
+          emit(state.copyWith(isLoading: false));
+        },
+        (categories) {
+          // Convert CategoryWithItems to Category presentation model
+          final presentationCategories = categories.map((categoryWithItems) {
+            return Category(
+              id: categoryWithItems.id,
+              name: categoryWithItems.name,
+              iconName: categoryWithItems.iconName,
+              items: categoryWithItems.items
+                  .map((item) => CategoryItem(
+                        id: item.id,
+                        name: item.name,
+                        amount: item.amount,
+                      ))
+                  .toList(),
+            );
+          }).toList();
+
+          emit(state.copyWith(
+            categories: presentationCategories,
+            isLoading: false,
+          ));
+        },
+      );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
