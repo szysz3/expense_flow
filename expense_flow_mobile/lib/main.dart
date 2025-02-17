@@ -9,7 +9,7 @@ void main() async {
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
-  configureDependencies();
+  await configureDependencies();
   runApp(const ExpenseFlowApp());
 }
 

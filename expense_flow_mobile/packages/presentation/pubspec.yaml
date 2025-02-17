@@ -27,6 +27,7 @@ dependencies:
   uuid: ^4.2.1
   dartz: ^0.10.1
   dio: ^5.0.0
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -41,6 +42,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+    - ../../.env
     - assets/icon_alcoholic_beverages.svg
     - assets/icon_groceries.svg
     - assets/icon_personal_care.svg
