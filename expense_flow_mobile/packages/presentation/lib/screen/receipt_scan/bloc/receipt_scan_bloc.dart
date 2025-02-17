@@ -1,13 +1,19 @@
+import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:presentation/services/camera/camera_service.dart';
 import 'package:vibration/vibration.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
+
 import 'receipt_scan_events.dart';
 
 class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
   final CameraService _cameraService;
+  final AnalyzeReceiptUseCase _analyzeReceiptUseCase;
 
-  ReceiptScanBloc(this._cameraService) : super(ReceiptScanInitState()) {
+  ReceiptScanBloc(
+    this._cameraService,
+    this._analyzeReceiptUseCase,
+  ) : super(ReceiptScanInitState()) {
     on<InitializeCameraEvent>(_initializeCamera);
     on<TakePhotoEvent>(_takePhoto);
     on<CameraButtonPressedEvent>(_handleCameraButtonPress);
@@ -51,26 +57,46 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
   ) async {
     if (state is ReceiptScanState) {
       final scanState = state as ReceiptScanState;
+
+      if (scanState.photoPath == null) {
+        emit(ReceiptScanErrorState(message: 'No photo available for analysis'));
+        return;
+      }
+
       emit(scanState.copyWith(
         cameraPreviewState: CameraPreviewState.loading,
       ));
-    }
 
-    await Future.delayed(Duration(milliseconds: 5000));
+      final result = await _analyzeReceiptUseCase(
+        AnalyzeReceiptParams(
+          filePath: scanState.photoPath!,
+          llmType: 'local', // You might want to make this configurable
+        ),
+      );
 
-    if (state is ReceiptScanState) {
-      final scanState = state as ReceiptScanState;
-      emit(scanState.copyWith(
-        cameraPreviewState: CameraPreviewState.uploadSuccess,
-      ));
-    }
+      result.fold(
+        (failure) {
+          emit(scanState.copyWith(
+            cameraPreviewState: CameraPreviewState.uploadFailure,
+          ));
+        },
+        (receipt) {
+          emit(scanState.copyWith(
+            cameraPreviewState: CameraPreviewState.uploadSuccess,
+          ));
+        },
+      );
 
-    await Future.delayed(Duration(milliseconds: 1500));
+      // Wait for the success/failure animation to complete
+      await Future.delayed(const Duration(milliseconds: 1500));
 
-    if (state is ReceiptScanState) {
-      final scanState = state as ReceiptScanState;
-      emit(scanState.copyWith(
-          photoPath: null, cameraPreviewState: CameraPreviewState.idle));
+      if (state is ReceiptScanState) {
+        final currentState = state as ReceiptScanState;
+        emit(currentState.copyWith(
+          photoPath: null,
+          cameraPreviewState: CameraPreviewState.idle,
+        ));
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:data/repository/receipt_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/repository/receipt_repository.dart';
+import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -35,6 +36,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton(
     () => GetMonthsSummaryUseCase(getIt<ReceiptRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => AnalyzeReceiptUseCase(getIt<ReceiptRepository>()),
   );
 }
 

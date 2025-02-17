@@ -26,12 +26,17 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
   }
 
   @override
-  Future<Either<Failure, Receipt>> analyzeReceipt(filePath,
+  Future<Either<Failure, Receipt>> analyzeReceipt(String filePath,
       {String llmType = 'local'}) async {
     try {
+      // Determine content type based on file extension
+      final extension = filePath.split('.').last.toLowerCase();
+      final contentType = _getContentType(extension);
+
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(
           filePath,
+          contentType: DioMediaType.parse(contentType), // Add content type
         ),
         'llm_type': llmType,
       });
@@ -42,11 +47,28 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
       );
 
       final receipt = Receipt.fromJson(response.data['receipt']);
+
       return Right(receipt);
     } on DioError catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  String _getContentType(String extension) {
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'pdf':
+        return 'application/pdf';
+      default:
+        throw ValidationFailure([
+          {'msg': 'Unsupported file type'}
+        ]);
     }
   }
 

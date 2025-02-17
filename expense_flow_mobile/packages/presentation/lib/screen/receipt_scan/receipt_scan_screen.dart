@@ -1,3 +1,4 @@
+import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:presentation/di/di.dart';
@@ -14,8 +15,10 @@ class ReceiptScanScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (_) => ReceiptScanBloc(getIt<CameraService>())
-          ..add(InitializeCameraEvent()),
+        create: (_) => ReceiptScanBloc(
+          getIt<CameraService>(),
+          getIt<AnalyzeReceiptUseCase>(),
+        )..add(InitializeCameraEvent()),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: const ReceiptScanView(),
