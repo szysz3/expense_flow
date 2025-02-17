@@ -12,7 +12,7 @@ import logging
 from contextlib import contextmanager
 
 from .models import (
-    LLMType, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
+    CategoryResponse, LLMType, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
     Receipt, ReceiptQuery, SearchResult
 )
 from .security import verify_api_key
@@ -327,6 +327,54 @@ async def search_receipts(
             }
         )
     
+@app.get(
+    "/api/categories",
+    response_model=CategoryResponse,
+    responses={
+        500: {"model": ErrorDetail}
+    }
+)
+async def get_categories(
+    api_key: str = Depends(verify_api_key),
+    repository: ReceiptRepository = Depends(get_repository)
+):
+    """Get all categories with their actual items and spending from receipts"""
+    try:
+        return repository.get_categories_with_items()
+        
+    except DatabaseError as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
+        )
+
+@app.get(
+    "/api/months/summary",
+    response_model=MonthSummaryResponse,
+    responses={
+        500: {"model": ErrorDetail}
+    }
+)
+async def get_months_summary(
+    api_key: str = Depends(verify_api_key),
+    repository: ReceiptRepository = Depends(get_repository)
+):
+    """Get spending summaries by month using actual receipt data"""
+    try:
+        return repository.get_monthly_summaries()
+        
+    except DatabaseError as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
+        )
+
 @app.on_event("startup")
 async def startup_event():
     """Ensure database exists on startup"""

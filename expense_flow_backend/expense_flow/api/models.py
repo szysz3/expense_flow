@@ -100,3 +100,41 @@ class SearchResultItem(BaseModel):
 class SearchResult(BaseModel):
     items: List[SearchResultItem]
     total: str    
+
+class CategoryItem(BaseModel):
+    id: str
+    name: str
+    amount: float
+
+class CategoryWithItems(BaseModel):
+    id: str
+    name: str
+    iconName: str
+    items: List[CategoryItem]
+
+class CategoryResponse(BaseModel):
+    categories: List[CategoryWithItems]
+
+class CategorySummary(BaseModel):
+    id: str
+    name: str
+    iconName: str
+    amount: float
+    previousMonthAmount: float
+
+class MonthSummary(BaseModel):
+    id: str
+    month: str
+    previousMonthTotal: float
+    categories: List[CategorySummary]
+
+class MonthSummaryResponse(BaseModel):
+    months: List[MonthSummary]
+
+def get_category_icon(category: Category) -> str:
+    """Get the icon path for a category"""
+    return f"packages/presentation/assets/icon_{category.value}.svg"
+
+def get_category_name(category: Category) -> str:
+    """Convert category enum value to display name"""
+    return " ".join(word.capitalize() for word in category.value.split('_'))    

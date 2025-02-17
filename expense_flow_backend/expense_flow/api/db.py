@@ -1,13 +1,20 @@
 from decimal import Decimal
 from typing import List, Optional, Dict, Union
 from datetime import datetime
+from collections import defaultdict
+from dateutil.relativedelta import relativedelta
 import re
 from tinydb import TinyDB, Query
 import uuid
 from contextlib import contextmanager
 from functools import reduce, wraps
 
-from .models import Receipt, Category, SearchResult, SearchResultItem
+from .models import (
+    Receipt, Category, SearchResult, SearchResultItem,
+    CategoryItem, CategoryWithItems, CategorySummary,
+    MonthSummary, MonthSummaryResponse, CategoryResponse,
+    get_category_icon, get_category_name
+)
 
 class DatabaseError(Exception):
     pass
@@ -87,6 +94,161 @@ class ReceiptRepository:
             return Receipt(**result)
         return None
 
+    def get_category_totals(self, start_date: Optional[datetime] = None, 
+                        end_date: Optional[datetime] = None) -> Dict[Category, Decimal]:
+        """Calculate total spending by category for a given date range"""
+        receipt_query = Query()
+        queries = []
+        
+        if start_date:
+            queries.append(receipt_query.transaction_datetime.test(
+                lambda x: datetime.fromisoformat(x) >= start_date
+            ))
+        if end_date:
+            queries.append(receipt_query.transaction_datetime.test(
+                lambda x: datetime.fromisoformat(x) <= end_date
+            ))
+
+        query = reduce(lambda x, y: x & y, queries) if queries else lambda _: True
+        receipts = self.db.search(query)
+
+        totals = defaultdict(Decimal)
+        for receipt in receipts:
+            for item in receipt['items']:
+                category = Category(item['category'])
+                totals[category] += Decimal(item['total_price'])
+
+        return totals
+
+    def get_categorized_items(self, category: Category, start_date: Optional[datetime] = None, 
+                            end_date: Optional[datetime] = None) -> List[Dict]:
+        """Get all items for a specific category within date range"""
+        receipt_query = Query()
+        queries = []
+        
+        if start_date:
+            queries.append(receipt_query.transaction_datetime.test(
+                lambda x: datetime.fromisoformat(x) >= start_date
+            ))
+        if end_date:
+            queries.append(receipt_query.transaction_datetime.test(
+                lambda x: datetime.fromisoformat(x) <= end_date
+            ))
+
+        query = reduce(lambda x, y: x & y, queries) if queries else lambda _: True
+        receipts = self.db.search(query)
+
+        items = []
+        for receipt in receipts:
+            for item in receipt['items']:
+                if item['category'] == category.value:
+                    items.append({
+                        'description': item['description'],
+                        'total_price': Decimal(item['total_price'])
+                    })
+
+        # Group similar items together and sum their prices
+        grouped_items = defaultdict(Decimal)
+        for item in items:
+            grouped_items[item['description']] += item['total_price']
+
+        return [
+            {'description': desc, 'total_price': price}
+            for desc, price in grouped_items.items()
+        ]
+
+    def get_categories_with_items(self) -> CategoryResponse:
+        """Get all categories with their actual items from receipts"""
+        current_month = datetime.utcnow().replace(day=1)
+        next_month = current_month + relativedelta(months=1)
+        
+        categories = []
+        for category in Category:
+            items = self.get_categorized_items(category, current_month, next_month)
+            
+            # Convert to CategoryItem models, using most common items by spend
+            category_items = []
+            for idx, item in enumerate(sorted(items, key=lambda x: x['total_price'], reverse=True)[:3]): # Get top 3 items
+                category_items.append(CategoryItem(
+                    id=f"{category.value}_{idx + 1}",
+                    name=item['description'],
+                    amount=float(item['total_price'])
+                ))
+            
+            # If we don't have any items for this category, add placeholder
+            if not category_items:
+                category_items.append(CategoryItem(
+                    id=f"{category.value}_1",
+                    name="No items this month",
+                    amount=0.0
+                ))
+            
+            categories.append(CategoryWithItems(
+                id=category.value,
+                name=get_category_name(category),
+                iconName=get_category_icon(category),
+                items=category_items
+            ))
+        
+        return CategoryResponse(categories=categories)
+
+    def get_monthly_summaries(self) -> MonthSummaryResponse:
+        """Get spending summaries by month"""
+        all_receipts = self.db.all()
+        
+        # Group receipts by month
+        months = defaultdict(list)
+        for receipt in all_receipts:
+            date = datetime.fromisoformat(receipt['transaction_datetime'])
+            month_key = date.strftime('%Y-%m')
+            months[month_key].append(receipt)
+        
+        # Sort months in descending order
+        sorted_months = sorted(months.keys(), reverse=True)
+        
+        summaries = []
+        for i, month_key in enumerate(sorted_months):
+            current_month = datetime.strptime(month_key, '%Y-%m')
+            
+            # Calculate current month totals
+            current_totals = defaultdict(Decimal)
+            for receipt in months[month_key]:
+                for item in receipt['items']:
+                    category = item['category']
+                    current_totals[category] += Decimal(item['total_price'])
+            
+            # Calculate previous month totals
+            prev_month_key = (current_month - relativedelta(months=1)).strftime('%Y-%m')
+            prev_totals = defaultdict(Decimal)
+            if prev_month_key in months:
+                for receipt in months[prev_month_key]:
+                    for item in receipt['items']:
+                        category = item['category']
+                        prev_totals[category] += Decimal(item['total_price'])
+            
+            # Create category summaries
+            category_summaries = []
+            for category in Category:
+                category_summaries.append(CategorySummary(
+                    id=category.value,
+                    name=get_category_name(category),
+                    iconName=get_category_icon(category),
+                    amount=float(current_totals[category.value]),
+                    previousMonthAmount=float(prev_totals[category.value])
+                ))
+            
+            # Calculate previous month total
+            prev_month_total = sum(prev_totals.values())
+            
+            summaries.append(MonthSummary(
+                id=str(len(sorted_months) - i),
+                month=current_month.strftime('%B %Y'),
+                previousMonthTotal=float(prev_month_total),
+                categories=category_summaries
+            ))
+        
+        return MonthSummaryResponse(months=summaries)
+
     def _filter_items_by_categories(self, receipts: List[Receipt], categories: List[Category]) -> Dict:
         """Filter receipt items by categories and calculate total"""
         matching_items = []
@@ -100,8 +262,7 @@ class ReceiptRepository:
                         "total_price": str(item.total_price),
                         "category": item.category.value
                     })
-                    # Calculate total using the item's total_price directly
-                    total += Decimal(item.total_price)
+                    total += item.total_price
                     
         return {
             "items": matching_items,
@@ -109,23 +270,23 @@ class ReceiptRepository:
         }
 
     def _convert_to_search_result(self, receipts: List[Receipt]) -> Dict:
-            """Convert list of receipts to SearchResult format"""
-            matching_items = []
-            total = Decimal('0')
-            
-            for receipt in receipts:
-                for item in receipt.items:
-                    matching_items.append({
-                        "description": item.description,
-                        "total_price": str(item.total_price),
-                        "category": item.category.value
-                    })
-                    total += item.total_price
-                        
-            return {
-                "items": matching_items,
-                "total": str(total)
-            }
+        """Convert list of receipts to SearchResult format"""
+        matching_items = []
+        total = Decimal('0')
+        
+        for receipt in receipts:
+            for item in receipt.items:
+                matching_items.append({
+                    "description": item.description,
+                    "total_price": str(item.total_price),
+                    "category": item.category.value
+                })
+                total += item.total_price
+                    
+        return {
+            "items": matching_items,
+            "total": str(total)
+        }
 
     @handle_db_errors
     def search_receipts(
@@ -176,6 +337,6 @@ class ReceiptRepository:
             receipts.append(Receipt(**result))
 
         if categories:
-            return self._filter_items_by_categories(receipts, categories)
+            return SearchResult(**self._filter_items_by_categories(receipts, categories))
         
-        return self._convert_to_search_result(receipts)
+        return SearchResult(**self._convert_to_search_result(receipts))
