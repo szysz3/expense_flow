@@ -8,6 +8,11 @@ from tinydb import TinyDB, Query
 import uuid
 from contextlib import contextmanager
 from functools import reduce, wraps
+from difflib import SequenceMatcher
+from collections import defaultdict
+from decimal import Decimal
+from datetime import datetime
+from typing import Dict, Any, Optional
 
 from .models import (
     Receipt, Category, SearchResult, SearchResultItem,
@@ -157,6 +162,28 @@ class ReceiptRepository:
             for desc, price in grouped_items.items()
         ]
 
+    def _are_similar(self, text1: str, text2: str, threshold: float = 0.95) -> bool:
+        """
+        Compare two strings for similarity using SequenceMatcher.
+        Returns True if similarity ratio is above threshold.
+        """
+        return SequenceMatcher(None, text1, text2).ratio() >= threshold
+
+    def _find_similar_description(
+        self,
+        normalized_desc: str, 
+        existing_descriptions: list[str], 
+        threshold: float = 0.95
+    ) -> Optional[str]:
+        """
+        Find the most similar existing description from the list.
+        Returns None if no similar description is found.
+        """
+        for existing in existing_descriptions:
+            if self._are_similar(normalized_desc, existing, threshold):
+                return existing
+        return None
+
     def get_categories_with_items(self) -> CategoryResponse:
         """Get all categories with their actual items from receipts"""
         current_month = datetime.utcnow().replace(day=1)
@@ -166,21 +193,65 @@ class ReceiptRepository:
         for category in Category:
             items = self.get_categorized_items(category, current_month, next_month)
             
-            # Convert to CategoryItem models, using most common items by spend
+            # Initialize grouping structures
+            grouped_items = defaultdict(lambda: {"total": Decimal('0'), "count": 0, "original_descriptions": set()})
+            
+            # Keep track of normalized descriptions we've seen
+            known_descriptions: list[str] = []
+            
+            for item in items:
+                original_desc = item['description']
+                normalized_desc = original_desc.lower().strip()
+                
+                # Try to find a similar existing description
+                matching_desc = self._find_similar_description(normalized_desc, known_descriptions)
+                
+                if matching_desc:
+                    # Use the existing group if we found a similar description
+                    group_key = matching_desc
+                else:
+                    # Create a new group if no similar description was found
+                    group_key = normalized_desc
+                    known_descriptions.append(normalized_desc)
+                
+                # Update the group data
+                grouped_items[group_key]["total"] += item['total_price']
+                # Access the original receipt item to get the quantity
+                receipt_query = Query()
+                matching_receipts = self.db.search(
+                    (receipt_query.items.any(lambda x: x['description'] == original_desc)) &
+                    (receipt_query.transaction_datetime.test(
+                        lambda x: current_month <= datetime.fromisoformat(x) < next_month
+                    ))
+                )
+                for receipt in matching_receipts:
+                    for receipt_item in receipt['items']:
+                        if receipt_item['description'] == original_desc:
+                            grouped_items[group_key]["count"] += receipt_item['quantity']
+                grouped_items[group_key]["original_descriptions"].add(original_desc)
+            
+            # Convert to CategoryItem models
             category_items = []
-            for idx, item in enumerate(sorted(items, key=lambda x: x['total_price'], reverse=True)):
+            for idx, (group_key, data) in enumerate(
+                sorted(grouped_items.items(), key=lambda x: x[1]["total"], reverse=True)
+            ):
+                # Choose the shortest original description as the display name
+                display_name = min(data["original_descriptions"], key=len)
+                
                 category_items.append(CategoryItem(
                     id=f"{category.value}_{idx + 1}",
-                    name=item['description'],
-                    amount=float(item['total_price'])
+                    name=display_name,
+                    amount=float(data["total"]),
+                    count=int(data["count"])  # Convert float quantity to int for count
                 ))
             
-            # If we don't have any items for this category, add placeholder
+            # Add placeholder if no items
             if not category_items:
                 category_items.append(CategoryItem(
                     id=f"{category.value}_1",
                     name="No items this month",
-                    amount=0.0
+                    amount=0.0,
+                    count=0
                 ))
             
             categories.append(CategoryWithItems(

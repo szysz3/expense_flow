@@ -105,6 +105,7 @@ class CategoryItem(BaseModel):
     id: str
     name: str
     amount: float
+    count: int = Field(default=1)
 
 class CategoryWithItems(BaseModel):
     id: str

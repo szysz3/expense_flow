@@ -44,6 +44,7 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
                         id: item.id,
                         name: item.name,
                         amount: item.amount,
+                        count: item.count,
                       ))
                   .toList(),
             );

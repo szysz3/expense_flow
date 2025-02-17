@@ -9,6 +9,7 @@ class CategoryItem with _$CategoryItem {
     required String id,
     required String name,
     required double amount,
+    @Default(1) int count,
   }) = _CategoryItem;
 
   factory CategoryItem.fromJson(Map<String, dynamic> json) =>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'expandable_header_data.dart';
+import 'expandable_item_count_badge.dart';
 import 'expandable_item_data.dart';
 
 class ExpandableListItem<T extends ExpandableHeaderData,
@@ -159,9 +160,21 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
         children: [
           if (widget.itemLeading != null) widget.itemLeading!(item),
           Expanded(
-            child: Text(
-              item.name,
-              style: TextStyle(fontSize: 14, color: textColor),
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    item.name,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 14, color: textColor),
+                  ),
+                ),
+                item.count > 0
+                    ? Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: ExpandableItemCountBadge(count: item.count))
+                    : SizedBox.shrink(),
+              ],
             ),
           ),
           if (widget.itemTrailing != null) widget.itemTrailing!(item),

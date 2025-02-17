@@ -11,4 +11,7 @@ class SummaryItemData implements ExpandableItemData {
 
   @override
   double get amount => category.amount;
+
+  @override
+  int get count => 0;
 }
