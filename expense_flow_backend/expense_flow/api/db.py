@@ -137,7 +137,7 @@ class ReceiptRepository:
             ))
         if end_date:
             queries.append(receipt_query.transaction_datetime.test(
-                lambda x: datetime.fromisoformat(x) <= end_date
+                lambda x: datetime.fromisoformat(x) < end_date
             ))
 
         query = reduce(lambda x, y: x & y, queries) if queries else lambda _: True
@@ -186,7 +186,7 @@ class ReceiptRepository:
 
     def get_categories_with_items(self) -> CategoryResponse:
         """Get all categories with their actual items from receipts"""
-        current_month = datetime.utcnow().replace(day=1)
+        current_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         next_month = current_month + relativedelta(months=1)
         
         categories = []
