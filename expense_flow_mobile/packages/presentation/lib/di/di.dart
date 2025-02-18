@@ -1,4 +1,5 @@
-import 'package:data/repository/receipt_repository_impl.dart';
+import 'package:data/repository/receipt/receipt_repository_config.dart';
+import 'package:data/repository/receipt/receipt_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
@@ -36,10 +37,11 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<ReceiptRepository>(
     () => ReceiptRepositoryImpl(
-      dio: dio,
-      baseUrl: EnvConfig.baseUrl,
-      apiKey: EnvConfig.apiKey,
-    ),
+        dio: dio,
+        config: RepositoryConfig(
+          baseUrl: EnvConfig.baseUrl,
+          apiKey: EnvConfig.apiKey,
+        )),
   );
 
   getIt.registerLazySingleton(
