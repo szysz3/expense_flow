@@ -34,17 +34,20 @@ class SummaryScreenView extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        return ListView.builder(
-          itemCount: state.months.length,
-          itemBuilder: (context, index) {
-            final month = state.months[index];
-            return SummaryItemWidget(
-              month: month,
-              onToggle: () => context.read<SummaryBloc>().add(
-                    SummaryEvent.toggleMonth(month.id),
-                  ),
-            );
-          },
+        return RefreshIndicator(
+          onRefresh: () => context.read<SummaryBloc>().refresh(),
+          child: ListView.builder(
+            itemCount: state.months.length,
+            itemBuilder: (context, index) {
+              final month = state.months[index];
+              return SummaryItemWidget(
+                month: month,
+                onToggle: () => context.read<SummaryBloc>().add(
+                      SummaryEvent.toggleMonth(month.id),
+                    ),
+              );
+            },
+          ),
         );
       },
     );

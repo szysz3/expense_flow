@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,22 +20,29 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
     on<ToggleCategoryEvent>(_handleToggleCategory);
   }
 
+  Future<void> refresh() async {
+    add(const CategoriesEvent.init());
+    return _refreshCompleter?.future;
+  }
+
+  Completer<void>? _refreshCompleter;
+
   Future<void> _handleInit(
     InitEvent event,
     Emitter<CategoriesState> emit,
   ) async {
     try {
+      _refreshCompleter = Completer<void>();
       emit(state.copyWith(isLoading: true));
 
       final result = await _getCategoriesUseCase(const NoParams());
 
       result.fold(
         (failure) {
-          // Handle failure case - you might want to add an error state
           emit(state.copyWith(isLoading: false));
+          _refreshCompleter?.complete();
         },
         (categories) {
-          // Convert CategoryWithItems to Category presentation model
           final presentationCategories = categories.map((categoryWithItems) {
             return Category(
               id: categoryWithItems.id,
@@ -54,10 +63,12 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
             categories: presentationCategories,
             isLoading: false,
           ));
+          _refreshCompleter?.complete();
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
+      _refreshCompleter?.complete();
     }
   }
 

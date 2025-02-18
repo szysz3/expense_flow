@@ -34,17 +34,20 @@ class CategoriesScreenView extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        return ListView.builder(
-          itemCount: state.categories.length,
-          itemBuilder: (context, index) {
-            final category = state.categories[index];
-            return CategoryListItem(
-              category: category,
-              onToggle: () => context.read<CategoriesBloc>().add(
-                    CategoriesEvent.toggleCategory(category.id),
-                  ),
-            );
-          },
+        return RefreshIndicator(
+          onRefresh: () => context.read<CategoriesBloc>().refresh(),
+          child: ListView.builder(
+            itemCount: state.categories.length,
+            itemBuilder: (context, index) {
+              final category = state.categories[index];
+              return CategoryListItem(
+                category: category,
+                onToggle: () => context.read<CategoriesBloc>().add(
+                      CategoriesEvent.toggleCategory(category.id),
+                    ),
+              );
+            },
+          ),
         );
       },
     );

@@ -1,10 +1,10 @@
 import 'package:flutter/widgets.dart';
+import 'package:presentation/common/widget/loading_indicator_widget.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:presentation/screen/receipt_scan/widget/action_bar/action_bar.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_button.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_controller.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
-import 'package:presentation/screen/receipt_scan/widget/loading_indicator_widget.dart';
 import 'package:presentation/screen/receipt_scan/widget/preview_container.dart';
 
 class CameraPreviewWidget extends StatelessWidget {
