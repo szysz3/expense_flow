@@ -6,6 +6,7 @@ import 'package:domain/model/category_with_items.dart';
 import 'package:domain/model/failure/failures.dart';
 import 'package:domain/model/month_summary.dart';
 import 'package:domain/model/receipt.dart';
+import 'package:domain/model/receipt_item.dart';
 import 'package:domain/model/receipt_query.dart';
 import 'package:domain/model/search_result.dart';
 import 'package:domain/repository/receipt_repository.dart';
@@ -118,6 +119,24 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
       return (response.data[ReceiptConstants.monthsKey] as List)
           .map((json) => MonthSummary.fromJson(json))
           .toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, Receipt>> createReceipt({
+    required ReceiptItem receiptItem,
+  }) async {
+    return _executeRequest(() async {
+      final response = await _dio.post(
+        ApiEndpoints.createReceipt,
+        data: {
+          'description': receiptItem.description,
+          'quantity': receiptItem.quantity,
+          'total_price': receiptItem.totalPrice,
+          'category': receiptItem.category,
+        },
+      );
+      return Receipt.fromJson(response.data[ReceiptConstants.receiptKey]);
     });
   }
 

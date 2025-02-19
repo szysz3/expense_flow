@@ -4,6 +4,7 @@ import '../model/category_with_items.dart';
 import '../model/failure/failures.dart';
 import '../model/month_summary.dart';
 import '../model/receipt.dart';
+import '../model/receipt_item.dart';
 import '../model/receipt_query.dart';
 import '../model/search_result.dart';
 
@@ -18,4 +19,7 @@ abstract class ReceiptRepository {
   Future<Either<Failure, List<CategoryWithItems>>> getCategories();
 
   Future<Either<Failure, List<MonthSummary>>> getMonthsSummary();
+
+  Future<Either<Failure, Receipt>> createReceipt(
+      {required ReceiptItem receiptItem});
 }

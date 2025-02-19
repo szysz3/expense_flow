@@ -7,4 +7,5 @@ class ApiConstants {
   static const String search = '$receiptPrefix/search';
   static const String categories = '$apiPrefix/categories';
   static const String monthsSummary = '$apiPrefix/months/summary';
+  static const String createReceipt = '$receiptPrefix/create';
 }

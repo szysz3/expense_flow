@@ -8,7 +8,7 @@ class ReceiptItem with _$ReceiptItem {
   const factory ReceiptItem({
     required String description,
     required double quantity,
-    required double totalPrice,
+    @JsonKey(name: 'total_price') required double totalPrice,
     required String category,
   }) = _ReceiptItem;
 

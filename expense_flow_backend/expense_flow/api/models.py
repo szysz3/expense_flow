@@ -20,11 +20,15 @@ class Category(str, Enum):
     ENTERTAINMENT = "entertainment"
     TRANSPORTATION = "transportation"
     PET = "pet"
+    STANDING_ORDERS = "standing_orders"
     OTHER = "other"
 
 class Merchant(BaseModel):
-    name: str
-    address: str
+    name: str = Field(default="")
+    address: str = Field(default="")
+    
+    class Config:
+        json_schema_extra = {"example": {"name": "", "address": ""}}
 
 class ReceiptItem(BaseModel):
     description: str
@@ -32,13 +36,23 @@ class ReceiptItem(BaseModel):
     total_price: Decimal
     category: Category
 
+    class Config:
+        json_encoders = {
+            Decimal: float
+        }
+
 class Receipt(BaseModel):
-    id: Optional[str] = Field(default=None)  # Will be set by database
+    id: Optional[str] = Field(default=None)
     merchant: Merchant
     items: List[ReceiptItem]
     total: Decimal
     transaction_datetime: datetime
     added_datetime: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        json_encoders = {
+            Decimal: float
+        }
 
 class ProcessReceiptRequest(BaseModel):
     llm_type: LLMType = Field(default=LLMType.LOCAL)
@@ -139,3 +153,60 @@ def get_category_icon(category: Category) -> str:
 def get_category_name(category: Category) -> str:
     """Convert category enum value to display name"""
     return " ".join(word.capitalize() for word in category.value.split('_'))    
+class MerchantResponse(BaseModel):
+    name: str = Field(default="")
+    address: str = Field(default="")
+
+    class Config:
+        json_schema_extra = {"example": {"name": "", "address": ""}}
+
+class ReceiptItemResponse(BaseModel):
+    description: str
+    quantity: float
+    total_price: float
+    category: str
+
+    class Config:
+        json_encoders = {
+            Decimal: float,
+            float: float
+        }
+
+class ReceiptResponse(BaseModel):
+    id: Optional[str] = None
+    merchant: MerchantResponse
+    items: List[ReceiptItemResponse]
+    total: float
+    transaction_datetime: datetime
+    added_datetime: datetime
+
+    class Config:
+        json_encoders = {
+            Decimal: float,
+            float: float,
+            datetime: lambda v: v.isoformat()
+        }
+
+class CreateReceiptRequest(BaseModel):
+    description: str
+    quantity: float
+    total_price: Decimal
+    category: Category
+    merchant: Optional[Merchant] = Field(
+        default_factory=lambda: Merchant(name="", address="")
+    )
+    transaction_datetime: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        json_encoders = {
+            Decimal: float
+        }
+
+class CreateReceiptResponse(BaseModel):
+    receipt_id: str
+    receipt: ReceiptResponse
+
+    class Config:
+        json_encoders = {
+            Decimal: float
+        }

@@ -18,4 +18,6 @@ class AddItemEvent with _$AddItemEvent {
       CategorySelected;
 
   const factory AddItemEvent.submitted() = Submitted;
+
+  const factory AddItemEvent.reset() = Reset;
 }

@@ -13,8 +13,9 @@ class Receipt with _$Receipt {
     required Merchant merchant,
     required List<ReceiptItem> items,
     required double total,
+    @JsonKey(name: 'transaction_datetime')
     required DateTime transactionDateTime,
-    required DateTime addedDateTime,
+    @JsonKey(name: 'added_datetime') required DateTime addedDateTime,
   }) = _Receipt;
 
   factory Receipt.fromJson(Map<String, dynamic> json) =>

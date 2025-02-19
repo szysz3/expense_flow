@@ -11,7 +11,7 @@ class BottomNavigation extends StatelessWidget {
   // Constants for icon assets
   static const _iconScan = 'icon_scan.svg';
   static const _iconCategories = 'icon_categories.svg';
-  static const _iconOrders = 'icon_orders.svg';
+  static const _iconOrders = 'icon_standing_orders.svg';
   static const _iconSummary = 'icon_summary.svg';
 
   // Navigation items configuration

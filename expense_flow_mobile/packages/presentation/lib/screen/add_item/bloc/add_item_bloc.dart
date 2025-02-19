@@ -1,17 +1,22 @@
 import 'dart:async';
 
+import 'package:domain/model/receipt_item.dart';
+import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'add_item_event.dart';
 import 'add_item_state.dart';
 
 class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
-  AddItemBloc() : super(const AddItemState()) {
+  final CreateReceiptUseCase _createReceiptUseCase;
+
+  AddItemBloc(this._createReceiptUseCase) : super(const AddItemState()) {
     on<DescriptionChanged>(_handleDescriptionChanged);
     on<QuantityChanged>(_handleQuantityChanged);
     on<PriceChanged>(_handlePriceChanged);
     on<CategorySelected>(_handleCategorySelected);
     on<Submitted>(_handleSubmitted);
+    on<Reset>(_handleReset);
   }
 
   void _handleDescriptionChanged(
@@ -46,6 +51,10 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     emit(state.copyWith(selectedCategory: event.category));
   }
 
+  void _handleReset(Reset event, Emitter<AddItemState> emit) {
+    emit(const AddItemState());
+  }
+
   Future<void> _handleSubmitted(
     Submitted event,
     Emitter<AddItemState> emit,
@@ -54,19 +63,29 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
 
     emit(state.copyWith(isSubmitting: true));
 
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
+    final params = ReceiptItem(
+      description: state.description,
+      quantity: state.quantity,
+      totalPrice: state.totalPrice,
+      category: state.selectedCategory.name,
+    );
 
-    if (!emit.isDone) {
-      emit(state.copyWith(
-        isSubmitting: false,
-        isSuccess: true,
-      ));
-    }
+    final result = await _createReceiptUseCase(params);
 
-    // Reset form after success
-    await Future.delayed(const Duration(milliseconds: 2000));
-
-    emit(const AddItemState());
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          isSubmitting: false,
+          error: failure.message,
+        ));
+      },
+      (receipt) {
+        emit(state.copyWith(
+          isSubmitting: false,
+          isSuccess: true,
+        ));
+        add(Reset());
+      },
+    );
   }
 }

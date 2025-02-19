@@ -1,3 +1,4 @@
+import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -8,13 +9,14 @@ import 'package:presentation/screen/add_item/widget/category_button.dart';
 
 import '../../common/widget/animated_square_button.dart';
 import '../../common/widget/loading_indicator_widget.dart';
+import '../../di/di.dart';
 
 class AddItemScreen extends StatelessWidget {
   const AddItemScreen({super.key});
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-      create: (_) => AddItemBloc(),
+      create: (_) => AddItemBloc(getIt<CreateReceiptUseCase>()),
       child: const Padding(
         padding: EdgeInsets.all(16.0),
         child: AddItemView(),

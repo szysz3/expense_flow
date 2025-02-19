@@ -1,3 +1,4 @@
+from decimal import Decimal
 from fastapi import FastAPI, File, Form, Request, UploadFile, Depends, HTTPException, BackgroundTasks
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,8 +13,8 @@ import logging
 from contextlib import contextmanager
 
 from .models import (
-    CategoryResponse, LLMType, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
-    Receipt, ReceiptQuery, SearchResult
+    CategoryResponse, CreateReceiptRequest, CreateReceiptResponse, LLMType, Merchant, MerchantResponse, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
+    Receipt, ReceiptItem, ReceiptItemResponse, ReceiptQuery, ReceiptResponse, SearchResult
 )
 from .security import verify_api_key
 from .db import ReceiptRepository, DatabaseError
@@ -375,6 +376,69 @@ async def get_months_summary(
             }
         )
 
+@app.post(
+    "/api/receipts/create",
+    response_model=CreateReceiptResponse,
+    response_model_exclude_none=True,
+)
+async def create_receipt(
+    request: CreateReceiptRequest,
+    api_key: str = Depends(verify_api_key),
+    repository: ReceiptRepository = Depends(get_repository)
+):
+    """Create a receipt manually"""
+    try:
+        # Create Receipt for database
+        receipt = Receipt(
+            merchant=request.merchant or Merchant(),
+            items=[
+                ReceiptItem(
+                    description=request.description,
+                    quantity=request.quantity,
+                    total_price=request.total_price,
+                    category=request.category
+                )
+            ],
+            total=request.total_price,
+            transaction_datetime=request.transaction_datetime or datetime.utcnow(),
+            added_datetime=datetime.utcnow()
+        )
+        
+        receipt_id = repository.insert_receipt(receipt)
+        
+        # Create response using response models
+        receipt_response = ReceiptResponse(
+            id=receipt_id,
+            merchant=MerchantResponse(
+                name=receipt.merchant.name,
+                address=receipt.merchant.address
+            ),
+            items=[
+                ReceiptItemResponse(
+                    description=item.description,
+                    quantity=float(item.quantity),
+                    total_price=float(item.total_price),
+                    category=item.category.value
+                )
+                for item in receipt.items
+            ],
+            total=float(receipt.total),
+            transaction_datetime=receipt.transaction_datetime,
+            added_datetime=receipt.added_datetime
+        )
+        
+        return CreateReceiptResponse(
+            receipt_id=receipt_id,
+            receipt=receipt_response
+        )
+        
+    except Exception as e:
+        logger.exception("Error in create_receipt")
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+    
 @app.on_event("startup")
 async def startup_event():
     """Ensure database exists on startup"""

@@ -25,6 +25,7 @@ class AddItemState with _$AddItemState {
     @Default(ItemCategory.groceries) ItemCategory selectedCategory,
     @Default(false) bool isSubmitting,
     @Default(false) bool isSuccess,
+    String? error,
   }) = _AddItemState;
 
   const AddItemState._();

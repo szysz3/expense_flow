@@ -6,4 +6,5 @@ class ApiEndpoints {
   static const String search = ApiConstants.search;
   static const String categories = ApiConstants.categories;
   static const String monthsSummary = ApiConstants.monthsSummary;
+  static const String createReceipt = ApiConstants.createReceipt;
 }
