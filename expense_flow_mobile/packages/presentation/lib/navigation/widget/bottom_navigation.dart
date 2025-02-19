@@ -17,8 +17,8 @@ class BottomNavigation extends StatelessWidget {
   // Navigation items configuration
   static const _navigationItems = [
     ('Scan', _iconScan),
-    ('Categories', _iconCategories),
     ('Orders', _iconOrders),
+    ('Categories', _iconCategories),
     ('Summary', _iconSummary),
   ];
 

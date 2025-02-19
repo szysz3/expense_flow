@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:presentation/common/widget/animated_square_button.dart';
 import 'package:presentation/common/widget/loading_indicator_widget.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:presentation/screen/receipt_scan/widget/action_bar/action_bar.dart';
-import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_button.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_controller.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
 import 'package:presentation/screen/receipt_scan/widget/preview_container.dart';
@@ -69,12 +70,21 @@ class CameraPreviewWidget extends StatelessWidget {
         bottom: 30,
         left: 0,
         right: 0,
-        child: CameraButton(
+        child: AnimatedSquareButton(
           isProcessing:
               state.previewState == CameraPreviewState.photoProcessing,
-          isCameraPreviewActive:
-              state.previewState == CameraPreviewState.cameraPreview,
           onPressed: controller.onCameraButtonPressed,
+          icon: SvgPicture.asset(
+            state.previewState == CameraPreviewState.cameraPreview
+                ? 'packages/presentation/assets/icon_scan_receipt.svg'
+                : 'packages/presentation/assets/icon_photo.svg',
+            width: 40,
+            height: 40,
+            key: ValueKey(
+                state.previewState == CameraPreviewState.cameraPreview),
+          ),
+          size: 64,
+          iconSize: 40,
         ),
       );
 }
