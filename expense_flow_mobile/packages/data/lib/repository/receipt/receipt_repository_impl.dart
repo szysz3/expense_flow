@@ -62,8 +62,6 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
     } on DioError catch (e) {
       return Left(_handleDioError(e));
     } catch (e, stackTrace) {
-      print('Error in analyzeReceipt: $e');
-      print('Stack trace: $stackTrace');
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -149,8 +147,6 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
     } on DioError catch (e) {
       return Left(_handleDioError(e));
     } catch (e, stackTrace) {
-      print('Error in _executeRequest: $e');
-      print('Stack trace: $stackTrace');
       return Left(ServerFailure(e.toString()));
     }
   }

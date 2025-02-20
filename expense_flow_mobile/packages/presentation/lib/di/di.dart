@@ -9,6 +9,7 @@ import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
+import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import './di.config.dart';
@@ -60,6 +61,8 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(
     () => CreateReceiptUseCase(getIt<ReceiptRepository>()),
   );
+
+  getIt.registerLazySingleton(() => Logger(printer: PrettyPrinter()));
 }
 
 class EnvConfig {
