@@ -75,7 +75,7 @@ class CameraPreviewWidget extends StatelessWidget {
               state.previewState == CameraPreviewState.photoProcessing,
           onPressed: controller.onCameraButtonPressed,
           icon: SvgPicture.asset(
-            state.previewState == CameraPreviewState.cameraPreview
+            _shouldShowScanIcon(state.previewState)
                 ? 'packages/presentation/assets/icon_scan_receipt.svg'
                 : 'packages/presentation/assets/icon_photo.svg',
             width: 40,
@@ -87,4 +87,11 @@ class CameraPreviewWidget extends StatelessWidget {
           iconSize: 40,
         ),
       );
+}
+
+bool _shouldShowScanIcon(CameraPreviewState state) {
+  return [
+    CameraPreviewState.cameraPreview,
+    CameraPreviewState.photoProcessing, // Keep scan icon during processing
+  ].contains(state);
 }
