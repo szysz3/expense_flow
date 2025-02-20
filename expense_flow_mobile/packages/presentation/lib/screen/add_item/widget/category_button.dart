@@ -45,10 +45,6 @@ class CategoryButton extends StatelessWidget {
                     icon,
                     width: 24,
                     height: 24,
-                    colorFilter: ColorFilter.mode(
-                      isSelected ? Colors.white : Colors.white.withOpacity(0.7),
-                      BlendMode.srcIn,
-                    ),
                   ),
                   Padding(
                       padding: EdgeInsets.all(4),

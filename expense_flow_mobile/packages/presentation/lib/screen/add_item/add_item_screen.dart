@@ -66,11 +66,11 @@ class _AddItemViewState extends State<AddItemView> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            _buildCategorySection(state),
+                            const SizedBox(height: 16),
                             _buildDescriptionSection(),
                             const SizedBox(height: 16),
                             _buildQuantityAndPriceSection(),
-                            const SizedBox(height: 16),
-                            _buildCategorySection(state),
                           ],
                         ),
                       ),
