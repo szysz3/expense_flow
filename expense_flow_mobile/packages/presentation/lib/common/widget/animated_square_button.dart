@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
-class AnimatedSquareButton extends StatelessWidget {
-  static const _buttonAnimationDuration = Duration(milliseconds: 400);
+class AnimatedSquareButtonConstants {
+  static const Duration animationDuration = Duration(milliseconds: 400);
+  static const Duration iconTransitionDuration = Duration(milliseconds: 600);
+  static const double defaultSize = 64.0;
+  static const double defaultIconSize = 40.0;
+  static const double borderRadius = 8.0;
+  static const double defaultOpacity = 0.4;
+}
 
+class AnimatedSquareButton extends StatelessWidget {
   final bool isProcessing;
   final VoidCallback onPressed;
   final Widget icon;
@@ -11,68 +18,85 @@ class AnimatedSquareButton extends StatelessWidget {
   final Color borderColor;
   final Color backgroundColor;
 
+  /// Creates an animated square button with customizable properties.
+  ///
+  /// [isProcessing] determines if the button is in a processing state
+  /// [onPressed] callback for button press
+  /// [icon] widget to display in the button
+  /// [size] overall button size (defaults to 64.0)
+  /// [iconSize] size of the icon (defaults to 40.0)
+  /// [borderColor] color of button border (defaults to white)
+  /// [backgroundColor] color of button background (defaults to black)
   const AnimatedSquareButton({
+    super.key,
     required this.isProcessing,
     required this.onPressed,
     required this.icon,
-    this.size = 64,
-    this.iconSize = 40,
+    this.size = AnimatedSquareButtonConstants.defaultSize,
+    this.iconSize = AnimatedSquareButtonConstants.defaultIconSize,
     this.borderColor = Colors.white,
     this.backgroundColor = Colors.black,
-    super.key,
   });
 
   @override
   Widget build(BuildContext context) => Center(
-        // Moved Center to root level
         child: TweenAnimationBuilder<double>(
           tween: Tween(begin: 0.0, end: 1.0),
-          duration: _buttonAnimationDuration,
+          duration: AnimatedSquareButtonConstants.animationDuration,
           curve: Curves.elasticOut,
-          builder: (_, value, child) => Transform.scale(
-            scale: value,
-            child: child,
-          ),
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              border: Border.all(color: borderColor),
-              borderRadius: BorderRadius.circular(8),
-              color: backgroundColor.withOpacity(0.4),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: isProcessing ? null : onPressed,
-                borderRadius: BorderRadius.circular(8),
-                child: Center(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 600),
-                    transitionBuilder: (child, animation) {
-                      final scaleCurve = CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeInOut,
-                      );
-                      final scaleValue = Tween<double>(
-                        begin: 0.8,
-                        end: 1.0,
-                      ).animate(scaleCurve);
-                      return FadeTransition(
-                        opacity: animation,
-                        child: ScaleTransition(
-                          scale: scaleValue,
-                          child: child,
-                        ),
-                      );
-                    },
-                    child:
-                        icon, // Removed SizedBox wrapper since icon already has size
-                  ),
-                ),
-              ),
-            ),
+          builder: _buildAnimatedButton,
+        ),
+      );
+
+  Widget _buildAnimatedButton(
+          BuildContext context, double value, Widget? child) =>
+      Transform.scale(
+        scale: value,
+        child: _buildButtonContainer(context),
+      );
+
+  Widget _buildButtonContainer(BuildContext context) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          border: Border.all(color: borderColor),
+          borderRadius:
+              BorderRadius.circular(AnimatedSquareButtonConstants.borderRadius),
+          color: backgroundColor
+              .withOpacity(AnimatedSquareButtonConstants.defaultOpacity),
+        ),
+        child: _buildButtonContent(),
+      );
+
+  Widget _buildButtonContent() => Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isProcessing ? null : onPressed,
+          borderRadius:
+              BorderRadius.circular(AnimatedSquareButtonConstants.borderRadius),
+          child: Center(
+            child: _buildAnimatedIcon(),
           ),
         ),
       );
+
+  Widget _buildAnimatedIcon() => AnimatedSwitcher(
+        duration: AnimatedSquareButtonConstants.iconTransitionDuration,
+        transitionBuilder: _buildIconTransition,
+        child: icon,
+      );
+
+  Widget _buildIconTransition(Widget child, Animation<double> animation) {
+    final scaleCurve =
+        CurvedAnimation(parent: animation, curve: Curves.easeInOut);
+    final scaleValue = Tween<double>(begin: 0.8, end: 1.0).animate(scaleCurve);
+
+    return FadeTransition(
+      opacity: animation,
+      child: ScaleTransition(
+        scale: scaleValue,
+        child: child,
+      ),
+    );
+  }
 }
