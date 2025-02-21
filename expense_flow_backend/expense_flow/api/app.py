@@ -12,12 +12,14 @@ import asyncio
 import logging
 from contextlib import contextmanager
 
+from expense_flow import config
+
 from .models import (
     CategoryResponse, CreateReceiptRequest, CreateReceiptResponse, LLMType, Merchant, MerchantResponse, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
-    Receipt, ReceiptItem, ReceiptItemResponse, ReceiptQuery, ReceiptResponse, SearchResult
+    Receipt, ReceiptItem, ReceiptItemResponse, ReceiptQuery, ReceiptResponse, ReceiptStatus, SearchResult, TempReceipt, UnprocessedReceiptsResponse
 )
 from .security import verify_api_key
-from .db import ReceiptRepository, DatabaseError
+from .db import ReceiptRepository, DatabaseError, TempReceiptRepository
 from .api_config import APIConfig, get_api_config
 from .constants import ErrorMessages, LogMessages, FileTypes
 from .logging_config import setup_logging
@@ -39,6 +41,10 @@ class ProcessingError(Exception):
 
 def get_repository(api_config: APIConfig = Depends(get_api_config)):
     return ReceiptRepository(db_path=api_config.db_path)
+
+def get_temp_repository(api_config: APIConfig = Depends(get_api_config)) -> TempReceiptRepository:
+    """Get temporary receipt repository instance"""
+    return TempReceiptRepository(api_config)
 
 def get_analyzer(config: Config, llm_type: LLMType) -> Union[LocalLLMAnalyzer, ChatGPTAnalyzer]:
     """Create the appropriate analyzer based on LLM type"""
@@ -145,85 +151,159 @@ async def get_request_form(
     """Parse form data into ProcessReceiptRequest"""
     return ProcessReceiptRequest(llm_type=llm_type)
 
-@app.post(
-    "/api/receipts/analyze",
-    response_model=ProcessReceiptResponse,
-    responses={
-        400: {"model": ErrorDetail},
-        500: {"model": ErrorDetail}
-    }
-)
+@app.post("/api/receipts/analyze", response_model=TempReceipt)
 async def analyze_receipt(
-    request: ProcessReceiptRequest = Depends(get_request_form),
     file: UploadFile = File(...),
     api_key: str = Depends(verify_api_key),
-    repository: ReceiptRepository = Depends(get_repository),
-    api_config: APIConfig = Depends(get_api_config)
+    api_config: APIConfig = Depends(get_api_config),
+    temp_repository: TempReceiptRepository = Depends(get_temp_repository)
 ):
-    """Analyze receipt image and store results in database"""
-    logger.info(LogMessages.REQUEST_RECEIVED.format(request.llm_type))
-    
+    """Process receipt with Azure OCR and store in temp database"""
+    if not api_config.azure_endpoint or not api_config.azure_key:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "Azure credentials not configured"}
+        )
+
     if not FileTypes.is_valid(file.content_type):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail={
-                "error": ErrorMessages.INVALID_FILE_TYPE,
-                "detail": ErrorMessages.FILE_TYPE_DETAIL
-            }
+            detail={"error": ErrorMessages.INVALID_FILE_TYPE}
         )
-    
-    ext = FileTypes.EXTENSIONS.get(file.content_type)
-    with temp_file_handler(ext) as temp_file:
-        content = await file.read()
-        temp_file.write(content)
-        temp_file.close()
+
+    try:
+        config = Config(
+            endpoint=api_config.azure_endpoint,
+            key=api_config.azure_key,
+            chatgpt_key=api_config.chatgpt_key
+        )
         
+        # Read file content first
+        content = await file.read()
+        
+        # Create temp file with proper suffix
+        with tempfile.NamedTemporaryFile(suffix=FileTypes.EXTENSIONS[file.content_type], delete=False) as temp_file:
+            temp_file.write(content)
+            temp_file_path = temp_file.name
+
         try:
-            config = Config(
-                endpoint=os.getenv("AZURE_DOCUMENT_ENDPOINT"),
-                key=os.getenv("AZURE_DOCUMENT_KEY"),
-                chatgpt_key=os.getenv("CHATGPT_KEY"),
-                llm_type=request.llm_type.value
+            # Process image after file is written but before cleanup
+            image_preprocessor = ImagePreprocessor()
+            doc_processor = AzureDocumentProcessor(config)
+            
+            processed_path, success = image_preprocessor.process(temp_file_path)
+            path_to_process = processed_path if success else temp_file_path
+            
+            # Make sure the file exists
+            if not os.path.exists(path_to_process):
+                raise ValueError(f"Image file not found at {path_to_process}")
+                
+            raw_data = doc_processor.process_image(path_to_process)
+            receipt_data = doc_processor.preprocess_receipt(raw_data)
+            
+            # Store in temp database
+            temp_receipt_id = temp_repository.insert_temp_receipt(receipt_data)
+            
+            return TempReceipt(
+                id=temp_receipt_id,
+                raw_data=receipt_data,
+                status=ReceiptStatus.PENDING
             )
             
-            receipt = await process_receipt_with_retries(
-                temp_file.name,
-                config,
-                request.llm_type,
-                api_config
-            )
-            receipt_id = repository.insert_receipt(receipt)
+        finally:
+            # Clean up temporary files
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+            if success and processed_path and os.path.exists(processed_path):
+                os.unlink(processed_path)
             
-            return ProcessReceiptResponse(
-                receipt_id=receipt_id,
-                receipt=receipt
+    except Exception as e:
+        logger.error(f"Error processing receipt: {str(e)}")
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": str(e)}
+        )
+
+# Add endpoint for Ollama PC registration
+@app.post("/api/analyzer/register")
+async def register_analyzer(
+    background_tasks: BackgroundTasks,
+    api_key: str = Depends(verify_api_key),
+    api_config: APIConfig = Depends(get_api_config),
+    temp_repository: TempReceiptRepository = Depends(get_temp_repository),
+    receipt_repository: ReceiptRepository = Depends(get_repository)
+):
+    """
+    Endpoint for Ollama PC to register its availability.
+    Triggers processing of pending receipts.
+    """
+
+    analyzer_config = Config(
+            endpoint=api_config.azure_endpoint,
+            key=api_config.azure_key,
+            chatgpt_key=api_config.chatgpt_key,
+            ollama_host=api_config.ollama_host,
+            model=api_config.ollama_model,
+            fallback_model=api_config.ollama_fallback_model,
+            llm_type='local'
+        )
+
+    # Start processing pending receipts in background
+    background_tasks.add_task(
+        process_pending_receipts,
+        temp_repository,
+        receipt_repository,
+        analyzer_config
+    )
+    return {"status": "registered"}
+
+# Add endpoint to get unprocessed receipts
+@app.get("/api/receipts/unprocessed", response_model=UnprocessedReceiptsResponse)
+async def get_unprocessed_receipts(
+    api_key: str = Depends(verify_api_key),
+    temp_repository: TempReceiptRepository = Depends(get_temp_repository)
+):
+    """Get all receipts that haven't been fully processed yet"""
+    unprocessed = temp_repository.get_unprocessed_receipts()
+    return UnprocessedReceiptsResponse(
+        receipts=unprocessed,
+        total_count=len(unprocessed)
+    )
+
+# Add background processing function
+async def process_pending_receipts(
+    temp_repository: TempReceiptRepository,
+    receipt_repository: ReceiptRepository,
+    config: Config
+):
+    """Process pending receipts when Ollama is available"""
+    pending_receipts = temp_repository.get_pending_receipts()
+    
+    for temp_receipt in pending_receipts:
+        try:
+            # Update status to processing
+            temp_repository.update_status(
+                temp_receipt.id, 
+                ReceiptStatus.PROCESSING
             )
             
-        except ProcessingError as e:
-            raise HTTPException(
-                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "error": ErrorMessages.PROCESSING_FAILED,
-                    "detail": e.message,
-                    "retry_count": e.retry_count
-                }
-            )
-        except DatabaseError as e:
-            raise HTTPException(
-                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "error": ErrorMessages.DATABASE_ERROR,
-                    "detail": str(e)
-                }
-            )
+            # Process with Ollama
+            analyzer = LocalLLMAnalyzer(config)
+            result = analyzer.analyze(temp_receipt.raw_data)
+            
+            # Store final receipt
+            receipt = Receipt(**result)
+            receipt_id = receipt_repository.insert_receipt(receipt)
+            
+            # Remove from temp storage
+            temp_repository.delete_receipt(temp_receipt.id)
+            
         except Exception as e:
-            logger.exception("Unexpected error during receipt processing")
-            raise HTTPException(
-                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "error": ErrorMessages.INTERNAL_ERROR,
-                    "detail": str(e)
-                }
+            logger.error(f"Error processing receipt {temp_receipt.id}: {str(e)}")
+            temp_repository.update_status(
+                temp_receipt.id,
+                ReceiptStatus.ERROR,
+                str(e)
             )
 
 @app.get(
@@ -441,14 +521,21 @@ async def create_receipt(
     
 @app.on_event("startup")
 async def startup_event():
-    """Ensure database exists on startup"""
+    """Ensure databases exist on startup"""
     api_config = get_api_config()
-    logger.info(LogMessages.DB_STARTUP.format(api_config.db_path))
-    os.makedirs(os.path.dirname(api_config.db_path) or '.', exist_ok=True)
+    
+    # Ensure both database directories exist
+    for db_path in [api_config.db_path, api_config.temp_db_path]:
+        db_dir = os.path.dirname(db_path)
+        if db_dir:
+            logger.info(f"Ensuring database directory exists at: {db_dir}")
+            os.makedirs(db_dir, exist_ok=True)
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Clean up database connection on shutdown"""
-    logger.info(LogMessages.DB_SHUTDOWN)
-    repository = get_repository()
-    repository.close()
+    """Clean up database connections on shutdown"""
+    logger.info("Closing database connections")
+    receipt_repository = get_repository()
+    temp_repository = get_temp_repository()
+    receipt_repository.close()
+    temp_repository.close()

@@ -4,6 +4,7 @@ from datetime import datetime
 from collections import defaultdict
 from dateutil.relativedelta import relativedelta
 import re
+from fastapi.encoders import jsonable_encoder
 from tinydb import TinyDB, Query
 import uuid
 from contextlib import contextmanager
@@ -14,10 +15,12 @@ from decimal import Decimal
 from datetime import datetime
 from typing import Dict, Any, Optional
 
+from expense_flow.api.api_config import APIConfig
+
 from .models import (
-    Receipt, Category, SearchResult, SearchResultItem,
+    Receipt, Category, ReceiptStatus, SearchResult, SearchResultItem,
     CategoryItem, CategoryWithItems, CategorySummary,
-    MonthSummary, MonthSummaryResponse, CategoryResponse,
+    MonthSummary, MonthSummaryResponse, CategoryResponse, TempReceipt,
     get_category_icon, get_category_name
 )
 
@@ -411,3 +414,69 @@ class ReceiptRepository:
             return SearchResult(**self._filter_items_by_categories(receipts, categories))
         
         return SearchResult(**self._convert_to_search_result(receipts))
+    
+
+class TempReceiptRepository:
+    def __init__(self, api_config: APIConfig):
+        self.db_path = api_config.temp_db_path
+        self._db = None
+        
+    @property
+    def db(self) -> TinyDB:
+        if self._db is None:
+            self._db = TinyDB(self.db_path)
+        return self._db
+        
+    def close(self):
+        if self._db is not None:
+            self._db.close()
+            self._db = None
+
+    def insert_temp_receipt(self, receipt_data: Dict[str, Any]) -> str:
+        """Store receipt data and return temp receipt ID"""
+        temp_receipt = TempReceipt(
+            id=str(uuid.uuid4()),
+            raw_data=receipt_data,
+            status=ReceiptStatus.PENDING,
+            created_at=datetime.utcnow()
+        )
+        
+        self.db.insert(jsonable_encoder(temp_receipt))
+        return temp_receipt.id
+
+    def get_unprocessed_receipts(self) -> List[TempReceipt]:
+        """Get all receipts that aren't in COMPLETED status"""
+        Receipt = Query()
+        results = self.db.search(
+            (Receipt.status == ReceiptStatus.PENDING.value) | 
+            (Receipt.status == ReceiptStatus.PROCESSING.value) |
+            (Receipt.status == ReceiptStatus.ERROR.value)
+        )
+        
+        # Convert to TempReceipt objects and sort by created_at
+        receipts = [TempReceipt(**r) for r in results]
+        return sorted(receipts, key=lambda x: x.created_at)
+
+    def get_pending_receipts(self) -> List[TempReceipt]:
+        """Get receipts in PENDING status only"""
+        Receipt = Query()
+        results = self.db.search(Receipt.status == ReceiptStatus.PENDING.value)
+        return [TempReceipt(**r) for r in results]
+
+    def update_status(
+        self, 
+        receipt_id: str, 
+        status: ReceiptStatus, 
+        error_message: Optional[str] = None
+    ):
+        """Update receipt status and optional error message"""
+        Receipt = Query()
+        update_data = {"status": status.value}
+        if error_message is not None:
+            update_data["error_message"] = error_message
+        self.db.update(update_data, Receipt.id == receipt_id)
+
+    def delete_receipt(self, receipt_id: str):
+        """Remove receipt from temp storage"""
+        Receipt = Query()
+        self.db.remove(Receipt.id == receipt_id)

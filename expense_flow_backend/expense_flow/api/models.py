@@ -210,3 +210,20 @@ class CreateReceiptResponse(BaseModel):
         json_encoders = {
             Decimal: float
         }
+
+class ReceiptStatus(str, Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    ERROR = "error"
+
+class TempReceipt(BaseModel):
+    id: str
+    raw_data: Dict[str, Any]
+    status: ReceiptStatus = ReceiptStatus.PENDING
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    error_message: Optional[str] = None
+
+class UnprocessedReceiptsResponse(BaseModel):
+    receipts: List[TempReceipt]
+    total_count: int        
