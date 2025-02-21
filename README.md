@@ -18,7 +18,7 @@ sequenceDiagram
     A->>TD: Store raw receipt
     A-->>C: 200 OK + temp_receipt_id
 
-    Note over O,A: Ollama PC comes online
+    Note over O,A: Ollama endpoint comes online
     O->>A: POST /api/analyzer/register
     A-->>O: 200 OK
 
