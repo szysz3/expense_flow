@@ -3,7 +3,8 @@ Guides families through their spending patterns with clear direction!
 
 # overview
 
-```sequenceDiagram
+```mermaid
+sequenceDiagram
     participant C as Client
     participant A as API Server
     participant AZ as Azure OCR
