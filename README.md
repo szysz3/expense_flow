@@ -3,7 +3,7 @@ Guides families through their spending patterns with clear direction!
 
 # overview
 
-sequenceDiagram
+```sequenceDiagram
     participant C as Client
     participant A as API Server
     participant AZ as Azure OCR
@@ -28,4 +28,4 @@ sequenceDiagram
         O-->>A: Categorized receipt
         A->>RD: Store final receipt
         A->>TD: Delete processed receipt
-    end
+    end```
