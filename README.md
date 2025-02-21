@@ -29,4 +29,4 @@ sequenceDiagram
         O-->>A: Categorized receipt
         A->>RD: Store final receipt
         A->>TD: Delete processed receipt
-    end```
+    end
