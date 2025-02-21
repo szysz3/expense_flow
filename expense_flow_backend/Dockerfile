@@ -29,7 +29,6 @@ RUN pip install --no-cache-dir -r requirements.txt \
 
 # Copy the rest of the project files
 COPY . /app/
-RUN chmod +x /app/docker_entrypoint.sh
 RUN chmod +x /app/run.sh
 
 # Expose API port

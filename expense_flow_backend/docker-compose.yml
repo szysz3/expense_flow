@@ -7,7 +7,6 @@ services:
       - "8000:8000"
     volumes:
       - ./.data:/app/.data
-      - ollama_models:/root/.ollama
     environment:
       - AZURE_DOCUMENT_ENDPOINT
       - AZURE_DOCUMENT_KEY
@@ -16,6 +15,10 @@ services:
       - MAX_RETRIES=3
       - RETRY_DELAY=1.0
       - DB_PATH=/app/.data/serve/receipts.db
+      - TEMP_DB_PATH=/app/.data/serve/temp_receipts.db
+      - OLLAMA_HOST=http://localhost:11434
+      - OLLAMA_MODEL=hf.co/speakleash/Bielik-11B-v2.3-Instruct-GGUF:Q6_K_low_temp
+      - OLLAMA_FALLBACK_MODEL=hf.co/unsloth/phi-4-GGUF:Q5_K_M
       - PYTHONPATH=/app
     deploy:
       resources:
@@ -30,8 +33,3 @@ services:
       retries: 3
       start_period: 40s
     restart: unless-stopped
-    cap_add:
-      - SYS_NICE
-
-volumes:
-  ollama_models:
