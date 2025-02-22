@@ -13,6 +13,7 @@ class BottomNavigation extends StatelessWidget {
   static const _iconCategories = 'icon_categories.svg';
   static const _iconOrders = 'icon_standing_orders.svg';
   static const _iconSummary = 'icon_summary.svg';
+  static const _iconUnprocessed = 'icon_unprocessed.svg';
 
   // Navigation items configuration
   static const _navigationItems = [
@@ -20,6 +21,7 @@ class BottomNavigation extends StatelessWidget {
     ('Orders', _iconOrders),
     ('Categories', _iconCategories),
     ('Summary', _iconSummary),
+    ('Unprocessed', _iconUnprocessed),
   ];
 
   @override

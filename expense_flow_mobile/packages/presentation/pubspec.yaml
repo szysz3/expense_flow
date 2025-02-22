@@ -30,6 +30,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   pretty_dio_logger: ^1.4.0
   logger: ^2.5.0
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +65,10 @@ flutter:
     - assets/icon_summary.svg
     - assets/icon_scan_receipt.svg
     - assets/icon_photo.svg
+    - assets/icon_error.svg
+    - assets/icon_pending.svg
+    - assets/icon_processing.svg
+    - assets/icon_unprocessed.svg
 
 
   # To add assets to your package, add an assets section, like this:

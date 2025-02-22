@@ -7,6 +7,7 @@ import '../model/receipt.dart';
 import '../model/receipt_item.dart';
 import '../model/receipt_query.dart';
 import '../model/search_result.dart';
+import '../model/unprocessed_receipt.dart';
 
 abstract class ReceiptRepository {
   Future<Either<Failure, Receipt>> analyzeReceipt(String filePath,
@@ -22,4 +23,6 @@ abstract class ReceiptRepository {
 
   Future<Either<Failure, Receipt>> createReceipt(
       {required ReceiptItem receiptItem});
+
+  Future<Either<Failure, UnprocessedReceiptsResponse>> getUnprocessedReceipts();
 }

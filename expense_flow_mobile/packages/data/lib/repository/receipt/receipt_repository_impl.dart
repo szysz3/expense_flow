@@ -9,6 +9,7 @@ import 'package:domain/model/receipt.dart';
 import 'package:domain/model/receipt_item.dart';
 import 'package:domain/model/receipt_query.dart';
 import 'package:domain/model/search_result.dart';
+import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:domain/repository/receipt_repository.dart';
 
 import '../../consts/error_messages.dart';
@@ -107,6 +108,15 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
       return (response.data[ReceiptConstants.categoriesKey] as List)
           .map((json) => CategoryWithItems.fromJson(json))
           .toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, UnprocessedReceiptsResponse>>
+      getUnprocessedReceipts() async {
+    return _executeRequest(() async {
+      final response = await _dio.get(ApiEndpoints.unprocessedReceipts);
+      return UnprocessedReceiptsResponse.fromJson(response.data);
     });
   }
 

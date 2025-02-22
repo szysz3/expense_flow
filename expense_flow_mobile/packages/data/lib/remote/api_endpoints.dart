@@ -7,4 +7,5 @@ class ApiEndpoints {
   static const String categories = ApiConstants.categories;
   static const String monthsSummary = ApiConstants.monthsSummary;
   static const String createReceipt = ApiConstants.createReceipt;
+  static const String unprocessedReceipts = ApiConstants.unprocessedReceipts;
 }

@@ -9,7 +9,7 @@ class ReceiptItem with _$ReceiptItem {
     required String description,
     required double quantity,
     @JsonKey(name: 'total_price') required double totalPrice,
-    required String category,
+    String? category,
   }) = _ReceiptItem;
 
   factory ReceiptItem.fromJson(Map<String, dynamic> json) =>
