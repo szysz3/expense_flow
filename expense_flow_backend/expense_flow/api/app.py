@@ -276,11 +276,14 @@ async def process_pending_receipts(
     receipt_repository: ReceiptRepository,
     config: Config
 ):
-    """Process pending receipts when Ollama is available"""
-    pending_receipts = temp_repository.get_pending_receipts()
-    
-    for temp_receipt in pending_receipts:
+    """Process pending and failed receipts when Ollama is available"""
+    unprocessed_receipts = temp_repository.get_unprocessed_receipts()    
+
+    for temp_receipt in unprocessed_receipts:
         try:
+            if temp_receipt.status == ReceiptStatus.PROCESSING:
+                    continue
+
             # Update status to processing
             temp_repository.update_status(
                 temp_receipt.id, 
