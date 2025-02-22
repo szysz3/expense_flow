@@ -12,7 +12,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('/var/log/expense_flow_backup.log'),
+        logging.FileHandler('expense_flow_backup.log'),
         logging.StreamHandler(sys.stdout)
     ]
 )
