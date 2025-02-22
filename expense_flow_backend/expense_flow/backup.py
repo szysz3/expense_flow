@@ -5,17 +5,6 @@ import shutil
 from datetime import datetime
 import sys
 from pathlib import Path
-import logging
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('expense_flow_backup.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
 
 # Configuration
 HOME = os.path.expanduser("~")
@@ -41,33 +30,25 @@ def create_backup():
             
             if os.path.exists(source_file):
                 shutil.copy2(source_file, dest_file)
-                logging.info(f"Successfully backed up {db_file} to {dest_file}")
-            else:
-                logging.warning(f"Source file {source_file} does not exist")
                 
         # Clean up old backups
         cleanup_old_backups()
         
     except Exception as e:
-        logging.error(f"Backup failed: {str(e)}")
         sys.exit(1)
 
 def cleanup_old_backups():
     """Remove old backups keeping only the most recent MAX_BACKUPS"""
-    try:
-        # List all backup directories
-        backups = sorted([d for d in os.listdir(BACKUP_DIR) 
-                         if os.path.isdir(os.path.join(BACKUP_DIR, d))])
-        
-        # Remove oldest backups if we have more than MAX_BACKUPS
-        while len(backups) > MAX_BACKUPS:
-            oldest = backups.pop(0)
-            oldest_path = os.path.join(BACKUP_DIR, oldest)
-            shutil.rmtree(oldest_path)
-            logging.info(f"Removed old backup: {oldest_path}")
+    # List all backup directories
+    backups = sorted([d for d in os.listdir(BACKUP_DIR) 
+                        if os.path.isdir(os.path.join(BACKUP_DIR, d))])
+    
+    # Remove oldest backups if we have more than MAX_BACKUPS
+    while len(backups) > MAX_BACKUPS:
+        oldest = backups.pop(0)
+        oldest_path = os.path.join(BACKUP_DIR, oldest)
+        shutil.rmtree(oldest_path)
             
-    except Exception as e:
-        logging.error(f"Cleanup failed: {str(e)}")
 
 if __name__ == "__main__":
     create_backup()
