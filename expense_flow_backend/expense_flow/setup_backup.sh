@@ -16,7 +16,7 @@ if [ ! -f "$BACKUP_SCRIPT" ]; then
 fi
 
 # Get absolute path of the backup script
-BACKUP_SCRIPT_ABS=$(realpath "$BACKUP_SCRIPT")
+BACKUP_SCRIPT_ABS=$(cd "$(dirname "$BACKUP_SCRIPT")" && pwd)/$(basename "$BACKUP_SCRIPT")
 
 # Determine Python path
 PYTHON_PATH=$(which python3)
