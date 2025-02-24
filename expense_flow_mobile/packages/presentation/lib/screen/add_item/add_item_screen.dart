@@ -52,61 +52,66 @@ class _AddItemViewState extends State<AddItemView> {
             _priceController.clear();
           }
         },
-        builder: (context, state) => Stack(
-          children: [
-            Column(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints:
-                          const BoxConstraints(maxWidth: double.infinity),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildCategorySection(state),
-                            const SizedBox(height: 16),
-                            _buildDescriptionSection(),
-                            const SizedBox(height: 16),
-                            _buildQuantityAndPriceSection(),
-                          ],
+        builder: (context, state) => GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints:
+                            const BoxConstraints(maxWidth: double.infinity),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _buildCategorySection(state),
+                              const SizedBox(height: 16),
+                              _buildDescriptionSection(),
+                              const SizedBox(height: 16),
+                              _buildQuantityAndPriceSection(),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 30),
-                  child: Center(
-                    child: AnimatedSquareButton(
-                      isProcessing: !state.isValid,
-                      onPressed: () => context.read<AddItemBloc>().add(
-                            const AddItemEvent.submitted(),
-                          ),
-                      icon: SvgPicture.asset(
-                        'packages/presentation/assets/icon_add.svg',
-                        width: 40,
-                        height: 40,
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 30),
+                    child: Center(
+                      child: AnimatedSquareButton(
+                        isProcessing: !state.isValid,
+                        onPressed: () => context.read<AddItemBloc>().add(
+                              const AddItemEvent.submitted(),
+                            ),
+                        icon: SvgPicture.asset(
+                          'packages/presentation/assets/icon_add.svg',
+                          width: 40,
+                          height: 40,
+                        ),
+                        size: 64,
+                        iconSize: 40,
                       ),
-                      size: 64,
-                      iconSize: 40,
+                    ),
+                  ),
+                ],
+              ),
+              if (state.isSubmitting || state.isSuccess)
+                Container(
+                  color: Colors.black54,
+                  child: Center(
+                    child: LoadingIndicatorWidget(
+                      isSuccess: state.isSuccess,
                     ),
                   ),
                 ),
-              ],
-            ),
-            if (state.isSubmitting || state.isSuccess)
-              Container(
-                color: Colors.black54,
-                child: Center(
-                  child: LoadingIndicatorWidget(
-                    isSuccess: state.isSuccess,
-                  ),
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       );
 
@@ -212,26 +217,6 @@ class _AddItemViewState extends State<AddItemView> {
               }).toList(),
             ),
           ],
-        ),
-      );
-
-  Widget _buildSubmitButton(BuildContext context, AddItemState state) =>
-      Positioned(
-        bottom: 30,
-        left: 0,
-        right: 0,
-        child: AnimatedSquareButton(
-          isProcessing: !state.isValid,
-          onPressed: () => context.read<AddItemBloc>().add(
-                const AddItemEvent.submitted(),
-              ),
-          icon: SvgPicture.asset(
-            'packages/presentation/assets/icon_add.svg',
-            width: 40,
-            height: 40,
-          ),
-          size: 64,
-          iconSize: 40,
         ),
       );
 

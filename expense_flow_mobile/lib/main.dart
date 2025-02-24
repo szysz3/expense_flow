@@ -22,7 +22,7 @@ class ExpenseFlowApp extends StatelessWidget {
       title: 'Expense Flow',
       theme: ExpenseFlowTheme.lightTheme,
       darkTheme: ExpenseFlowTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       home: MainScreen(),
     );
   }
