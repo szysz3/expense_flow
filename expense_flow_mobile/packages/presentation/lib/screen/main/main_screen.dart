@@ -32,6 +32,7 @@ class MainScreen extends StatelessWidget {
               ..add(InitializeCameraEvent())),
       ],
       child: Scaffold(
+        extendBody: true,
         body: Stack(
           children: [
             BlocBuilder<CameraPreviewBloc, CameraPreviewState>(
