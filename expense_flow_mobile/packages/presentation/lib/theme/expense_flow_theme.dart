@@ -22,7 +22,7 @@ class ExpenseFlowTheme {
     onSecondary: ExpenseFlowColors.darkOnSecondary,
     error: ExpenseFlowColors.darkError,
     onError: Colors.white,
-    surface: ExpenseFlowColors.darkSurface,
+    surface: ExpenseFlowColors.darkBackground,
     onSurface: Colors.white,
   );
 

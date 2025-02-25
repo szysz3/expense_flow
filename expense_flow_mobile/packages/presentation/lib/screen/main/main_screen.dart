@@ -25,44 +25,45 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => NavigationBloc()),
-        BlocProvider(
-            create: (context) => CameraPreviewBloc(getIt<CameraService>())
-              ..add(InitializeCameraEvent())),
-      ],
-      child: Scaffold(
-        body: Stack(
-          children: [
-            BlocBuilder<CameraPreviewBloc, CameraPreviewState>(
-              builder: (context, state) {
-                return switch (state) {
-                  CameraPreviewInitialized() =>
-                    _CameraPreview(state.controller),
-                  CameraInitError() => Text(state.message),
-                  _ => SizedBox.shrink()
-                };
-              },
+        providers: [
+          BlocProvider(create: (context) => NavigationBloc()),
+          BlocProvider(
+              create: (context) => CameraPreviewBloc(getIt<CameraService>())
+                ..add(InitializeCameraEvent())),
+        ],
+        child: SafeArea(
+          child: Scaffold(
+            body: Stack(
+              children: [
+                BlocBuilder<CameraPreviewBloc, CameraPreviewState>(
+                  builder: (context, state) {
+                    return switch (state) {
+                      CameraPreviewInitialized() =>
+                        _CameraPreview(state.controller),
+                      CameraInitError() => Text(state.message),
+                      _ => SizedBox.shrink()
+                    };
+                  },
+                ),
+                BlocBuilder<NavigationBloc, NavigationState>(
+                  builder: (context, state) {
+                    return IndexedStack(
+                      index: state.currentIndex,
+                      children: const [
+                        ReceiptScanScreen(),
+                        AddItemScreen(),
+                        CategoriesScreen(),
+                        SummaryScreen(),
+                        UnprocessedReceiptsScreen()
+                      ],
+                    );
+                  },
+                )
+              ],
             ),
-            BlocBuilder<NavigationBloc, NavigationState>(
-              builder: (context, state) {
-                return IndexedStack(
-                  index: state.currentIndex,
-                  children: const [
-                    ReceiptScanScreen(),
-                    AddItemScreen(),
-                    CategoriesScreen(),
-                    SummaryScreen(),
-                    UnprocessedReceiptsScreen()
-                  ],
-                );
-              },
-            )
-          ],
-        ),
-        bottomNavigationBar: const BottomNavigation(),
-      ),
-    );
+            bottomNavigationBar: const BottomNavigation(),
+          ),
+        ));
   }
 }
 
