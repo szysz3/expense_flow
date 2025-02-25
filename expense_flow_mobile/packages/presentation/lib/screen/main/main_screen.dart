@@ -25,45 +25,45 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (context) => NavigationBloc()),
-          BlocProvider(
-              create: (context) => CameraPreviewBloc(getIt<CameraService>())
-                ..add(InitializeCameraEvent())),
-        ],
-        child: SafeArea(
-          child: Scaffold(
-            body: Stack(
-              children: [
-                BlocBuilder<CameraPreviewBloc, CameraPreviewState>(
-                  builder: (context, state) {
-                    return switch (state) {
-                      CameraPreviewInitialized() =>
-                        _CameraPreview(state.controller),
-                      CameraInitError() => Text(state.message),
-                      _ => SizedBox.shrink()
-                    };
-                  },
-                ),
-                BlocBuilder<NavigationBloc, NavigationState>(
-                  builder: (context, state) {
-                    return IndexedStack(
-                      index: state.currentIndex,
-                      children: const [
-                        ReceiptScanScreen(),
-                        AddItemScreen(),
-                        CategoriesScreen(),
-                        SummaryScreen(),
-                        UnprocessedReceiptsScreen()
-                      ],
-                    );
-                  },
-                )
-              ],
+      providers: [
+        BlocProvider(create: (context) => NavigationBloc()),
+        BlocProvider(
+            create: (context) => CameraPreviewBloc(getIt<CameraService>())
+              ..add(InitializeCameraEvent())),
+      ],
+      child: Scaffold(
+        body: Stack(
+          children: [
+            BlocBuilder<CameraPreviewBloc, CameraPreviewState>(
+              builder: (context, state) {
+                return switch (state) {
+                  CameraPreviewInitialized() =>
+                    _CameraPreview(state.controller),
+                  CameraInitError() => Text(state.message),
+                  _ => SizedBox.shrink()
+                };
+              },
             ),
-            bottomNavigationBar: const BottomNavigation(),
-          ),
-        ));
+            BlocBuilder<NavigationBloc, NavigationState>(
+              builder: (context, state) {
+                return SafeArea(
+                    child: IndexedStack(
+                  index: state.currentIndex,
+                  children: const [
+                    ReceiptScanScreen(),
+                    AddItemScreen(),
+                    CategoriesScreen(),
+                    SummaryScreen(),
+                    UnprocessedReceiptsScreen()
+                  ],
+                ));
+              },
+            )
+          ],
+        ),
+        bottomNavigationBar: const BottomNavigation(),
+      ),
+    );
   }
 }
 
@@ -84,26 +84,30 @@ class _CameraPreview extends StatelessWidget {
 
   Widget _buildBlurredBackgroundPreview(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final data = MediaQuery.of(context);
+    final deviceRatio = size.width / size.height;
     final aspectRatio = controller.value.aspectRatio;
-    final deviceRatio = size.width / size.height + data.padding.bottom;
 
-    return Center(
-      child: Transform.scale(
-        scale: controller.value.aspectRatio / deviceRatio,
-        child: AspectRatio(
-            aspectRatio: aspectRatio,
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.accentDelicate.withAlpha(250),
-                  BlendMode.modulate,
-                ),
-                child: CameraPreview(controller),
-              ),
-            )),
-      ),
-    );
+    return Container(
+        color: Theme.of(context).colorScheme.surface,
+        child: Center(
+          child: Transform.scale(
+            scale: controller.value.aspectRatio / deviceRatio,
+            child: AspectRatio(
+                aspectRatio: aspectRatio,
+                child: ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: ColorFiltered(
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context)
+                          .colorScheme
+                          .accentDelicate
+                          .withAlpha(250),
+                      BlendMode.modulate,
+                    ),
+                    child: CameraPreview(controller),
+                  ),
+                )),
+          ),
+        ));
   }
 }
