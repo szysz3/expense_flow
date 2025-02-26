@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
 import 'expandable_header_data.dart';
 import 'expandable_item_count_badge.dart';
@@ -38,6 +39,10 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _rotationAnimation;
+
+  String get _currencySymbol => NumberFormat.currency(
+        locale: Localizations.localeOf(context).toString(),
+      ).currencySymbol;
 
   @override
   void initState() {
@@ -117,7 +122,7 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
             if (widget.headerTrailing != null)
               widget.headerTrailing!(widget.headerData),
             Text(
-              '\$${widget.headerData.totalAmount.toStringAsFixed(2)}',
+              '$_currencySymbol ${widget.headerData.totalAmount.toStringAsFixed(2)}',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -171,15 +176,15 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
                 ),
                 item.count > 0
                     ? Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: ExpandableItemCountBadge(count: item.count))
-                    : SizedBox.shrink(),
+                    : const SizedBox.shrink(),
               ],
             ),
           ),
           if (widget.itemTrailing != null) widget.itemTrailing!(item),
           Text(
-            '\$${item.amount.toStringAsFixed(2)}',
+            '$_currencySymbol ${item.amount.toStringAsFixed(2)}',
             style: TextStyle(fontSize: 14, color: textColor),
           ),
         ],

@@ -2,6 +2,7 @@ import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_bloc.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_event.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_state.dart';
@@ -34,6 +35,10 @@ class _AddItemViewState extends State<AddItemView> {
   final _descriptionController = TextEditingController();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
+
+  String get _currencySymbol => NumberFormat.currency(
+        locale: Localizations.localeOf(context).toString(),
+      ).currencySymbol;
 
   @override
   void dispose() {
@@ -168,10 +173,10 @@ class _AddItemViewState extends State<AddItemView> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Total Price',
                   hintText: 'Enter price',
-                  prefixText: '\$',
+                  prefixText: '$_currencySymbol ',
                   border: InputBorder.none,
                 ),
               ),
