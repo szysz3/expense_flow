@@ -87,7 +87,7 @@ class _AddItemViewState extends State<AddItemView> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 30),
+                    padding: const EdgeInsets.only(bottom: 20),
                     child: Center(
                       child: AnimatedSquareButton(
                         isProcessing: !state.isValid,
@@ -121,7 +121,7 @@ class _AddItemViewState extends State<AddItemView> {
       );
 
   Widget _buildDescriptionSection() => Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(12),
@@ -140,7 +140,7 @@ class _AddItemViewState extends State<AddItemView> {
       );
 
   Widget _buildQuantityAndPriceSection() => Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(12),
@@ -206,8 +206,9 @@ class _AddItemViewState extends State<AddItemView> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 4,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 0.75,
               children: ItemCategory.values.map((category) {
                 final isSelected = state.selectedCategory == category;
                 return CategoryButton(
@@ -240,7 +241,7 @@ class _AddItemViewState extends State<AddItemView> {
       case ItemCategory.entertainment:
         return 'Entertainment';
       case ItemCategory.transportation:
-        return 'Transport';
+        return 'Transportation';
       case ItemCategory.pet:
         return 'Pet';
       case ItemCategory.other:

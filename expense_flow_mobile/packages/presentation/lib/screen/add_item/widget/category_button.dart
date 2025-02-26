@@ -1,4 +1,3 @@
-// add_item/widgets/category_button.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -46,20 +45,22 @@ class CategoryButton extends StatelessWidget {
                     width: 24,
                     height: 24,
                   ),
+                  const SizedBox(height: 4),
                   Padding(
-                      padding: EdgeInsets.all(4),
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.7),
-                          fontSize: 12,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: isSelected
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.7),
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
             ),
