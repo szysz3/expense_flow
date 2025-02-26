@@ -78,7 +78,8 @@ class _CameraPreview extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        _buildBlurredBackgroundPreview(context),
+        // TODO: temporarily disable preview in background
+        // _buildBlurredBackgroundPreview(context),
       ],
     );
   }
