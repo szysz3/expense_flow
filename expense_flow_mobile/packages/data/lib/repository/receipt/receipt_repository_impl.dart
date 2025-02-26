@@ -58,11 +58,24 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
           await _createAnalyzeFormData(filePath, contentType, llmType);
       final response = await _dio.post(ApiEndpoints.analyze, data: formData);
 
-      return Right(
-          Receipt.fromJson(response.data[ReceiptConstants.receiptKey]));
+      final responseData = response.data;
+      final rawData = responseData['raw_data'];
+
+      final transformedData = {
+        'id': responseData['id'],
+        'merchant': rawData['merchant'],
+        'items': rawData['items'],
+        'total': rawData['total'],
+        'transaction_datetime': rawData['transaction_datetime'],
+        // Use created_at as added_datetime since that's what's available
+        'added_datetime': responseData['created_at'],
+      };
+
+      return Right(Receipt.fromJson(transformedData));
     } on DioError catch (e) {
       return Left(_handleDioError(e));
     } catch (e, stackTrace) {
+      print('Exception during receipt analysis: $e\n$stackTrace');
       return Left(ServerFailure(e.toString()));
     }
   }
