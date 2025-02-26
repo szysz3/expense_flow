@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:presentation/common/widget/animated_square_button.dart';
 import 'package:presentation/common/widget/loading_indicator_widget.dart';
@@ -32,7 +32,7 @@ class CameraPreviewWidget extends StatelessWidget {
             CameraPreviewState.uploadFailure,
             CameraPreviewState.uploadSuccess
           ].contains(state.previewState))
-            _buildLoadingIndicator(),
+            _buildLoadingIndicator(context),
           if ([
             CameraPreviewState.idle,
             CameraPreviewState.cameraPreview,
@@ -42,12 +42,26 @@ class CameraPreviewWidget extends StatelessWidget {
         ],
       );
 
-  Widget _buildLoadingIndicator() => Center(
-        child: LoadingIndicatorWidget(
-          isSuccess: state.previewState == CameraPreviewState.uploadSuccess,
-          sizeFactor: 0.5,
-        ),
-      );
+  Widget _buildLoadingIndicator(BuildContext context) {
+    if (state.previewState == CameraPreviewState.uploadFailure) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Center(child: Text('Upload failed!')),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: Duration(seconds: 5),
+          ),
+        );
+      });
+    }
+
+    return Center(
+      child: LoadingIndicatorWidget(
+        isSuccess: state.previewState == CameraPreviewState.uploadSuccess,
+        sizeFactor: 0.5,
+      ),
+    );
+  }
 
   Widget _buildMainContent(BuildContext context) => Column(
         mainAxisAlignment: MainAxisAlignment.center,

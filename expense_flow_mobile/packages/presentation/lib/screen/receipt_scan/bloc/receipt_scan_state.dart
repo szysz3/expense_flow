@@ -24,11 +24,11 @@ class ReceiptScanErrorState extends BaseReceiptScanState
 }
 
 enum CameraPreviewState {
-  idle, // Default state
-  cameraPreview, // When camera preview is active
-  photoPreview, // When photo preview is active
-  photoProcessing, // When photo is being processed
-  loading, // When loading indicator should be shown
-  uploadSuccess, // When photo upload succeeded
-  uploadFailure, // When photo upload failed
+  idle,
+  cameraPreview,
+  photoPreview,
+  photoProcessing,
+  loading,
+  uploadSuccess,
+  uploadFailure,
 }
