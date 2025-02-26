@@ -75,8 +75,11 @@ class UnprocessedReceiptItem extends StatelessWidget {
 
   Widget _buildAmount(BuildContext context) {
     final amount = receipt.rawData.total;
+    final locale = Localizations.localeOf(context).toString();
+    final currencySymbol = NumberFormat.currency(locale: locale).currencySymbol;
+
     return Text(
-      '\$$amount',
+      '$currencySymbol $amount',
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
