@@ -1,5 +1,6 @@
 import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -167,9 +168,19 @@ class _AddItemViewState extends State<AddItemView> {
             Expanded(
               child: TextField(
                 controller: _priceController,
-                onChanged: (value) => context.read<AddItemBloc>().add(
-                      AddItemEvent.priceChanged(value),
-                    ),
+                onChanged: (value) {
+                  final locale = Localizations.localeOf(context);
+                  final format = NumberFormat.decimalPattern(locale.toString());
+                  final decimalSeparator = format.symbols.DECIMAL_SEP;
+                  String normalizedValue = value;
+                  if (decimalSeparator != '.') {
+                    normalizedValue = value.replaceAll(decimalSeparator, '.');
+                  }
+
+                  context.read<AddItemBloc>().add(
+                        AddItemEvent.priceChanged(normalizedValue),
+                      );
+                },
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -179,6 +190,35 @@ class _AddItemViewState extends State<AddItemView> {
                   prefixText: '$_currencySymbol ',
                   border: InputBorder.none,
                 ),
+                inputFormatters: [
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    final locale = Localizations.localeOf(context);
+                    final format =
+                        NumberFormat.decimalPattern(locale.toString());
+                    final decimalSeparator = format.symbols.DECIMAL_SEP;
+                    final regExp = RegExp('[0-9$decimalSeparator]');
+
+                    String filtered = newValue.text
+                        .split('')
+                        .where((char) => regExp.hasMatch(char))
+                        .join();
+
+                    if (filtered.contains(decimalSeparator)) {
+                      final parts = filtered.split(decimalSeparator);
+                      if (parts.length > 2) {
+                        filtered = parts[0] +
+                            decimalSeparator +
+                            parts.sublist(1).join('');
+                      }
+                    }
+
+                    return newValue.copyWith(
+                      text: filtered,
+                      selection:
+                          TextSelection.collapsed(offset: filtered.length),
+                    );
+                  }),
+                ],
               ),
             ),
           ],
