@@ -36,6 +36,7 @@ dependencies:
     path: packages/data
   presentation:
     path: packages/presentation
+  flutter_native_splash: ^2.3.5
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -54,13 +55,10 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.4.14
 
-
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/icon_app.png"
-  adaptive_icon_background: "#121212"
-  adaptive_icon_foreground: "assets/icon_app.png"
+flutter_native_splash:
+  # Background color
+  color: "#44475A"
+  image: assets/icon_app_splash.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
