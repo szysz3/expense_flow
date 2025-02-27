@@ -37,10 +37,6 @@ class _AddItemViewState extends State<AddItemView> {
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
 
-  String get _currencySymbol => NumberFormat.currency(
-        locale: Localizations.localeOf(context).toString(),
-      ).currencySymbol;
-
   @override
   void dispose() {
     _descriptionController.dispose();
@@ -187,7 +183,6 @@ class _AddItemViewState extends State<AddItemView> {
                 decoration: InputDecoration(
                   labelText: 'Total Price',
                   hintText: 'Enter price',
-                  prefixText: '$_currencySymbol ',
                   border: InputBorder.none,
                 ),
                 inputFormatters: [

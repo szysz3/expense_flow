@@ -34,7 +34,7 @@ class SummaryItemWidget extends StatelessWidget {
   }
 
   Widget _buildChangeIndicator(MonthSummary month) {
-    if (month.previousMonthTotal <= 0) return const SizedBox.shrink();
+    if (month.previousMonthAmount <= 0) return const SizedBox.shrink();
 
     final changePercentage = month.changePercentage.abs().toStringAsFixed(1);
     final changeColor = month.isIncrease ? Colors.red : Colors.green;
@@ -60,7 +60,7 @@ class SummaryItemWidget extends StatelessWidget {
   }
 
   Widget _buildCategoryChangeIndicator(CategorySummary category) {
-    if (category.previousMonthAmount <= 0 || category.changePercentage == 0) {
+    if (category.changePercentage == 0) {
       return const SizedBox.shrink();
     }
 

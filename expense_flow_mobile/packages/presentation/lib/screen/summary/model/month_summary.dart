@@ -10,7 +10,7 @@ class MonthSummary with _$MonthSummary {
     required String id,
     required String month,
     required List<CategorySummary> categories,
-    required double previousMonthTotal,
+    required double previousMonthAmount,
     @Default(false) bool isExpanded,
   }) = _MonthSummary;
 
@@ -20,9 +20,12 @@ class MonthSummary with _$MonthSummary {
       categories.fold(0.0, (sum, cat) => sum + cat.amount);
 
   double get changePercentage {
-    if (previousMonthTotal == 0) return 0;
-    return ((totalAmount - previousMonthTotal) / previousMonthTotal) * 100;
+    if (previousMonthAmount == 0) {
+      return totalAmount > 0 ? 100 : 0;
+    } else {
+      return ((totalAmount - previousMonthAmount) / previousMonthAmount) * 100;
+    }
   }
 
-  bool get isIncrease => totalAmount > previousMonthTotal;
+  bool get isIncrease => totalAmount > previousMonthAmount;
 }

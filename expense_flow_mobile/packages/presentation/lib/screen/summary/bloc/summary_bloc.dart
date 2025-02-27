@@ -47,7 +47,7 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
             return MonthSummary(
               id: month.id,
               month: month.month,
-              previousMonthTotal: month.previousMonthTotal,
+              previousMonthAmount: month.previousMonthTotal,
               categories: month.categories
                   .map((category) => CategorySummary(
                         id: category.id,

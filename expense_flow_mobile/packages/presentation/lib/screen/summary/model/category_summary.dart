@@ -1,5 +1,5 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'category_summary.freezed.dart';
 
@@ -16,8 +16,11 @@ class CategorySummary with _$CategorySummary {
   const CategorySummary._();
 
   double get changePercentage {
-    if (previousMonthAmount == 0) return 0;
-    return ((amount - previousMonthAmount) / previousMonthAmount) * 100;
+    if (previousMonthAmount == 0) {
+      return amount > 0 ? 100 : 0;
+    } else {
+      return ((amount - previousMonthAmount) / previousMonthAmount) * 100;
+    }
   }
 
   bool get isIncrease => amount > previousMonthAmount;
