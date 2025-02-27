@@ -196,14 +196,18 @@ class _AddItemViewState extends State<AddItemView> {
                     final format =
                         NumberFormat.decimalPattern(locale.toString());
                     final decimalSeparator = format.symbols.DECIMAL_SEP;
-                    final regExp = RegExp('[0-9$decimalSeparator]');
+                    final regExp = RegExp('[0-9.,]');
 
                     String filtered = newValue.text
                         .split('')
                         .where((char) => regExp.hasMatch(char))
                         .join();
 
-                    if (filtered.contains(decimalSeparator)) {
+                    if (filtered.contains('.') || filtered.contains(',')) {
+                      filtered = filtered
+                          .replaceAll(',', decimalSeparator)
+                          .replaceAll('.', decimalSeparator);
+
                       final parts = filtered.split(decimalSeparator);
                       if (parts.length > 2) {
                         filtered = parts[0] +

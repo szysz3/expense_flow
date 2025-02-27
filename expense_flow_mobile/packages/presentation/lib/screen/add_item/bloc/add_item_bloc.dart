@@ -30,8 +30,14 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     QuantityChanged event,
     Emitter<AddItemState> emit,
   ) {
-    final quantity = double.tryParse(event.quantity) ?? state.quantity;
-    if (quantity > 0) {
+    if (event.quantity.isEmpty) {
+      emit(state.copyWith(quantity: 0));
+      return;
+    }
+
+    final quantity = double.tryParse(event.quantity);
+
+    if (quantity != null) {
       emit(state.copyWith(quantity: quantity));
     }
   }
@@ -40,8 +46,15 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     PriceChanged event,
     Emitter<AddItemState> emit,
   ) {
-    final price = double.tryParse(event.price) ?? state.totalPrice;
-    emit(state.copyWith(totalPrice: price));
+    if (event.price.isEmpty) {
+      emit(state.copyWith(totalPrice: 0));
+      return;
+    }
+
+    final price = double.tryParse(event.price);
+    if (price != null) {
+      emit(state.copyWith(totalPrice: price));
+    }
   }
 
   void _handleCategorySelected(
