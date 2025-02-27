@@ -19,10 +19,7 @@ class AddItemScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BlocProvider(
       create: (_) => AddItemBloc(getIt<CreateReceiptUseCase>()),
-      child: const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: AddItemView(),
-      ));
+      child: AddItemView());
 }
 
 class AddItemView extends StatefulWidget {
@@ -60,49 +57,51 @@ class _AddItemViewState extends State<AddItemView> {
           },
           child: Stack(
             children: [
-              Column(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints:
-                            const BoxConstraints(maxWidth: double.infinity),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _buildCategorySection(state),
-                              const SizedBox(height: 12),
-                              _buildDescriptionSection(),
-                              const SizedBox(height: 12),
-                              _buildQuantityAndPriceSection(),
-                            ],
+              Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints:
+                                const BoxConstraints(maxWidth: double.infinity),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _buildCategorySection(state),
+                                  const SizedBox(height: 12),
+                                  _buildDescriptionSection(),
+                                  const SizedBox(height: 12),
+                                  _buildQuantityAndPriceSection(),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: Center(
-                      child: AnimatedSquareButton(
-                        isProcessing: !state.isValid,
-                        onPressed: () => context.read<AddItemBloc>().add(
-                              const AddItemEvent.submitted(),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: Center(
+                          child: AnimatedSquareButton(
+                            isProcessing: !state.isValid,
+                            onPressed: () => context.read<AddItemBloc>().add(
+                                  const AddItemEvent.submitted(),
+                                ),
+                            icon: SvgPicture.asset(
+                              'packages/presentation/assets/icon_add.svg',
+                              width: 40,
+                              height: 40,
                             ),
-                        icon: SvgPicture.asset(
-                          'packages/presentation/assets/icon_add.svg',
-                          width: 40,
-                          height: 40,
+                            size: 64,
+                            iconSize: 40,
+                          ),
                         ),
-                        size: 64,
-                        iconSize: 40,
                       ),
-                    ),
-                  ),
-                ],
-              ),
+                    ],
+                  )),
               if (state.isSubmitting || state.isSuccess)
                 Container(
                   color: Colors.black54,
@@ -122,6 +121,7 @@ class _AddItemViewState extends State<AddItemView> {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(12),
+          color: Colors.black.withOpacity(0.4),
         ),
         child: TextField(
           controller: _descriptionController,
@@ -141,6 +141,7 @@ class _AddItemViewState extends State<AddItemView> {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(12),
+          color: Colors.black.withOpacity(0.4),
         ),
         child: Row(
           children: [
