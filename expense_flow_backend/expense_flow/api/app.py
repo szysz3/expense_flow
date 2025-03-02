@@ -13,13 +13,13 @@ import logging
 from contextlib import contextmanager
 
 from expense_flow import config
+from expense_flow.api.base_repository import DatabaseError
 
 from .models import (
     CategoryResponse, CreateReceiptRequest, CreateReceiptResponse, LLMType, Merchant, MerchantResponse, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
     Receipt, ReceiptItem, ReceiptItemResponse, ReceiptQuery, ReceiptResponse, ReceiptStatus, SearchResult, TempReceipt, UnprocessedReceiptsResponse
 )
 from .security import verify_api_key
-from .db import ReceiptRepository, DatabaseError, TempReceiptRepository
 from .api_config import APIConfig, get_api_config
 from .constants import ErrorMessages, LogMessages, FileTypes
 from .logging_config import setup_logging
@@ -28,6 +28,8 @@ from expense_flow.document_processor.image_processor import ImagePreprocessor
 from expense_flow.analyzers.local_llm import LocalLLMAnalyzer
 from expense_flow.analyzers.chatgpt_llm import ChatGPTAnalyzer
 from expense_flow.config import Config
+from expense_flow.api.receipt_repository import ReceiptRepository
+from expense_flow.api.temp_receipt_repository import TempReceiptRepository
 
 # Setup logging
 setup_logging()

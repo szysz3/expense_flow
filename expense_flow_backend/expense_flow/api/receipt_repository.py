@@ -1,71 +1,59 @@
 from decimal import Decimal
-from typing import List, Optional, Dict, Union
+from typing import List, Optional, Dict
 from datetime import datetime
 from collections import defaultdict
 from dateutil.relativedelta import relativedelta
 import re
-from fastapi.encoders import jsonable_encoder
-from tinydb import TinyDB, Query
+from functools import reduce
 import uuid
-from contextlib import contextmanager
-from functools import reduce, wraps
-from difflib import SequenceMatcher
-from collections import defaultdict
-from decimal import Decimal
-from datetime import datetime
-from typing import Dict, Any, Optional
+from tinydb import Query
 
-from expense_flow.api.api_config import APIConfig
-
+from .base_repository import BaseRepository, handle_db_errors
 from .models import (
-    Receipt, Category, ReceiptStatus, SearchResult, SearchResultItem,
-    CategoryItem, CategoryWithItems, CategorySummary,
-    MonthSummary, MonthSummaryResponse, CategoryResponse, TempReceipt,
+    Receipt, Category, SearchResult, CategoryItem, CategoryWithItems,
+    CategorySummary, MonthSummary, MonthSummaryResponse, CategoryResponse,
     get_category_icon, get_category_name
 )
 
-class DatabaseError(Exception):
-    pass
-
-def handle_db_errors(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            raise DatabaseError(f"Database operation failed: {str(e)}")
-    return wrapper
-
-class ReceiptRepository:
+class ReceiptRepository(BaseRepository):
     def __init__(self, db_path: str = "receipts.db"):
-        self.db_path = db_path
-        self._db = None
-        
-    @property
-    def db(self) -> TinyDB:
-        if self._db is None:
-            self._db = TinyDB(self.db_path)
-        return self._db
-        
-    def close(self):
-        if self._db is not None:
-            self._db.close()
-            self._db = None
+        super().__init__(db_path)
 
     def _serialize_receipt(self, receipt_dict: dict) -> dict:
         """Serialize receipt data for database storage"""
         serialized = receipt_dict.copy()
         
-        if 'transaction_datetime' in serialized:
-            serialized['transaction_datetime'] = serialized['transaction_datetime'].isoformat()
-        if 'added_datetime' in serialized:
-            serialized['added_datetime'] = serialized['added_datetime'].isoformat()
-            
+        # Convert datetime objects to strings
+        serialized = self._serialize_datetime_fields(
+            serialized, ['transaction_datetime', 'added_datetime']
+        )
+        
+        # Convert decimal values to strings
         serialized['total'] = str(serialized['total'])
+        
+        # Process items directly
         for item in serialized['items']:
             item['total_price'] = str(item['total_price'])
-            
+                
         return serialized
+
+    def _deserialize_receipt(self, receipt_dict: dict) -> dict:
+        """Deserialize receipt data from database storage"""
+        deserialized = receipt_dict.copy()
+        
+        # Convert string dates back to datetime objects
+        deserialized = self._deserialize_datetime_fields(
+            deserialized, ['transaction_datetime', 'added_datetime']
+        )
+        
+        # Convert stored strings back to decimal
+        deserialized = self._deserialize_decimal_fields(deserialized, ['total'])
+        
+        # Process items
+        for item in deserialized['items']:
+            item = self._deserialize_decimal_fields(item, ['total_price'])
+            
+        return deserialized
 
     @handle_db_errors
     def insert_receipt(self, receipt: Receipt) -> str:
@@ -90,16 +78,9 @@ class ReceiptRepository:
         result = self.db.get(receipt_query.id == receipt_id)
         
         if result:
-            # Convert datetime strings back to datetime objects
-            result['transaction_datetime'] = datetime.fromisoformat(result['transaction_datetime'])
-            result['added_datetime'] = datetime.fromisoformat(result['added_datetime'])
-            
-            # Convert stored strings back to decimal
-            result['total'] = Decimal(result['total'])
-            for item in result['items']:
-                item['total_price'] = Decimal(item['total_price'])
-                
-            return Receipt(**result)
+            # Deserialize stored data
+            deserialized_result = self._deserialize_receipt(result)
+            return Receipt(**deserialized_result)
         return None
 
     def get_category_totals(self, start_date: Optional[datetime] = None, 
@@ -164,13 +145,6 @@ class ReceiptRepository:
             {'description': desc, 'total_price': price}
             for desc, price in grouped_items.items()
         ]
-
-    def _are_similar(self, text1: str, text2: str, threshold: float = 0.95) -> bool:
-        """
-        Compare two strings for similarity using SequenceMatcher.
-        Returns True if similarity ratio is above threshold.
-        """
-        return SequenceMatcher(None, text1, text2).ratio() >= threshold
 
     def _find_similar_description(
         self,
@@ -403,80 +377,11 @@ class ReceiptRepository:
 
         receipts = []
         for result in results:
-            result['transaction_datetime'] = datetime.fromisoformat(result['transaction_datetime'])
-            result['added_datetime'] = datetime.fromisoformat(result['added_datetime'])
-            result['total'] = Decimal(result['total'])
-            for item in result['items']:
-                item['total_price'] = Decimal(item['total_price'])
-            receipts.append(Receipt(**result))
+            # Deserialize the stored data
+            deserialized_result = self._deserialize_receipt(result)
+            receipts.append(Receipt(**deserialized_result))
 
         if categories:
             return SearchResult(**self._filter_items_by_categories(receipts, categories))
         
         return SearchResult(**self._convert_to_search_result(receipts))
-    
-
-class TempReceiptRepository:
-    def __init__(self, api_config: APIConfig):
-        self.db_path = api_config.temp_db_path
-        self._db = None
-        
-    @property
-    def db(self) -> TinyDB:
-        if self._db is None:
-            self._db = TinyDB(self.db_path)
-        return self._db
-        
-    def close(self):
-        if self._db is not None:
-            self._db.close()
-            self._db = None
-
-    def insert_temp_receipt(self, receipt_data: Dict[str, Any]) -> str:
-        """Store receipt data and return temp receipt ID"""
-        temp_receipt = TempReceipt(
-            id=str(uuid.uuid4()),
-            raw_data=receipt_data,
-            status=ReceiptStatus.PENDING,
-            created_at=datetime.utcnow()
-        )
-        
-        self.db.insert(jsonable_encoder(temp_receipt))
-        return temp_receipt.id
-
-    def get_unprocessed_receipts(self) -> List[TempReceipt]:
-        """Get all receipts that aren't in COMPLETED status"""
-        Receipt = Query()
-        results = self.db.search(
-            (Receipt.status == ReceiptStatus.PENDING.value) | 
-            (Receipt.status == ReceiptStatus.PROCESSING.value) |
-            (Receipt.status == ReceiptStatus.ERROR.value)
-        )
-        
-        # Convert to TempReceipt objects and sort by created_at
-        receipts = [TempReceipt(**r) for r in results]
-        return sorted(receipts, key=lambda x: x.created_at)
-
-    def get_pending_receipts(self) -> List[TempReceipt]:
-        """Get receipts in PENDING status only"""
-        Receipt = Query()
-        results = self.db.search(Receipt.status == ReceiptStatus.PENDING.value)
-        return [TempReceipt(**r) for r in results]
-
-    def update_status(
-        self, 
-        receipt_id: str, 
-        status: ReceiptStatus, 
-        error_message: Optional[str] = None
-    ):
-        """Update receipt status and optional error message"""
-        Receipt = Query()
-        update_data = {"status": status.value}
-        if error_message is not None:
-            update_data["error_message"] = error_message
-        self.db.update(update_data, Receipt.id == receipt_id)
-
-    def delete_receipt(self, receipt_id: str):
-        """Remove receipt from temp storage"""
-        Receipt = Query()
-        self.db.remove(Receipt.id == receipt_id)
