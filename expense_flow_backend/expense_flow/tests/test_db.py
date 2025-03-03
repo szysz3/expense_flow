@@ -2,7 +2,8 @@ import pytest
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
-from ..api.db import ReceiptRepository, DatabaseError
+
+from expense_flow.api.receipt_repository import ReceiptRepository
 from ..api.models import Receipt, Category
 from .mock_data import MOCK_RECEIPTS
 
