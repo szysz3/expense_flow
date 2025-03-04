@@ -12,8 +12,9 @@ import asyncio
 import logging
 from contextlib import contextmanager
 
-from expense_flow import config
-from expense_flow.api.base_repository import DatabaseError
+from expense_flow.api.repository.base_repository import DatabaseError
+from expense_flow.api.repository.receipt_repository import ReceiptRepository
+from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
 
 from .models import (
     CategoryResponse, CreateReceiptRequest, CreateReceiptResponse, LLMType, Merchant, MerchantResponse, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
@@ -28,8 +29,6 @@ from expense_flow.document_processor.image_processor import ImagePreprocessor
 from expense_flow.analyzers.local_llm import LocalLLMAnalyzer
 from expense_flow.analyzers.chatgpt_llm import ChatGPTAnalyzer
 from expense_flow.config import Config
-from expense_flow.api.receipt_repository import ReceiptRepository
-from expense_flow.api.temp_receipt_repository import TempReceiptRepository
 
 # Setup logging
 setup_logging()

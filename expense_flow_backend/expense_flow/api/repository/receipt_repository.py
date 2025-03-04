@@ -8,7 +8,7 @@ import uuid
 from tinydb import Query
 
 from .base_repository import BaseRepository, handle_db_errors
-from .models import (
+from expense_flow.api.models import (
     Receipt, Category, SearchResult, CategoryItem, CategoryWithItems,
     CategorySummary, MonthSummary, MonthSummaryResponse, CategoryResponse,
     get_category_icon, get_category_name

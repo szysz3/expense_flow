@@ -4,9 +4,10 @@ import uuid
 from fastapi.encoders import jsonable_encoder
 from tinydb import Query
 
+from expense_flow.api.api_config import APIConfig
+from expense_flow.api.models import ReceiptStatus, TempReceipt
+
 from .base_repository import BaseRepository, handle_db_errors
-from .models import TempReceipt, ReceiptStatus
-from .api_config import APIConfig
 
 class TempReceiptRepository(BaseRepository):
     """
