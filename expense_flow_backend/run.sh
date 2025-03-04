@@ -10,41 +10,6 @@ usage() {
 
 VENV_PATH="$HOME/ai_venv"
 
-check_venv() {
-    # Skip venv check if running in Docker
-    if [ -f "/.dockerenv" ]; then
-        return 0
-    fi
-
-    if [ ! -d "$VENV_PATH" ]; then
-        echo -e "\033[31mError: Virtual environment not found in $VENV_PATH\033[0m"
-        echo -e "\033[33mFirst create environment using:\033[0m"
-        echo -e "\033[36mpython3 -m venv ~/ai_venv\033[0m"
-        echo -e "\033[36msource ~/ai_venv/bin/activate\033[0m"
-        echo -e "\033[36mpip install azure-ai-documentintelligence azure-core rich ollama openai fastapi uvicorn python-multipart\033[0m"
-        exit 1
-    fi
-}
-
-check_azure_credentials() {
-    if [ -z "$AZURE_DOCUMENT_ENDPOINT" ] || [ -z "$AZURE_DOCUMENT_KEY" ]; then
-        echo -e "\033[31mError: Azure credentials not found in environment!\033[0m"
-        echo -e "\033[33mPlease set environment variables:\033[0m"
-        echo -e "\033[36mexport AZURE_DOCUMENT_ENDPOINT='your_endpoint'\033[0m"
-        echo -e "\033[36mexport AZURE_DOCUMENT_KEY='your_key'\033[0m"
-        exit 1
-    fi
-}
-
-check_chatgpt_key() {
-    if [ "$LLM_TYPE" = "chatgpt" ] && [ -z "$CHATGPT_KEY" ]; then
-        echo -e "\033[31mError: ChatGPT API key not found in environment!\033[0m"
-        echo -e "\033[33mPlease set environment variable:\033[0m"
-        echo -e "\033[36mexport CHATGPT_KEY='your_key'\033[0m"
-        exit 1
-    fi
-}
-
 check_file() {
     if [ ! -f "$1" ]; then
         echo -e "\033[31mError: File $1 does not exist!\033[0m"
@@ -87,13 +52,6 @@ analyze_receipt() {
 
     check_file "$RECEIPT_PATH"
     
-    # Only check Azure credentials for non-JSON files
-    if [[ ! $RECEIPT_PATH =~ \.json$ ]]; then
-        check_azure_credentials
-    fi
-    
-    check_chatgpt_key
-    
     echo -e "\033[32mStarting receipt analysis using $LLM_TYPE LLM...\033[0m"
     python -m expense_flow.main "$RECEIPT_PATH" --llm-type "$LLM_TYPE"
     SCRIPT_STATUS=$?
@@ -126,8 +84,6 @@ serve_api() {
                 ;;
         esac
     done
-
-    check_azure_credentials
     
     echo -e "\033[32mStarting API server on $HOST:$PORT...\033[0m"
     python -m expense_flow.api.main --host "$HOST" --port "$PORT"
