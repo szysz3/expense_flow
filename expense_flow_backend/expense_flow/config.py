@@ -1,12 +1,105 @@
-from dataclasses import dataclass
-from typing import Literal
+from dataclasses import dataclass, field
+from typing import Literal, Optional
+import os
+from dotenv import load_dotenv
+from pathlib import Path
 
 @dataclass
 class Config:
-    endpoint: str
-    key: str    
-    model: str = 'hf.co/speakleash/Bielik-11B-v2.3-Instruct-GGUF:Q6_K_low_temp'
-    fallback_model: str = 'hf.co/unsloth/phi-4-GGUF:Q5_K_M'
+    """
+    Centralized configuration class for ExpenseFlow application.
+    
+    This class loads configuration from .env file and provides
+    typed access to all configuration settings used across the application.
+    """
+    base_dir: Path = field(default_factory=lambda: Path(os.path.expanduser("~")))
+    data_dir: Path = field(default_factory=lambda: Path(".data"))
+    
+    # API settings
+    api_key: str = ""
+    max_retries: int = 3
+    retry_delay: float = 1.0
+    
+    # Database paths
+    db_path: str = field(default_factory=lambda: str(Path(".data/serve/receipts.db")))
+    temp_db_path: str = field(default_factory=lambda: str(Path(".data/serve/temp_receipts.db")))
+    
+    # Azure Document Intelligence settings
+    azure_endpoint: str = ""
+    azure_key: str = ""
+    
+    # LLM settings
+    llm_type: Literal['local', 'chatgpt'] = 'local'
     ollama_host: str = 'http://localhost:11434'
+    ollama_model: str = 'hf.co/speakleash/Bielik-11B-v2.3-Instruct-GGUF:Q6_K_low_temp'
+    ollama_fallback_model: str = 'hf.co/unsloth/phi-4-GGUF:Q5_K_M'
     chatgpt_key: str = ''
-    llm_type: Literal['local', 'chatgpt'] = 'local' 
+    
+    @classmethod
+    def from_env(cls, env_file: Optional[str] = None) -> 'Config':
+        """
+        Create configuration by loading from .env file
+        
+        Args:
+            env_file: Optional path to .env file. If None, tries to find .env in current directory
+                      and parent directories.
+            
+        Returns:
+            Config object with loaded settings
+        """
+        if env_file:
+            load_dotenv(env_file, override=False)  # Don't override existing env vars
+        else:
+            load_dotenv(override=False)  # Don't override existing env vars
+        
+        config = cls()
+        
+        mappings = {
+            # DATABASE section
+            'DATABASE_DB_PATH': ('db_path', str),
+            'DATABASE_TEMP_DB_PATH': ('temp_db_path', str),
+            
+            # AZURE section
+            'AZURE_ENDPOINT': ('azure_endpoint', str),
+            'AZURE_KEY': ('azure_key', str),
+            
+            # LLM section
+            'LLM_TYPE': ('llm_type', str),
+            'LLM_OLLAMA_HOST': ('ollama_host', str),
+            'LLM_OLLAMA_MODEL': ('ollama_model', str),
+            'LLM_OLLAMA_FALLBACK_MODEL': ('ollama_fallback_model', str),
+            'LLM_CHATGPT_KEY': ('chatgpt_key', str),
+            
+            # API section
+            'API_API_KEY': ('api_key', str),
+            'API_MAX_RETRIES': ('max_retries', int),
+            'API_RETRY_DELAY': ('retry_delay', float),
+        }
+        
+        for env_var, (attr_name, type_func) in mappings.items():
+            if env_var in os.environ and os.environ[env_var]:
+                setattr(config, attr_name, type_func(os.environ[env_var]))
+        
+        if config.db_path and '~' in config.db_path:
+            config.db_path = os.path.expanduser(config.db_path)
+        if config.temp_db_path and '~' in config.temp_db_path:
+            config.temp_db_path = os.path.expanduser(config.temp_db_path) 
+            
+        return config
+
+_config_instance = None
+
+def get_config(env_file: Optional[str] = None) -> Config:
+    """
+    Get the singleton Config instance
+    
+    Args:
+        env_file: Optional path to .env file
+        
+    Returns:
+        Config singleton instance
+    """
+    global _config_instance
+    if _config_instance is None:
+        _config_instance = Config.from_env(env_file)
+    return _config_instance

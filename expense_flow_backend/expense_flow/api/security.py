@@ -1,26 +1,29 @@
 from fastapi import Security, HTTPException, Depends
 from fastapi.security.api_key import APIKeyHeader
 from starlette.status import HTTP_403_FORBIDDEN
-import os
-from functools import lru_cache
+from expense_flow.config import get_config
 
-class SecurityConfig:
-    """Security configuration using environment variables"""
-    def __init__(self):
-        self.api_key = os.getenv('EXPENSE_FLOW_API_KEY')
-        if not self.api_key:
-            raise EnvironmentError("EXPENSE_FLOW_API_KEY environment variable is not set")
-
-@lru_cache()
-def get_security_config():
-    return SecurityConfig()
-
+# API key header
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
-async def verify_api_key(
-    api_key: str = Security(api_key_header),
-    config: SecurityConfig = Depends(get_security_config)
-):
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    """
+    Verify that the provided API key matches the one in configuration
+    
+    Args:
+        api_key: API key from request header
+        
+    Returns:
+        API key if valid
+        
+    Raises:
+        HTTPException: If API key is invalid or missing
+    """
+    config = get_config()
+    
+    if not config.api_key:
+        raise RuntimeError("API key not configured. Set API_API_KEY in your .env file")
+    
     if not api_key or api_key != config.api_key:
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,

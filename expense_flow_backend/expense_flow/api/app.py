@@ -12,6 +12,7 @@ import asyncio
 import logging
 from contextlib import contextmanager
 
+from expense_flow.config import get_config, Config
 from expense_flow.api.repository.base_repository import DatabaseError
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
@@ -21,16 +22,13 @@ from .models import (
     Receipt, ReceiptItem, ReceiptItemResponse, ReceiptQuery, ReceiptResponse, ReceiptStatus, SearchResult, TempReceipt, UnprocessedReceiptsResponse
 )
 from .security import verify_api_key
-from .api_config import APIConfig, get_api_config
 from .constants import ErrorMessages, LogMessages, FileTypes
 from .logging_config import setup_logging
 from expense_flow.document_processor.azure_processor import AzureDocumentProcessor
 from expense_flow.document_processor.image_processor import ImagePreprocessor
 from expense_flow.analyzers.local_llm import LocalLLMAnalyzer
 from expense_flow.analyzers.chatgpt_llm import ChatGPTAnalyzer
-from expense_flow.config import Config
 
-# Setup logging
 setup_logging()
 logger = logging.getLogger("expense_flow")
 
@@ -40,15 +38,41 @@ class ProcessingError(Exception):
         self.retry_count = retry_count
         super().__init__(message)
 
-def get_repository(api_config: APIConfig = Depends(get_api_config)):
-    return ReceiptRepository(db_path=api_config.db_path)
+def get_repository():
+    """
+    Get receipt repository instance
+    
+    Returns:
+        ReceiptRepository instance
+    """
+    config = get_config()
+    return ReceiptRepository(db_path=config.db_path)
 
-def get_temp_repository(api_config: APIConfig = Depends(get_api_config)) -> TempReceiptRepository:
-    """Get temporary receipt repository instance"""
-    return TempReceiptRepository(api_config)
+def get_temp_repository() -> TempReceiptRepository:
+    """
+    Get temporary receipt repository instance
+    
+    Returns:
+        TempReceiptRepository instance
+    """
+    config = get_config()
+    return TempReceiptRepository(config=config)
 
-def get_analyzer(config: Config, llm_type: LLMType) -> Union[LocalLLMAnalyzer, ChatGPTAnalyzer]:
-    """Create the appropriate analyzer based on LLM type"""
+def get_analyzer(llm_type: LLMType):
+    """
+    Create the appropriate analyzer based on LLM type
+    
+    Args:
+        llm_type: Type of LLM to use
+        
+    Returns:
+        Analyzer instance
+        
+    Raises:
+        ValueError: If LLM type is invalid
+    """
+    config = get_config()
+    
     analyzers = {
         LLMType.LOCAL: LocalLLMAnalyzer,
         LLMType.CHATGPT: ChatGPTAnalyzer
@@ -87,15 +111,14 @@ app.add_middleware(
 
 async def process_receipt_with_retries(
     file_path: str,
-    config: Config,
-    llm_type: LLMType,
-    api_config: APIConfig
+    llm_type: LLMType
 ) -> Receipt:
     logger.info(LogMessages.RECEIPT_PROCESSING_START.format(llm_type.value))
     
+    config = get_config()
     image_preprocessor = ImagePreprocessor()
     doc_processor = AzureDocumentProcessor(config)
-    analyzer = get_analyzer(config, llm_type)
+    analyzer = get_analyzer(llm_type)
     
     logger.info(LogMessages.ANALYZER_USED.format(analyzer.__class__.__name__))
     
@@ -103,7 +126,7 @@ async def process_receipt_with_retries(
     last_error = None
     processed_path = None
     
-    while retry_count < api_config.max_retries:
+    while retry_count < config.max_retries:
         try:
             logger.info(LogMessages.PROCESSING_ATTEMPT.format(retry_count + 1))
             
@@ -130,9 +153,9 @@ async def process_receipt_with_retries(
             logger.error(LogMessages.ATTEMPT_FAILED.format(retry_count, last_error))
             
             if isinstance(e, (ProcessingError, TimeoutError)):
-                if retry_count < api_config.max_retries:
-                    logger.info(LogMessages.WAITING_FOR_RETRY.format(api_config.retry_delay))
-                    await asyncio.sleep(api_config.retry_delay)
+                if retry_count < config.max_retries:
+                    logger.info(LogMessages.WAITING_FOR_RETRY.format(config.retry_delay))
+                    await asyncio.sleep(config.retry_delay)
             else:
                 logger.error(LogMessages.NON_RETRYABLE_ERROR.format(type(e).__name__))
                 raise
@@ -156,14 +179,15 @@ async def get_request_form(
 async def analyze_receipt(
     file: UploadFile = File(...),
     api_key: str = Depends(verify_api_key),
-    api_config: APIConfig = Depends(get_api_config),
     temp_repository: TempReceiptRepository = Depends(get_temp_repository)
 ):
     """Process receipt with Azure OCR and store in temp database"""
-    if not api_config.azure_endpoint or not api_config.azure_key:
+    config = get_config()
+    
+    if not config.azure_endpoint or not config.azure_key:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Azure credentials not configured"}
+            detail={"error": "Azure credentials not configured. Please set AZURE_ENDPOINT and AZURE_KEY in your .env file."}
         )
 
     if not FileTypes.is_valid(file.content_type):
@@ -173,12 +197,6 @@ async def analyze_receipt(
         )
 
     try:
-        config = Config(
-            endpoint=api_config.azure_endpoint,
-            key=api_config.azure_key,
-            chatgpt_key=api_config.chatgpt_key
-        )
-        
         # Read file content first
         content = await file.read()
         
@@ -230,7 +248,6 @@ async def analyze_receipt(
 async def register_analyzer(
     background_tasks: BackgroundTasks,
     api_key: str = Depends(verify_api_key),
-    api_config: APIConfig = Depends(get_api_config),
     temp_repository: TempReceiptRepository = Depends(get_temp_repository),
     receipt_repository: ReceiptRepository = Depends(get_repository)
 ):
@@ -238,23 +255,11 @@ async def register_analyzer(
     Endpoint for Ollama PC to register its availability.
     Triggers processing of pending receipts.
     """
-
-    analyzer_config = Config(
-            endpoint=api_config.azure_endpoint,
-            key=api_config.azure_key,
-            chatgpt_key=api_config.chatgpt_key,
-            ollama_host=api_config.ollama_host,
-            model=api_config.ollama_model,
-            fallback_model=api_config.ollama_fallback_model,
-            llm_type='local'
-        )
-
     # Start processing pending receipts in background
     background_tasks.add_task(
         process_pending_receipts,
         temp_repository,
-        receipt_repository,
-        analyzer_config
+        receipt_repository
     )
     return {"status": "registered"}
 
@@ -274,10 +279,10 @@ async def get_unprocessed_receipts(
 # Add background processing function
 async def process_pending_receipts(
     temp_repository: TempReceiptRepository,
-    receipt_repository: ReceiptRepository,
-    config: Config
+    receipt_repository: ReceiptRepository
 ):
     """Process pending and failed receipts when Ollama is available"""
+    config = get_config()
     unprocessed_receipts = temp_repository.get_unprocessed_receipts()    
 
     for temp_receipt in unprocessed_receipts:
@@ -526,10 +531,13 @@ async def create_receipt(
 @app.on_event("startup")
 async def startup_event():
     """Ensure databases exist on startup"""
-    api_config = get_api_config()
+    config = get_config()
     
     # Ensure both database directories exist
-    for db_path in [api_config.db_path, api_config.temp_db_path]:
+    for db_path in [config.db_path, config.temp_db_path]:
+        if not db_path:
+            continue
+            
         db_dir = os.path.dirname(db_path)
         if db_dir:
             logger.info(f"Ensuring database directory exists at: {db_dir}")

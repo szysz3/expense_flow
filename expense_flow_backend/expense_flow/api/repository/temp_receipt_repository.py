@@ -4,7 +4,7 @@ import uuid
 from fastapi.encoders import jsonable_encoder
 from tinydb import Query
 
-from expense_flow.api.api_config import APIConfig
+from expense_flow.config import Config
 from expense_flow.api.models import ReceiptStatus, TempReceipt
 
 from .base_repository import BaseRepository, handle_db_errors
@@ -19,14 +19,18 @@ class TempReceiptRepository(BaseRepository):
     - Managing the lifecycle of temporary receipts
     """
     
-    def __init__(self, api_config: APIConfig):
+    def __init__(self, config: Config):
         """
         Initialize temporary receipt repository
         
         Args:
-            api_config: API configuration with temp database path
+            config: Application configuration
         """
-        super().__init__(api_config.temp_db_path)
+        if not config.temp_db_path:
+            raise ValueError("Temporary database path not configured. "
+                             "Please set DATABASE_TEMP_DB_PATH in your .env file.")
+            
+        super().__init__(config.temp_db_path)
         self.TEMP_RECEIPT_DATETIME_FIELDS = ['created_at']
 
     @handle_db_errors

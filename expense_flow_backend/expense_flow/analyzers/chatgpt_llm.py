@@ -8,12 +8,38 @@ from expense_flow.utils.validator import ResponseValidator
 import json
 
 class ChatGPTAnalyzer(BaseAnalyzer):
+    """
+    Receipt analyzer using ChatGPT via OpenAI API
+    """
     def __init__(self, config: Config):
+        """
+        Initialize the ChatGPT analyzer
+        
+        Args:
+            config: Application configuration
+        """
         super().__init__()
         self.config = config
+        
+        if not config.chatgpt_key:
+            raise ValueError("ChatGPT API key not configured. "
+                             "Please set LLM_CHATGPT_KEY in your .env file.")
+        
         self.validator = ResponseValidator()
 
     def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
+        """
+        Analyze receipt data using ChatGPT
+        
+        Args:
+            receipt_data: Receipt data to analyze
+            
+        Returns:
+            Analysis result dictionary
+            
+        Raises:
+            ValueError: If analysis fails after max retries
+        """
         prompt = self._get_llm_prompt()
         self._display_input_data(receipt_data)
         

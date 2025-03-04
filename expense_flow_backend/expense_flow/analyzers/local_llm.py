@@ -8,14 +8,41 @@ from expense_flow.utils.validator import ResponseValidator
 import json
 
 class LocalLLMAnalyzer(BaseAnalyzer):
+    """
+    Receipt analyzer using local LLM with Ollama
+    """
     def __init__(self, config: Config):
+        """
+        Initialize the local LLM analyzer
+        
+        Args:
+            config: Application configuration
+        """
         super().__init__()
         self.config = config
+        
+        if not config.ollama_host:
+            raise ValueError("Ollama host not configured. "
+                             "Please set LLM_OLLAMA_HOST in your .env file.")
+        
         self.client = Client(host=config.ollama_host)
         self.validator = ResponseValidator()
         
     def _try_model(self, model: str, receipt_data: Dict[Any, Any], max_retries: int = 3) -> Dict[Any, Any]:
-        """Attempt analysis with a specific model"""
+        """
+        Attempt analysis with a specific model
+        
+        Args:
+            model: Model name
+            receipt_data: Receipt data to analyze
+            max_retries: Maximum number of retry attempts
+            
+        Returns:
+            Analysis result dictionary
+            
+        Raises:
+            ValueError: If analysis fails after max retries
+        """
         prompt = self._get_llm_prompt()
         attempt = 0
         start_time = datetime.now()
@@ -62,10 +89,21 @@ class LocalLLMAnalyzer(BaseAnalyzer):
         raise ValueError(f"All attempts failed for model {model}")
 
     def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
-        """Analyze receipt data with fallback to different models if needed"""
+        """
+        Analyze receipt data with fallback to different models if needed
+        
+        Args:
+            receipt_data: Receipt data to analyze
+            
+        Returns:
+            Analysis result dictionary
+            
+        Raises:
+            ValueError: If all models fail
+        """
         self._display_input_data(receipt_data)
         
-        models_to_try = [self.config.model, self.config.fallback_model]
+        models_to_try = [self.config.ollama_model, self.config.ollama_fallback_model]
         total_start_time = datetime.now()
         
         for i, model in enumerate(models_to_try, 1):
