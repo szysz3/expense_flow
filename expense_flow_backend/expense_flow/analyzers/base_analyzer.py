@@ -16,7 +16,7 @@ class BaseAnalyzer(ABC):
         self.console = Console()
         
     @abstractmethod
-    def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
+    async def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
         """
         Analyze receipt data
         

@@ -16,6 +16,7 @@ from expense_flow.config import get_config, Config
 from expense_flow.api.repository.base_repository import DatabaseError
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
+from expense_flow.utils.retry import retry_async
 
 from .models import (
     CategoryResponse, CreateReceiptRequest, CreateReceiptResponse, LLMType, Merchant, MerchantResponse, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
@@ -113,23 +114,17 @@ async def process_receipt_with_retries(
     file_path: str,
     llm_type: LLMType
 ) -> Receipt:
-    logger.info(LogMessages.RECEIPT_PROCESSING_START.format(llm_type.value))
-    
-    config = get_config()
-    image_preprocessor = ImagePreprocessor()
-    doc_processor = AzureDocumentProcessor(config)
-    analyzer = get_analyzer(llm_type)
-    
-    logger.info(LogMessages.ANALYZER_USED.format(analyzer.__class__.__name__))
-    
-    retry_count = 0
-    last_error = None
-    processed_path = None
-    
-    while retry_count < config.max_retries:
+    """Process a receipt image with retries"""
+    async def _process():
+        config = get_config()
+        image_preprocessor = ImagePreprocessor()
+        doc_processor = AzureDocumentProcessor(config)
+        analyzer = get_analyzer(llm_type)
+        
+        logger.info(LogMessages.ANALYZER_USED.format(analyzer.__class__.__name__))
+        processed_path = None
+        
         try:
-            logger.info(LogMessages.PROCESSING_ATTEMPT.format(retry_count + 1))
-            
             # Process image
             processed_path, success = image_preprocessor.process(file_path)
             if not success:
@@ -144,22 +139,9 @@ async def process_receipt_with_retries(
             logger.info(LogMessages.OCR_PROCESSING_SUCCESS)
             
             # Analyze with LLM
-            analysis_result = analyzer.analyze(receipt_data)
+            analysis_result = await analyzer.analyze(receipt_data)
             return Receipt(**analysis_result)
             
-        except Exception as e:
-            retry_count += 1
-            last_error = str(e)
-            logger.error(LogMessages.ATTEMPT_FAILED.format(retry_count, last_error))
-            
-            if isinstance(e, (ProcessingError, TimeoutError)):
-                if retry_count < config.max_retries:
-                    logger.info(LogMessages.WAITING_FOR_RETRY.format(config.retry_delay))
-                    await asyncio.sleep(config.retry_delay)
-            else:
-                logger.error(LogMessages.NON_RETRYABLE_ERROR.format(type(e).__name__))
-                raise
-                
         finally:
             if processed_path and os.path.exists(processed_path):
                 try:
@@ -167,7 +149,15 @@ async def process_receipt_with_retries(
                 except Exception as e:
                     logger.warning(LogMessages.TEMP_FILE_REMOVAL_FAILED.format(e))
     
-    raise ProcessingError(f"Processing failed after {retry_count} attempts: {last_error}", retry_count)
+    logger.info(LogMessages.RECEIPT_PROCESSING_START.format(llm_type.value))
+    config = get_config()
+    
+    return await retry_async(
+        _process,
+        max_retries=config.max_retries,
+        retry_delay=config.retry_delay,
+        logger=logger
+    )
 
 async def get_request_form(
     llm_type: str = Form(default='local')
@@ -298,7 +288,7 @@ async def process_pending_receipts(
             
             # Process with Ollama
             analyzer = LocalLLMAnalyzer(config)
-            result = analyzer.analyze(temp_receipt.raw_data)
+            result = await analyzer.analyze(temp_receipt.raw_data)
             
             # Store final receipt
             receipt = Receipt(**result)

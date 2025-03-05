@@ -37,7 +37,7 @@ class LocalLLMAnalyzer(BaseAnalyzer):
                 OllamaProvider(host=config.ollama_host, model=config.ollama_fallback_model)
             )
 
-    def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
+    async def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
         """
         Analyze receipt data with fallback to different models if needed
         
@@ -56,7 +56,7 @@ class LocalLLMAnalyzer(BaseAnalyzer):
         prompt = self.load_prompt("receipt_analyzer")
         self.display_input_data(receipt_data)
         
-        result = self.service.analyze_with_fallback(
+        result = await self.service.analyze_with_fallback(
             providers=self.providers,
             prompt=prompt,
             data=receipt_data

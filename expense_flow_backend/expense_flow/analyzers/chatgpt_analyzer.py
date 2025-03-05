@@ -26,7 +26,7 @@ class ChatGPTAnalyzer(BaseAnalyzer):
         self.provider = ChatGPTProvider(api_key=config.chatgpt_key)
         self.service = LLMService(self.console, self.validator)
 
-    def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
+    async def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
         """
         Analyze receipt data using ChatGPT
         
@@ -42,7 +42,7 @@ class ChatGPTAnalyzer(BaseAnalyzer):
         prompt = self.load_prompt("receipt_analyzer")
         self.display_input_data(receipt_data)
         
-        result = self.service.analyze_with_retry(
+        result = await self.service.analyze_with_retry(
             provider=self.provider,
             prompt=prompt,
             data=receipt_data

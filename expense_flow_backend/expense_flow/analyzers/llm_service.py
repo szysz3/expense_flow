@@ -1,16 +1,15 @@
-from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, List
+from datetime import datetime
+from typing import Dict, Any, List, Optional
+import json
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
-from datetime import datetime
-import json
+
 from expense_flow.utils.validator import ResponseValidator
+from expense_flow.utils.retry import retry_async, RetryableError, ProcessingError
 
-
-class LLMProvider(ABC):
+class LLMProvider:
     """Interface for LLM providers"""
     
-    @abstractmethod
     def generate(self, prompt: str, content: str) -> str:
         """
         Generate response from LLM
@@ -22,13 +21,12 @@ class LLMProvider(ABC):
         Returns:
             LLM response as string
         """
-        pass
+        raise NotImplementedError("LLM providers must implement generate method")
     
     @property
-    @abstractmethod
     def name(self) -> str:
         """Name of the LLM provider"""
-        pass
+        raise NotImplementedError("LLM providers must implement name property")
 
 
 class LLMService:
@@ -45,12 +43,13 @@ class LLMService:
         self.console = console
         self.validator = validator
         
-    def analyze_with_retry(
+    async def analyze_with_retry(
         self, 
         provider: LLMProvider, 
         prompt: str, 
         data: Dict[Any, Any], 
-        max_retries: int = 5
+        max_retries: int = 5,
+        retry_delay: float = 1.0
     ) -> Dict[Any, Any]:
         """
         Analyze data with retry logic
@@ -60,65 +59,56 @@ class LLMService:
             prompt: System prompt
             data: Data to analyze
             max_retries: Maximum number of retry attempts
+            retry_delay: Delay between retries in seconds
             
         Returns:
             Analysis result
             
         Raises:
-            ValueError: If analysis fails after max retries
+            ProcessingError: If analysis fails after max retries
         """
-        attempt = 0
-        total_start_time = datetime.now()
         
-        while attempt < max_retries:
-            try:
-                start_time = datetime.now()
-                
-                with Progress(
-                    SpinnerColumn(),
-                    TimeElapsedColumn(),
-                    TextColumn("{task.description}"),
-                    refresh_per_second=4,
-                    console=self.console,
-                    transient=True
-                ) as progress:
-                    task = progress.add_task(
-                        f"[cyan]Analyzing with {provider.name} (Attempt {attempt + 1}/{max_retries})..."
-                    )
-                    
-                    response_text = provider.generate(prompt, json.dumps(data, indent=2))
-                    
-                    try:
-                        if isinstance(response_text, str):
-                            result = self._parse_json(response_text)
-                        elif isinstance(response_text, bytes):
-                            result = self._parse_json(response_text.decode())
-                        else:
-                            raise ValueError(f"Unexpected response type: {type(response_text)}")
-                    except (ValueError, json.JSONDecodeError) as e:
-                        raise ValueError(f"Invalid JSON response: {str(e)}")
-                
-                if self.validator.validate(data, result):
-                    final_elapsed = (datetime.now() - total_start_time).total_seconds()
-                    self.console.print(f"[green]✓ Analysis successful with {provider.name} (Total time: {final_elapsed:.1f}s)[/]")
-                    return result
-                else:
-                    raise ValueError("Validation failed: Result contains modified or invalid data")
-                    
-            except Exception as e:
-                attempt += 1
-                duration = (datetime.now() - start_time).total_seconds()
-                total_elapsed = (datetime.now() - total_start_time).total_seconds()
-                
-                if attempt == max_retries:
-                    raise ValueError(f"Failed after {max_retries} attempts ({total_elapsed:.1f}s): {str(e)}")
-                
-                self.console.print(
-                    f"[yellow]Attempt {attempt} failed after {duration:.1f}s "
-                    f"(Total: {total_elapsed:.1f}s): {str(e)}. Retrying...[/]"
+        async def _analyze():
+            with Progress(
+                SpinnerColumn(),
+                TimeElapsedColumn(),
+                TextColumn("{task.description}"),
+                refresh_per_second=4,
+                console=self.console,
+                transient=True
+            ) as progress:
+                task = progress.add_task(
+                    f"[cyan]Analyzing with {provider.name}..."
                 )
                 
-    def analyze_with_fallback(
+                response_text = provider.generate(prompt, json.dumps(data, indent=2))
+                
+                try:
+                    if isinstance(response_text, str):
+                        result = self._parse_json(response_text)
+                    elif isinstance(response_text, bytes):
+                        result = self._parse_json(response_text.decode())
+                    else:
+                        raise ValueError(f"Unexpected response type: {type(response_text)}")
+                except (ValueError, json.JSONDecodeError) as e:
+                    raise ProcessingError(f"Invalid JSON response: {str(e)}")
+            
+            if not self.validator.validate(data, result):
+                raise ProcessingError("Validation failed: Result contains modified or invalid data")
+                
+            return result
+        
+        total_start_time = datetime.now()
+        result = await retry_async(
+            _analyze,
+            max_retries=max_retries,
+            retry_delay=retry_delay
+        )
+        final_elapsed = (datetime.now() - total_start_time).total_seconds()
+        self.console.print(f"[green]✓ Analysis successful with {provider.name} (Total time: {final_elapsed:.1f}s)[/]")
+        return result
+    
+    async def analyze_with_fallback(
         self, 
         providers: List[LLMProvider], 
         prompt: str, 
@@ -142,7 +132,7 @@ class LLMService:
         
         for i, provider in enumerate(providers, 1):
             try:
-                result = self.analyze_with_retry(provider, prompt, data)
+                result = await self.analyze_with_retry(provider, prompt, data)
                 
                 total_duration = (datetime.now() - total_start_time).total_seconds()
                 self.console.print(
