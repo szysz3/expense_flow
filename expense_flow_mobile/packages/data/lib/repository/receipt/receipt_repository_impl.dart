@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dartz/dartz.dart';
 import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/utils/content_type_resolver_impl.dart';
@@ -11,6 +12,7 @@ import 'package:domain/model/receipt_query.dart';
 import 'package:domain/model/search_result.dart';
 import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:domain/repository/receipt_repository.dart';
+import 'package:logger/logger.dart';
 
 import '../../consts/error_messages.dart';
 import '../../consts/http_constants.dart';
@@ -22,13 +24,19 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
   final Dio _dio;
   final RepositoryConfig _config;
   final ContentTypeResolver _contentTypeResolver;
+  final Logger _errorLogger;
+  final Connectivity _connectivity;
 
   ReceiptRepositoryImpl({
     required Dio dio,
     required RepositoryConfig config,
+    required Logger errorLogger,
+    required Connectivity connectivity,
     ContentTypeResolver? contentTypeResolver,
   })  : _dio = dio,
         _config = config,
+        _errorLogger = errorLogger,
+        _connectivity = connectivity,
         _contentTypeResolver =
             contentTypeResolver ?? ContentTypeResolverImpl() {
     _configureDio();
@@ -45,12 +53,32 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
       ..receiveTimeout = _config.timeout;
   }
 
+  Future<Either<Failure, bool>> _checkConnectivity() async {
+    try {
+      final connectivityResult = await _connectivity.checkConnectivity();
+      // TODO: onConnectivityChanged should be used instead
+      if (connectivityResult.contains(ConnectivityResult.none)) {
+        return Left(ConnectionFailure());
+      }
+      return const Right(true);
+    } catch (e) {
+      _errorLogger.w('Failed to check connectivity', error: e);
+      return const Right(true);
+    }
+  }
+
   @override
   Future<Either<Failure, Receipt>> analyzeReceipt(
     String filePath, {
     String llmType = ReceiptConstants.defaultLlmType,
   }) async {
     try {
+      final connectivityCheck = await _checkConnectivity();
+      if (connectivityCheck.isLeft()) {
+        return Left(connectivityCheck.fold(
+            (l) => l, (r) => ServerFailure('Unknown error')));
+      }
+
       final extension = filePath.split('.').last;
       final contentType = _contentTypeResolver.resolveContentType(extension);
 
@@ -67,15 +95,16 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
         'items': rawData['items'],
         'total': rawData['total'],
         'transaction_datetime': rawData['transaction_datetime'],
-        // Use created_at as added_datetime since that's what's available
         'added_datetime': responseData['created_at'],
       };
 
       return Right(Receipt.fromJson(transformedData));
-    } on DioError catch (e) {
+    } on DioError catch (e, stackTrace) {
+      _errorLogger.e('API error during receipt analysis',
+          error: e, stackTrace: stackTrace);
       return Left(_handleDioError(e));
     } catch (e, stackTrace) {
-      print('Exception during receipt analysis: $e\n$stackTrace');
+      _errorLogger.e('Exception during receipt analysis', error: e);
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -94,82 +123,33 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
     });
   }
 
-  @override
-  Future<Either<Failure, Receipt>> getReceipt(String id) async {
-    return _executeRequest(() async {
-      final response = await _dio.get('${ApiEndpoints.receipt}$id');
-      return Receipt.fromJson(response.data);
-    });
-  }
-
-  @override
-  Future<Either<Failure, SearchResult>> searchReceipts(
-      ReceiptQuery query) async {
-    return _executeRequest(() async {
-      final response = await _dio.post(
-        ApiEndpoints.search,
-        data: query.toJson(),
-      );
-      return SearchResult.fromJson(response.data);
-    });
-  }
-
-  @override
-  Future<Either<Failure, List<CategoryWithItems>>> getCategories() async {
-    return _executeRequest(() async {
-      final response = await _dio.get(ApiEndpoints.categories);
-      return (response.data[ReceiptConstants.categoriesKey] as List)
-          .map((json) => CategoryWithItems.fromJson(json))
-          .toList();
-    });
-  }
-
-  @override
-  Future<Either<Failure, UnprocessedReceiptsResponse>>
-      getUnprocessedReceipts() async {
-    return _executeRequest(() async {
-      final response = await _dio.get(ApiEndpoints.unprocessedReceipts);
-      return UnprocessedReceiptsResponse.fromJson(response.data);
-    });
-  }
-
-  @override
-  Future<Either<Failure, List<MonthSummary>>> getMonthsSummary() async {
-    return _executeRequest(() async {
-      final response = await _dio.get(ApiEndpoints.monthsSummary);
-      return (response.data[ReceiptConstants.monthsKey] as List)
-          .map((json) => MonthSummary.fromJson(json))
-          .toList();
-    });
-  }
-
-  @override
-  Future<Either<Failure, Receipt>> createReceipt({
-    required ReceiptItem receiptItem,
-  }) async {
-    return _executeRequest(() async {
-      final response = await _dio.post(
-        ApiEndpoints.createReceipt,
-        data: {
-          'description': receiptItem.description,
-          'quantity': receiptItem.quantity,
-          'total_price': receiptItem.totalPrice,
-          'category': receiptItem.category,
-        },
-      );
-      return Receipt.fromJson(response.data[ReceiptConstants.receiptKey]);
-    });
-  }
-
   Future<Either<Failure, T>> _executeRequest<T>(
-    Future<T> Function() request,
-  ) async {
+    Future<T> Function() request, {
+    String? context,
+  }) async {
     try {
+      // Check connectivity first
+      final connectivityCheck = await _checkConnectivity();
+      if (connectivityCheck.isLeft()) {
+        return Left(connectivityCheck.fold(
+            (l) => l, (r) => ServerFailure('Unknown error')));
+      }
+
       final result = await request();
       return Right(result);
-    } on DioError catch (e) {
+    } on DioError catch (e, stackTrace) {
+      _errorLogger.e(
+        'API error in repository',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return Left(_handleDioError(e));
     } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Exception in repository',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -182,10 +162,16 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
         case HttpConstants.statusNotFound:
           return NotFoundFailure();
         case HttpConstants.statusValidationError:
-          return ValidationFailure(
-            (e.response!.data[ReceiptConstants.detailKey] as List)
-                .cast<Map<String, dynamic>>(),
-          );
+          try {
+            final details =
+                (e.response!.data[ReceiptConstants.detailKey] as List)
+                    .cast<Map<String, dynamic>>();
+            return ValidationFailure(details);
+          } catch (_) {
+            return ValidationFailure([
+              {'msg': 'Validation error occurred'}
+            ]);
+          }
       }
     }
 
@@ -193,12 +179,106 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
       return ConnectionFailure();
     }
 
-    return ServerFailure(e.message ?? ErrorMessages.unknownServerError);
+    switch (e.type) {
+      case DioErrorType.connectionError:
+        return ConnectionFailure();
+      case DioErrorType.badResponse:
+        return ServerFailure('Bad response from server');
+      case DioErrorType.cancel:
+        return ServerFailure('Request was cancelled');
+      default:
+        return ServerFailure(e.message ?? ErrorMessages.unknownServerError);
+    }
   }
 
   bool _isTimeoutError(DioError e) {
     return e.type == DioErrorType.connectionTimeout ||
         e.type == DioErrorType.receiveTimeout ||
         e.type == DioErrorType.sendTimeout;
+  }
+
+  @override
+  Future<Either<Failure, Receipt>> getReceipt(String id) async {
+    return _executeRequest(
+      () async {
+        final response = await _dio.get('${ApiEndpoints.receipt}$id');
+        return Receipt.fromJson(response.data);
+      },
+      context: 'getReceipt: $id',
+    );
+  }
+
+  @override
+  Future<Either<Failure, SearchResult>> searchReceipts(
+      ReceiptQuery query) async {
+    return _executeRequest(
+      () async {
+        final response = await _dio.post(
+          ApiEndpoints.search,
+          data: query.toJson(),
+        );
+        return SearchResult.fromJson(response.data);
+      },
+      context: 'searchReceipts',
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<CategoryWithItems>>> getCategories() async {
+    return _executeRequest(
+      () async {
+        final response = await _dio.get(ApiEndpoints.categories);
+        return (response.data[ReceiptConstants.categoriesKey] as List)
+            .map((json) => CategoryWithItems.fromJson(json))
+            .toList();
+      },
+      context: 'getCategories',
+    );
+  }
+
+  @override
+  Future<Either<Failure, UnprocessedReceiptsResponse>>
+      getUnprocessedReceipts() async {
+    return _executeRequest(
+      () async {
+        final response = await _dio.get(ApiEndpoints.unprocessedReceipts);
+        return UnprocessedReceiptsResponse.fromJson(response.data);
+      },
+      context: 'getUnprocessedReceipts',
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<MonthSummary>>> getMonthsSummary() async {
+    return _executeRequest(
+      () async {
+        final response = await _dio.get(ApiEndpoints.monthsSummary);
+        return (response.data[ReceiptConstants.monthsKey] as List)
+            .map((json) => MonthSummary.fromJson(json))
+            .toList();
+      },
+      context: 'getMonthsSummary',
+    );
+  }
+
+  @override
+  Future<Either<Failure, Receipt>> createReceipt({
+    required ReceiptItem receiptItem,
+  }) async {
+    return _executeRequest(
+      () async {
+        final response = await _dio.post(
+          ApiEndpoints.createReceipt,
+          data: {
+            'description': receiptItem.description,
+            'quantity': receiptItem.quantity,
+            'total_price': receiptItem.totalPrice,
+            'category': receiptItem.category,
+          },
+        );
+        return Receipt.fromJson(response.data[ReceiptConstants.receiptKey]);
+      },
+      context: 'createReceipt',
+    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/repository/receipt/receipt_repository_impl.dart';
 import 'package:dio/dio.dart';
@@ -27,6 +28,10 @@ Future<void> configureDependencies() async {
 
   getIt.init();
 
+  final logger = Logger(printer: PrettyPrinter());
+  getIt.registerLazySingleton(() => logger);
+  getIt.registerLazySingleton(() => Connectivity());
+
   final dio = Dio();
   dio.interceptors.add(PrettyDioLogger(
     request: true,
@@ -39,11 +44,14 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<ReceiptRepository>(
     () => ReceiptRepositoryImpl(
-        dio: dio,
-        config: RepositoryConfig(
-          baseUrl: EnvConfig.baseUrl,
-          apiKey: EnvConfig.apiKey,
-        )),
+      dio: dio,
+      config: RepositoryConfig(
+        baseUrl: EnvConfig.baseUrl,
+        apiKey: EnvConfig.apiKey,
+      ),
+      errorLogger: getIt<Logger>(),
+      connectivity: getIt<Connectivity>(),
+    ),
   );
 
   getIt.registerLazySingleton(
@@ -61,8 +69,6 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(
     () => CreateReceiptUseCase(getIt<ReceiptRepository>()),
   );
-
-  getIt.registerLazySingleton(() => Logger(printer: PrettyPrinter()));
 }
 
 class EnvConfig {

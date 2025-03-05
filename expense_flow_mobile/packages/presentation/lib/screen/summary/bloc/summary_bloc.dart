@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 
+import '../../../../core/error/app_error.dart';
 import '../model/category_summary.dart';
 import '../model/month_summary.dart';
 import 'summary_events.dart';
@@ -11,10 +13,13 @@ import 'summary_state.dart';
 
 class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
   final GetMonthsSummaryUseCase _getMonthsSummaryUseCase;
+  final Logger _errorLogger;
 
   SummaryBloc({
     required GetMonthsSummaryUseCase getMonthsSummaryUseCase,
+    required Logger errorLogger,
   })  : _getMonthsSummaryUseCase = getMonthsSummaryUseCase,
+        _errorLogger = errorLogger,
         super(const SummaryState()) {
     on<InitEvent>(_handleInit);
     on<ToggleMonthEvent>(_handleToggleMonth);
@@ -33,13 +38,25 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
   ) async {
     try {
       _refreshCompleter = Completer<void>();
-      emit(state.copyWith(isLoading: true));
+
+      emit(state.copyWith(isLoading: true, error: null));
 
       final result = await _getMonthsSummaryUseCase(const NoParams());
 
       result.fold(
         (failure) {
-          emit(state.copyWith(isLoading: false));
+          _errorLogger.e(
+            'Failed to get months summary',
+            error: failure,
+          );
+
+          emit(state.copyWith(
+            isLoading: false,
+            error: AppError.fromFailure(
+              failure,
+              onRetry: () => add(const SummaryEvent.init()),
+            ),
+          ));
           _refreshCompleter?.complete();
         },
         (monthsSummary) {
@@ -63,12 +80,25 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
           emit(state.copyWith(
             months: presentationMonths,
             isLoading: false,
+            error: null,
           ));
           _refreshCompleter?.complete();
         },
       );
-    } catch (e) {
-      emit(state.copyWith(isLoading: false));
+    } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Exception in SummaryBloc',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
+      emit(state.copyWith(
+        isLoading: false,
+        error: AppError.fromException(
+          e,
+          onRetry: () => add(const SummaryEvent.init()),
+        ),
+      ));
       _refreshCompleter?.complete();
     }
   }
@@ -77,13 +107,21 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
     ToggleMonthEvent event,
     Emitter<SummaryState> emit,
   ) {
-    final updatedMonths = state.months.map((month) {
-      if (month.id == event.monthId) {
-        return month.copyWith(isExpanded: !month.isExpanded);
-      }
-      return month;
-    }).toList();
+    try {
+      final updatedMonths = state.months.map((month) {
+        if (month.id == event.monthId) {
+          return month.copyWith(isExpanded: !month.isExpanded);
+        }
+        return month;
+      }).toList();
 
-    emit(state.copyWith(months: updatedMonths));
+      emit(state.copyWith(months: updatedMonths));
+    } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Error toggling month',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }
