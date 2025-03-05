@@ -6,8 +6,8 @@ from rich.console import Console
 from expense_flow.config import get_config
 from expense_flow.document_processor.azure_processor import AzureDocumentProcessor
 from expense_flow.document_processor.image_processor import ImagePreprocessor
-from expense_flow.analyzers.local_llm import LocalLLMAnalyzer
-from expense_flow.analyzers.chatgpt_llm import ChatGPTAnalyzer
+from expense_flow.analyzers.local_llm_analyzer import LocalLLMAnalyzer
+from expense_flow.analyzers.chatgpt_analyzer import ChatGPTAnalyzer
 
 def save_result(input_file: str, analysis_result: dict, console: Console):
     """

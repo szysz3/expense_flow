@@ -26,8 +26,8 @@ from .constants import ErrorMessages, LogMessages, FileTypes
 from .logging_config import setup_logging
 from expense_flow.document_processor.azure_processor import AzureDocumentProcessor
 from expense_flow.document_processor.image_processor import ImagePreprocessor
-from expense_flow.analyzers.local_llm import LocalLLMAnalyzer
-from expense_flow.analyzers.chatgpt_llm import ChatGPTAnalyzer
+from expense_flow.analyzers.local_llm_analyzer import LocalLLMAnalyzer
+from expense_flow.analyzers.chatgpt_analyzer import ChatGPTAnalyzer
 
 setup_logging()
 logger = logging.getLogger("expense_flow")
