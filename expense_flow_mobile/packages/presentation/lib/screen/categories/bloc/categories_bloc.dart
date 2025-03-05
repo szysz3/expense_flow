@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 
+import '../../../../core/error/app_error.dart';
 import '../models/category.dart';
 import '../models/category_item.dart';
 import 'categories_events.dart';
@@ -11,21 +13,24 @@ import 'categories_state.dart';
 
 class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
   final GetCategoriesUseCase _getCategoriesUseCase;
+  final Logger _errorLogger;
 
   CategoriesBloc({
     required GetCategoriesUseCase getCategoriesUseCase,
+    required Logger errorLogger,
   })  : _getCategoriesUseCase = getCategoriesUseCase,
+        _errorLogger = errorLogger,
         super(const CategoriesState()) {
     on<InitEvent>(_handleInit);
     on<ToggleCategoryEvent>(_handleToggleCategory);
   }
 
+  Completer<void>? _refreshCompleter;
+
   Future<void> refresh() async {
     add(const CategoriesEvent.init());
     return _refreshCompleter?.future;
   }
-
-  Completer<void>? _refreshCompleter;
 
   Future<void> _handleInit(
     InitEvent event,
@@ -33,13 +38,29 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
   ) async {
     try {
       _refreshCompleter = Completer<void>();
-      emit(state.copyWith(isLoading: true));
+
+      if (state.categories.isEmpty) {
+        emit(state.copyWith(isLoading: true, error: null));
+      } else {
+        emit(state.copyWith(error: null));
+      }
 
       final result = await _getCategoriesUseCase(const NoParams());
 
       result.fold(
         (failure) {
-          emit(state.copyWith(isLoading: false));
+          _errorLogger.e(
+            'Failed to get categories',
+            error: failure,
+          );
+
+          emit(state.copyWith(
+            isLoading: false,
+            error: AppError.fromFailure(
+              failure,
+              onRetry: () => add(const CategoriesEvent.init()),
+            ),
+          ));
           _refreshCompleter?.complete();
         },
         (categories) {
@@ -62,12 +83,25 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
           emit(state.copyWith(
             categories: presentationCategories,
             isLoading: false,
+            error: null,
           ));
           _refreshCompleter?.complete();
         },
       );
-    } catch (e) {
-      emit(state.copyWith(isLoading: false));
+    } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Exception in CategoriesBloc.handleInit',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
+      emit(state.copyWith(
+        isLoading: false,
+        error: AppError.fromException(
+          e,
+          onRetry: () => add(const CategoriesEvent.init()),
+        ),
+      ));
       _refreshCompleter?.complete();
     }
   }
@@ -76,13 +110,21 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
     ToggleCategoryEvent event,
     Emitter<CategoriesState> emit,
   ) {
-    final updatedCategories = state.categories.map((category) {
-      if (category.id == event.categoryId) {
-        return category.copyWith(isExpanded: !category.isExpanded);
-      }
-      return category;
-    }).toList();
+    try {
+      final updatedCategories = state.categories.map((category) {
+        if (category.id == event.categoryId) {
+          return category.copyWith(isExpanded: !category.isExpanded);
+        }
+        return category;
+      }).toList();
 
-    emit(state.copyWith(categories: updatedCategories));
+      emit(state.copyWith(categories: updatedCategories));
+    } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Exception in CategoriesBloc.handleToggleCategory',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

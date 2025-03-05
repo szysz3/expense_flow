@@ -1,8 +1,12 @@
+// lib/presentation/screen/categories/categories_screen.dart
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 import 'package:presentation/screen/categories/widget/category_list_item.dart';
 
+import '../../core/error/error_utils.dart';
+import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
 import 'bloc/categories_bloc.dart';
 import 'bloc/categories_events.dart';
@@ -15,10 +19,11 @@ class CategoriesScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
         create: (_) => CategoriesBloc(
           getCategoriesUseCase: getIt<GetCategoriesUseCase>(),
+          errorLogger: getIt<Logger>(),
         )..add(const CategoriesEvent.init()),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: const CategoriesScreenView(),
+        child: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: CategoriesScreenView(),
         ),
       );
 }
@@ -28,12 +33,30 @@ class CategoriesScreenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CategoriesBloc, CategoriesState>(
+    return BlocConsumer<CategoriesBloc, CategoriesState>(
+      listener: (context, state) {
+        if (state.error != null && state.categories.isNotEmpty) {
+          ErrorUtils.showErrorSnackBar(context, state.error!);
+        }
+      },
       builder: (context, state) {
-        if (state.isLoading) {
+        if (state.isLoading && state.categories.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
+        if (state.error != null && state.categories.isEmpty) {
+          return ErrorDisplayWidget(
+            error: state.error!,
+            isFullScreen: true,
+          );
+        }
+
+        // Show empty state if we have no data and no error
+        if (state.categories.isEmpty) {
+          return _buildEmptyState(context);
+        }
+
+        // Show the main content
         return RefreshIndicator(
           onRefresh: () => context.read<CategoriesBloc>().refresh(),
           child: ListView.builder(
@@ -50,6 +73,43 @@ class CategoriesScreenView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.category_outlined,
+            size: 64,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No Categories',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Add expenses to see your expense categories',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              // Refresh data
+              context.read<CategoriesBloc>().add(const CategoriesEvent.init());
+            },
+            child: const Text('Refresh'),
+          ),
+        ],
+      ),
     );
   }
 }

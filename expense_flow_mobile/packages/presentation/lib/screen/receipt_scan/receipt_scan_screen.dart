@@ -1,6 +1,7 @@
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 import 'package:presentation/di/di.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_bloc.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_events.dart';
@@ -9,7 +10,9 @@ import 'package:presentation/screen/receipt_scan/controller/receipt_scan_control
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_widget.dart';
 
+import '../../core/error/error_utils.dart';
 import '../../core/service/camera/camera_service.dart';
+import '../../core/widget/error_display_widget.dart';
 
 class ReceiptScanScreen extends StatelessWidget {
   const ReceiptScanScreen({super.key});
@@ -19,10 +22,11 @@ class ReceiptScanScreen extends StatelessWidget {
         create: (_) => ReceiptScanBloc(
           getIt<CameraService>(),
           getIt<AnalyzeReceiptUseCase>(),
+          getIt<Logger>(),
         )..add(InitializeCameraEvent()),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: const ReceiptScanView(),
+        child: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: ReceiptScanView(),
         ),
       );
 }
@@ -32,18 +36,40 @@ class ReceiptScanView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      BlocBuilder<ReceiptScanBloc, BaseReceiptScanState>(
-        builder: (context, state) => switch (state) {
-          ReceiptScanState() => CameraPreviewWidget(
-              controller: ReceiptScanController(context),
-              state: CameraPreviewWidgetState(
-                previewState: state.cameraPreviewState,
-                photoPath: state.photoPath,
-                cameraController: state.controller,
-              ),
-            ),
-          ReceiptScanErrorState() => Center(child: Text(state.message)),
-          _ => const SizedBox.shrink()
+      BlocConsumer<ReceiptScanBloc, BaseReceiptScanState>(
+        listener: (context, state) {
+          if (state is ReceiptScanState && state.error != null) {
+            ErrorUtils.showErrorSnackBar(context, state.error!);
+          }
+        },
+        builder: (context, state) {
+          if (state is ReceiptScanInitState) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ReceiptScanState) {
+            if (state.error != null &&
+                state.cameraPreviewState != CameraPreviewState.cameraPreview &&
+                state.cameraPreviewState != CameraPreviewState.photoPreview) {
+              return Center(
+                child: ErrorDisplayWidget(
+                  error: state.error!,
+                  isFullScreen: true,
+                ),
+              );
+            }
+
+            if (state.controller != null) {
+              return CameraPreviewWidget(
+                controller: ReceiptScanController(context),
+                state: CameraPreviewWidgetState(
+                  previewState: state.cameraPreviewState,
+                  photoPath: state.photoPath,
+                  cameraController: state.controller!,
+                ),
+              );
+            }
+          }
+
+          return const SizedBox.shrink();
         },
       );
 }

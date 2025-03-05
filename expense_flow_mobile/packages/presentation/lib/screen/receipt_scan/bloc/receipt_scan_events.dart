@@ -17,3 +17,5 @@ class SetFocusPointEvent extends ReceiptScanEvent {
 class PhotoRejectedEvent extends ReceiptScanEvent {}
 
 class PhotoAcceptedEvent extends ReceiptScanEvent {}
+
+class DismissErrorEvent extends ReceiptScanEvent {}

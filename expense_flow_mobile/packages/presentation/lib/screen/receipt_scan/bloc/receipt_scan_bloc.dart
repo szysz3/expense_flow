@@ -1,18 +1,22 @@
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:vibration/vibration.dart';
 
+import '../../../../core/error/app_error.dart';
 import '../../../core/service/camera/camera_service.dart';
 import 'receipt_scan_events.dart';
 
 class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
   final CameraService _cameraService;
   final AnalyzeReceiptUseCase _analyzeReceiptUseCase;
+  final Logger _errorLogger;
 
   ReceiptScanBloc(
     this._cameraService,
     this._analyzeReceiptUseCase,
+    this._errorLogger,
   ) : super(ReceiptScanInitState()) {
     on<InitializeCameraEvent>(_initializeCamera);
     on<TakePhotoEvent>(_takePhoto);
@@ -20,6 +24,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     on<SetFocusPointEvent>(_handleSetFocusPoint);
     on<PhotoRejectedEvent>(_handleBackButtonPress);
     on<PhotoAcceptedEvent>(_handlePhotoAcceptedEvent);
+    on<DismissErrorEvent>(_handleDismissError);
   }
 
   Future<void> _initializeCamera(
@@ -29,8 +34,20 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     try {
       final controller = await _cameraService.initialize();
       emit(ReceiptScanState(controller: controller));
-    } catch (e) {
-      emit(ReceiptScanErrorState(message: 'Failed to initialize camera: $e'));
+    } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Failed to initialize camera',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
+      emit(ReceiptScanState(
+        controller: null,
+        error: AppError.fromException(
+          e,
+          onRetry: () => add(InitializeCameraEvent()),
+        ),
+      ));
     }
   }
 
@@ -40,12 +57,20 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
   ) {
     if (state is ReceiptScanState) {
       final scanState = state as ReceiptScanState;
+
+      if (scanState.error != null) {
+        emit(scanState.copyWith(error: null));
+        return;
+      }
+
       if (scanState.cameraPreviewState != CameraPreviewState.photoProcessing) {
         if (scanState.cameraPreviewState == CameraPreviewState.cameraPreview) {
           add(TakePhotoEvent());
         } else {
           emit(scanState.copyWith(
-              cameraPreviewState: CameraPreviewState.cameraPreview));
+            cameraPreviewState: CameraPreviewState.cameraPreview,
+            error: null,
+          ));
         }
       }
     }
@@ -59,43 +84,95 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       final scanState = state as ReceiptScanState;
 
       if (scanState.photoPath == null) {
-        emit(ReceiptScanErrorState(message: 'No photo available for analysis'));
+        emit(scanState.copyWith(
+          error: AppError(
+            message: 'No photo available',
+            details: 'Please take a photo first',
+          ),
+        ));
         return;
       }
 
       emit(scanState.copyWith(
         cameraPreviewState: CameraPreviewState.loading,
+        error: null,
       ));
 
-      final result = await _analyzeReceiptUseCase(
-        AnalyzeReceiptParams(
-          filePath: scanState.photoPath!,
-          llmType: 'local', // You might want to make this configurable
-        ),
-      );
+      try {
+        final result = await _analyzeReceiptUseCase(
+          AnalyzeReceiptParams(
+            filePath: scanState.photoPath!,
+            llmType: 'local',
+          ),
+        );
 
-      result.fold(
-        (failure) {
-          emit(scanState.copyWith(
-            cameraPreviewState: CameraPreviewState.uploadFailure,
-          ));
-        },
-        (receipt) {
-          emit(scanState.copyWith(
-            cameraPreviewState: CameraPreviewState.uploadSuccess,
-          ));
-        },
-      );
+        result.fold(
+          (failure) {
+            _errorLogger.e(
+              'Failed to analyze receipt',
+              error: failure,
+            );
 
-      // Wait for the success/failure animation to complete
-      await Future.delayed(const Duration(milliseconds: 1500));
+            emit(scanState.copyWith(
+              cameraPreviewState: CameraPreviewState.uploadFailure,
+              error: AppError.fromFailure(
+                failure,
+                onRetry: () => add(PhotoAcceptedEvent()),
+              ),
+            ));
+          },
+          (receipt) {
+            _errorLogger.i('Receipt analyzed successfully: ${receipt.id}');
 
-      if (state is ReceiptScanState) {
-        final currentState = state as ReceiptScanState;
-        emit(currentState.copyWith(
-          photoPath: null,
-          cameraPreviewState: CameraPreviewState.idle,
+            emit(scanState.copyWith(
+              cameraPreviewState: CameraPreviewState.uploadSuccess,
+              error: null,
+            ));
+          },
+        );
+
+        // Wait for the success/failure animation to complete
+        await Future.delayed(const Duration(milliseconds: 1500));
+
+        if (state is ReceiptScanState) {
+          final currentState = state as ReceiptScanState;
+
+          if (currentState.cameraPreviewState ==
+                  CameraPreviewState.uploadSuccess ||
+              currentState.cameraPreviewState ==
+                  CameraPreviewState.uploadFailure) {
+            emit(currentState.copyWith(
+              photoPath: null,
+              cameraPreviewState: CameraPreviewState.idle,
+              // Keep error if we had a failure
+            ));
+          }
+        }
+      } catch (e, stackTrace) {
+        _errorLogger.e(
+          'Exception during receipt analysis',
+          error: e,
+          stackTrace: stackTrace,
+        );
+
+        emit(scanState.copyWith(
+          cameraPreviewState: CameraPreviewState.uploadFailure,
+          error: AppError.fromException(
+            e,
+            onRetry: () => add(PhotoAcceptedEvent()),
+          ),
         ));
+
+        // Wait a moment then reset to idle state
+        await Future.delayed(const Duration(milliseconds: 1500));
+
+        if (state is ReceiptScanState) {
+          emit((state as ReceiptScanState).copyWith(
+            photoPath: null,
+            cameraPreviewState: CameraPreviewState.idle,
+            // Keep the error
+          ));
+        }
       }
     }
   }
@@ -109,7 +186,18 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       emit(scanState.copyWith(
         cameraPreviewState: CameraPreviewState.cameraPreview,
         photoPath: null,
+        error: null,
       ));
+    }
+  }
+
+  void _handleDismissError(
+    DismissErrorEvent event,
+    Emitter<BaseReceiptScanState> emit,
+  ) {
+    if (state is ReceiptScanState) {
+      final scanState = state as ReceiptScanState;
+      emit(scanState.copyWith(error: null));
     }
   }
 
@@ -120,8 +208,12 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     if (state is ReceiptScanState) {
       try {
         await _cameraService.setFocusPoint(event.point.dx, event.point.dy);
-      } catch (e) {
-        emit(ReceiptScanErrorState(message: 'Failed to set focus: $e'));
+      } catch (e, stackTrace) {
+        _errorLogger.e(
+          'Failed to set focus point',
+          error: e,
+          stackTrace: stackTrace,
+        );
       }
     }
   }
@@ -134,7 +226,9 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       final scanState = state as ReceiptScanState;
 
       emit(scanState.copyWith(
-          cameraPreviewState: CameraPreviewState.photoProcessing));
+        cameraPreviewState: CameraPreviewState.photoProcessing,
+        error: null, // Clear any errors when taking a new photo
+      ));
 
       try {
         await Vibration.vibrate(duration: 50);
@@ -144,10 +238,20 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
           cameraPreviewState: CameraPreviewState.photoPreview,
           photoPath: imagePath,
         ));
-      } catch (e) {
+      } catch (e, stackTrace) {
+        _errorLogger.e(
+          'Failed to take photo',
+          error: e,
+          stackTrace: stackTrace,
+        );
+
         emit(scanState.copyWith(
-            cameraPreviewState: CameraPreviewState.cameraPreview));
-        emit(ReceiptScanErrorState(message: 'Failed to take photo: $e'));
+          cameraPreviewState: CameraPreviewState.cameraPreview,
+          error: AppError.fromException(
+            e,
+            onRetry: () => add(TakePhotoEvent()),
+          ),
+        ));
       }
     }
   }

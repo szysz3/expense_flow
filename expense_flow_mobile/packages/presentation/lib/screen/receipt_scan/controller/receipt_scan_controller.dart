@@ -32,4 +32,9 @@ class ReceiptScanController implements CameraPreviewController {
   void onPhotoAcceptedButtonPressed() {
     context.read<ReceiptScanBloc>().add(PhotoAcceptedEvent());
   }
+
+  @override
+  void onErrorDismissed() {
+    context.read<ReceiptScanBloc>().add(DismissErrorEvent());
+  }
 }
