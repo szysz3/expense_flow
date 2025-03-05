@@ -2,17 +2,22 @@ import 'dart:async';
 
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 
+import '../../../../core/error/app_error.dart';
 import 'unprocessed_receipts_event.dart';
 import 'unprocessed_receipts_state.dart';
 
 class UnprocessedReceiptsBloc
     extends Bloc<UnprocessedReceiptsEvent, UnprocessedReceiptsState> {
   final ReceiptRepository _repository;
+  final Logger _errorLogger;
 
   UnprocessedReceiptsBloc({
     required ReceiptRepository repository,
+    required Logger errorLogger,
   })  : _repository = repository,
+        _errorLogger = errorLogger,
         super(const UnprocessedReceiptsState()) {
     on<InitEvent>(_handleInit);
     on<RefreshEvent>(_handleRefresh);
@@ -34,16 +39,31 @@ class UnprocessedReceiptsBloc
 
   Future<void> _loadReceipts(Emitter<UnprocessedReceiptsState> emit) async {
     try {
-      emit(state.copyWith(isLoading: true));
+      _refreshCompleter = Completer<void>();
+
+      if (state.receipts.isEmpty) {
+        emit(state.copyWith(isLoading: true, error: null));
+      } else {
+        emit(state.copyWith(error: null));
+      }
 
       final result = await _repository.getUnprocessedReceipts();
 
       result.fold(
         (failure) {
+          _errorLogger.e(
+            'Failed to get unprocessed receipts',
+            error: failure,
+          );
+
           emit(state.copyWith(
             isLoading: false,
-            error: failure.message,
+            error: AppError.fromFailure(
+              failure,
+              onRetry: () => add(const UnprocessedReceiptsEvent.refresh()),
+            ),
           ));
+          _refreshCompleter?.complete();
         },
         (response) {
           emit(state.copyWith(
@@ -51,13 +71,24 @@ class UnprocessedReceiptsBloc
             isLoading: false,
             error: null,
           ));
+          _refreshCompleter?.complete();
         },
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Exception in UnprocessedReceiptsBloc',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
       emit(state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: AppError.fromException(
+          e,
+          onRetry: () => add(const UnprocessedReceiptsEvent.refresh()),
+        ),
       ));
+      _refreshCompleter?.complete();
     }
   }
 
