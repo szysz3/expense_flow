@@ -6,13 +6,12 @@ from fastapi.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_422_UNPROCESSABLE_ENTITY
 import tempfile
 import os
-from typing import Optional, Union
+from typing import Optional
 from datetime import datetime
-import asyncio
 import logging
 from contextlib import contextmanager
 
-from expense_flow.config import get_config, Config
+from expense_flow.config import get_config
 from expense_flow.api.repository.base_repository import DatabaseError
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
@@ -104,7 +103,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Configure this for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

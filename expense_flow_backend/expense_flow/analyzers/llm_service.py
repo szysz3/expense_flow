@@ -1,11 +1,11 @@
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 import json
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
 from expense_flow.utils.validator import ResponseValidator
-from expense_flow.utils.retry import retry_async, RetryableError, ProcessingError
+from expense_flow.utils.retry import retry_async, ProcessingError
 
 class LLMProvider:
     """Interface for LLM providers"""

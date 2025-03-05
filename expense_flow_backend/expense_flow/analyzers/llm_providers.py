@@ -1,9 +1,7 @@
-from typing import Dict, Any
 from openai import OpenAI
 from ollama import Client
 from expense_flow.config import Config
 from .llm_service import LLMProvider
-
 
 class ChatGPTProvider(LLMProvider):
     """ChatGPT provider using OpenAI API"""

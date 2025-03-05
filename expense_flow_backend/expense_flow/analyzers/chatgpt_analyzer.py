@@ -5,7 +5,6 @@ from expense_flow.utils.validator import ResponseValidator
 from .llm_service import LLMService
 from .llm_providers import ChatGPTProvider
 
-
 class ChatGPTAnalyzer(BaseAnalyzer):
     """Receipt analyzer using ChatGPT via OpenAI API"""
     

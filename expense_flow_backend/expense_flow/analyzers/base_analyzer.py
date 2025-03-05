@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from rich.console import Console
 from rich.panel import Panel
 from rich.syntax import Syntax
 import json
 import os
 from pathlib import Path
-
 
 class BaseAnalyzer(ABC):
     """Base class for receipt analyzers"""

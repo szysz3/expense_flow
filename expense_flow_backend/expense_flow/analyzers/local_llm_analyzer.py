@@ -1,10 +1,9 @@
-from typing import Dict, Any, List
+from typing import Dict, Any
 from .base_analyzer import BaseAnalyzer
 from expense_flow.config import Config
 from expense_flow.utils.validator import ResponseValidator
 from .llm_service import LLMService
 from .llm_providers import OllamaProvider
-
 
 class LocalLLMAnalyzer(BaseAnalyzer):
     """Receipt analyzer using local LLM with Ollama"""
