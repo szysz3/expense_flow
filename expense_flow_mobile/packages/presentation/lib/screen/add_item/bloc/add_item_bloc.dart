@@ -3,20 +3,27 @@ import 'dart:async';
 import 'package:domain/model/receipt_item.dart';
 import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 
+import '../../../../core/error/app_error.dart';
 import 'add_item_event.dart';
 import 'add_item_state.dart';
 
 class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
   final CreateReceiptUseCase _createReceiptUseCase;
+  final Logger _errorLogger;
 
-  AddItemBloc(this._createReceiptUseCase) : super(const AddItemState()) {
+  AddItemBloc(
+    this._createReceiptUseCase,
+    this._errorLogger,
+  ) : super(const AddItemState()) {
     on<DescriptionChanged>(_handleDescriptionChanged);
     on<QuantityChanged>(_handleQuantityChanged);
     on<PriceChanged>(_handlePriceChanged);
     on<CategorySelected>(_handleCategorySelected);
     on<Submitted>(_handleSubmitted);
     on<Reset>(_handleReset);
+    on<ClearError>(_handleClearError);
   }
 
   void _handleDescriptionChanged(
@@ -30,15 +37,19 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     QuantityChanged event,
     Emitter<AddItemState> emit,
   ) {
-    if (event.quantity.isEmpty) {
-      emit(state.copyWith(quantity: 0));
-      return;
-    }
+    try {
+      if (event.quantity.isEmpty) {
+        emit(state.copyWith(quantity: 0));
+        return;
+      }
 
-    final quantity = double.tryParse(event.quantity);
+      final quantity = double.tryParse(event.quantity);
 
-    if (quantity != null) {
-      emit(state.copyWith(quantity: quantity));
+      if (quantity != null) {
+        emit(state.copyWith(quantity: quantity));
+      }
+    } catch (e) {
+      _errorLogger.w('Error parsing quantity: ${event.quantity}', error: e);
     }
   }
 
@@ -46,14 +57,18 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     PriceChanged event,
     Emitter<AddItemState> emit,
   ) {
-    if (event.price.isEmpty) {
-      emit(state.copyWith(totalPrice: 0));
-      return;
-    }
+    try {
+      if (event.price.isEmpty) {
+        emit(state.copyWith(totalPrice: 0));
+        return;
+      }
 
-    final price = double.tryParse(event.price);
-    if (price != null) {
-      emit(state.copyWith(totalPrice: price));
+      final price = double.tryParse(event.price);
+      if (price != null) {
+        emit(state.copyWith(totalPrice: price));
+      }
+    } catch (e) {
+      _errorLogger.w('Error parsing price: ${event.price}', error: e);
     }
   }
 
@@ -68,37 +83,74 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     emit(const AddItemState());
   }
 
+  void _handleClearError(ClearError event, Emitter<AddItemState> emit) {
+    emit(state.copyWith(error: null));
+  }
+
   Future<void> _handleSubmitted(
     Submitted event,
     Emitter<AddItemState> emit,
   ) async {
-    if (!state.isValid) return;
+    if (!state.isValid) {
+      emit(state.copyWith(
+        error: AppError(
+          message: 'Invalid Data',
+          details: 'Please fill in all required fields.',
+          isRetryable: false,
+        ),
+      ));
+      return;
+    }
 
-    emit(state.copyWith(isSubmitting: true));
+    emit(state.copyWith(isSubmitting: true, error: null));
 
-    final params = ReceiptItem(
-      description: state.description,
-      quantity: state.quantity,
-      totalPrice: state.totalPrice,
-      category: state.selectedCategory.name,
-    );
+    try {
+      final params = ReceiptItem(
+        description: state.description,
+        quantity: state.quantity,
+        totalPrice: state.totalPrice,
+        category: state.selectedCategory.name,
+      );
 
-    final result = await _createReceiptUseCase(params);
+      final result = await _createReceiptUseCase(params);
 
-    result.fold(
-      (failure) {
-        emit(state.copyWith(
-          isSubmitting: false,
-          error: failure.message,
-        ));
-      },
-      (receipt) {
-        emit(state.copyWith(
-          isSubmitting: false,
-          isSuccess: true,
-        ));
-        add(Reset());
-      },
-    );
+      result.fold(
+        (failure) {
+          _errorLogger.e(
+            'Failed to create receipt item',
+            error: failure,
+          );
+
+          emit(state.copyWith(
+            isSubmitting: false,
+            error: AppError.fromFailure(failure),
+          ));
+        },
+        (receipt) {
+          _errorLogger.i('Receipt item created successfully: ${receipt.id}');
+
+          emit(state.copyWith(
+            isSubmitting: false,
+            isSuccess: true,
+            error: null,
+          ));
+
+          Future.delayed(const Duration(seconds: 2), () {
+            add(Reset());
+          });
+        },
+      );
+    } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Exception during item creation',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
+      emit(state.copyWith(
+        isSubmitting: false,
+        error: AppError.fromException(e),
+      ));
+    }
   }
 }

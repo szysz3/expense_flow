@@ -1,5 +1,6 @@
-// add_item/bloc/add_item_state.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
+
+import '../../../core/error/app_error.dart';
 
 part 'add_item_state.freezed.dart';
 
@@ -25,7 +26,7 @@ class AddItemState with _$AddItemState {
     @Default(ItemCategory.groceries) ItemCategory selectedCategory,
     @Default(false) bool isSubmitting,
     @Default(false) bool isSuccess,
-    String? error,
+    AppError? error,
   }) = _AddItemState;
 
   const AddItemState._();

@@ -1,14 +1,17 @@
+// lib/presentation/screen/add_item/add_item_screen.dart
 import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_bloc.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_event.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_state.dart';
 import 'package:presentation/screen/add_item/widget/category_button.dart';
 
+import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/loading_indicator_widget.dart';
 import '../../di/di.dart';
@@ -18,8 +21,11 @@ class AddItemScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-      create: (_) => AddItemBloc(getIt<CreateReceiptUseCase>()),
-      child: AddItemView());
+      create: (_) => AddItemBloc(
+            getIt<CreateReceiptUseCase>(),
+            getIt<Logger>(),
+          ),
+      child: const AddItemView());
 }
 
 class AddItemView extends StatefulWidget {
@@ -50,6 +56,11 @@ class _AddItemViewState extends State<AddItemView> {
             _quantityController.clear();
             _priceController.clear();
           }
+
+          if (state.error != null) {
+            ErrorUtils.showErrorSnackBar(context, state.error!);
+            context.read<AddItemBloc>().add(const AddItemEvent.clearError());
+          }
         },
         builder: (context, state) => GestureDetector(
           onTap: () {
@@ -58,50 +69,52 @@ class _AddItemViewState extends State<AddItemView> {
           child: Stack(
             children: [
               Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: ConstrainedBox(
-                            constraints:
-                                const BoxConstraints(maxWidth: double.infinity),
-                            child: SingleChildScrollView(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  _buildCategorySection(state),
-                                  const SizedBox(height: 12),
-                                  _buildDescriptionSection(),
-                                  const SizedBox(height: 12),
-                                  _buildQuantityAndPriceSection(),
-                                ],
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints:
+                              const BoxConstraints(maxWidth: double.infinity),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildCategorySection(state),
+                                const SizedBox(height: 12),
+                                _buildDescriptionSection(),
+                                const SizedBox(height: 12),
+                                _buildQuantityAndPriceSection(context),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Center(
+                        child: AnimatedSquareButton(
+                          isProcessing: !state.isValid || state.isSubmitting,
+                          onPressed: () => context.read<AddItemBloc>().add(
+                                const AddItemEvent.submitted(),
                               ),
-                            ),
+                          icon: SvgPicture.asset(
+                            'packages/presentation/assets/icon_add.svg',
+                            width: 40,
+                            height: 40,
                           ),
+                          size: 64,
+                          iconSize: 40,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Center(
-                          child: AnimatedSquareButton(
-                            isProcessing: !state.isValid,
-                            onPressed: () => context.read<AddItemBloc>().add(
-                                  const AddItemEvent.submitted(),
-                                ),
-                            icon: SvgPicture.asset(
-                              'packages/presentation/assets/icon_add.svg',
-                              width: 40,
-                              height: 40,
-                            ),
-                            size: 64,
-                            iconSize: 40,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )),
+                    ),
+                  ],
+                ),
+              ),
+              // Loading or success overlay
               if (state.isSubmitting || state.isSuccess)
                 Container(
                   color: Colors.black54,
@@ -136,7 +149,7 @@ class _AddItemViewState extends State<AddItemView> {
         ),
       );
 
-  Widget _buildQuantityAndPriceSection() => Container(
+  Widget _buildQuantityAndPriceSection(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
@@ -181,7 +194,7 @@ class _AddItemViewState extends State<AddItemView> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Total Price',
                   hintText: 'Enter price',
                   border: InputBorder.none,

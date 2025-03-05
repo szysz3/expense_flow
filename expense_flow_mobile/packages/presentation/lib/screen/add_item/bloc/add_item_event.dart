@@ -1,4 +1,3 @@
-// add_item/bloc/add_item_event.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'add_item_state.dart';
@@ -20,4 +19,6 @@ class AddItemEvent with _$AddItemEvent {
   const factory AddItemEvent.submitted() = Submitted;
 
   const factory AddItemEvent.reset() = Reset;
+
+  const factory AddItemEvent.clearError() = ClearError;
 }
