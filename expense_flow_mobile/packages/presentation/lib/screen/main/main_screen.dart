@@ -14,9 +14,9 @@ import 'package:presentation/screen/main/bloc/camera_preview_state.dart';
 import 'package:presentation/screen/receipt_scan/receipt_scan_screen.dart';
 import 'package:presentation/screen/summary/summary_screen.dart';
 import 'package:presentation/screen/unprocessed_receipts/unprocessed_receipts_screen.dart';
-import 'package:presentation/services/camera/camera_service.dart';
 import 'package:presentation/theme/expense_flow_color_scheme.dart';
 
+import '../../core/service/camera/camera_service.dart';
 import '../add_item/add_item_screen.dart';
 
 class MainScreen extends StatelessWidget {

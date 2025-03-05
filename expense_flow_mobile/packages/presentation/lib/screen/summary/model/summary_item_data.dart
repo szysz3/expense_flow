@@ -1,4 +1,4 @@
-import '../../../common/widget/expandable_list_item/expandable_item_data.dart';
+import '../../../core/widget/expandable_list_item/expandable_item_data.dart';
 import 'category_summary.dart';
 
 class SummaryItemData implements ExpandableItemData {

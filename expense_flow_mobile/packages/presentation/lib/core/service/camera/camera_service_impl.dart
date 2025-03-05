@@ -1,7 +1,8 @@
-import 'package:injectable/injectable.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
-import 'package:presentation/services/camera/camera_service.dart';
+import 'package:injectable/injectable.dart';
+
+import 'camera_service.dart';
 
 @LazySingleton(as: CameraService)
 class CameraServiceImpl implements CameraService {

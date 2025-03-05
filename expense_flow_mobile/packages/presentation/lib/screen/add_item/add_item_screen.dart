@@ -9,8 +9,8 @@ import 'package:presentation/screen/add_item/bloc/add_item_event.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_state.dart';
 import 'package:presentation/screen/add_item/widget/category_button.dart';
 
-import '../../common/widget/animated_square_button.dart';
-import '../../common/widget/loading_indicator_widget.dart';
+import '../../core/widget/animated_square_button.dart';
+import '../../core/widget/loading_indicator_widget.dart';
 import '../../di/di.dart';
 
 class AddItemScreen extends StatelessWidget {

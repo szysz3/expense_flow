@@ -1,4 +1,4 @@
-import '../../../common/widget/expandable_list_item/expandable_header_data.dart';
+import '../../../core/widget/expandable_list_item/expandable_header_data.dart';
 import 'month_summary.dart';
 
 class SummaryItemHeaderData implements ExpandableHeaderData {

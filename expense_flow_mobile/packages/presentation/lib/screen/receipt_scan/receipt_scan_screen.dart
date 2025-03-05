@@ -8,7 +8,8 @@ import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:presentation/screen/receipt_scan/controller/receipt_scan_controller.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_widget.dart';
-import 'package:presentation/services/camera/camera_service.dart';
+
+import '../../core/service/camera/camera_service.dart';
 
 class ReceiptScanScreen extends StatelessWidget {
   const ReceiptScanScreen({super.key});
