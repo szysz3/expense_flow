@@ -12,5 +12,6 @@ class CategoryItemData implements ExpandableItemData {
   @override
   double get amount => item.amount;
 
+  @override
   int get count => item.count;
 }

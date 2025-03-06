@@ -1,13 +1,14 @@
 import 'dart:math';
 import 'dart:ui';
-import 'package:flutter/material.dart';
+
 import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
 import 'package:presentation/theme/expense_flow_color_scheme.dart';
 
 class CameraPreview extends StatelessWidget {
   final CameraController controller;
 
-  const CameraPreview(this.controller);
+  const CameraPreview(this.controller, {super.key});
 
   @override
   Widget build(BuildContext context) {
