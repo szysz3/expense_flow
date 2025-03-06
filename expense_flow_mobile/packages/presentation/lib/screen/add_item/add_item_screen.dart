@@ -96,7 +96,7 @@ class _AddItemViewState extends State<AddItemView> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: Center(
-                        child: AnimatedSquareButton(
+                        child: AnimatedSquareButton.square(
                           isProcessing: !state.isValid || state.isSubmitting,
                           onPressed: () => context.read<AddItemBloc>().add(
                                 const AddItemEvent.submitted(),

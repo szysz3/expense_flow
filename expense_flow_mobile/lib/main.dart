@@ -20,7 +20,7 @@ class ExpenseFlowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Expense Flow',
-      theme: ExpenseFlowTheme.lightTheme,
+      theme: ExpenseFlowTheme.darkTheme,
       darkTheme: ExpenseFlowTheme.darkTheme,
       themeMode: ThemeMode.dark,
       home: MainScreen(),

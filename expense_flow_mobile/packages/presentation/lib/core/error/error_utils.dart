@@ -14,8 +14,9 @@ class ErrorUtils {
         children: [
           Text(
             error.message,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onError.withOpacity(0.8),
             ),
           ),
           if (error.details != null)

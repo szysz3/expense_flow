@@ -71,6 +71,7 @@ flutter:
     - assets/icon_pending.svg
     - assets/icon_processing.svg
     - assets/icon_unprocessed.svg
+    - assets/icon_failure.svg
 
 
   # To add assets to your package, add an assets section, like this:

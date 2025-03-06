@@ -1,0 +1,33 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Glitch effect layers - X shape -->
+    <path d="M25,25 L75,75 M75,25 L25,75" fill="none" opacity="0.4" stroke="#ff00ff"
+        stroke-width="8" />
+    <path d="M27,27 L73,73 M73,27 L27,73" fill="none" opacity="0.6" stroke="#00ffff"
+        stroke-width="6" />
+
+    <!-- Main X mark -->
+    <path d="M30,30 L70,70 M70,30 L30,70" fill="none" stroke="#ffffff" stroke-width="4" />
+
+    <!-- Circuit border -->
+    <circle cx="50" cy="50" fill="none" opacity="0.3" r="35" stroke="#ff00ff" stroke-width="3" />
+    <circle cx="50" cy="50" fill="none" opacity="0.5" r="32" stroke="#00ffff" stroke-width="2" />
+
+    <!-- Cyberpunk decorative elements -->
+    <circle cx="30" cy="30" fill="#00ff99" r="4" />
+    <circle cx="70" cy="70" fill="#00ff99" r="4" />
+    <circle cx="30" cy="70" fill="#00ff99" r="4" />
+    <circle cx="70" cy="30" fill="#00ff99" r="4" />
+
+    <!-- Circuit-like details -->
+    <line stroke="#00ff99" stroke-width="2" x1="20" x2="30" y1="30" y2="30" />
+    <line stroke="#00ff99" stroke-width="2" x1="70" x2="70" y1="20" y2="30" />
+    <line stroke="#00ff99" stroke-width="2" x1="30" x2="30" y1="80" y2="70" />
+    <line stroke="#00ff99" stroke-width="2" x1="80" x2="70" y1="70" y2="70" />
+
+    <!-- Additional geometric elements -->
+    <rect fill="#00ffff" height="10" opacity="0.8" width="4" x="48" y="15" />
+    <rect fill="#00ffff" height="10" opacity="0.8" width="4" x="48" y="75" />
+
+    <!-- Glitch accent -->
+    <path d="M40,50 L60,50" opacity="0.7" stroke="#ff00ff" stroke-width="3" />
+</svg>

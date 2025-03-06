@@ -85,7 +85,7 @@ class CameraPreviewWidget extends StatelessWidget {
         bottom: 20,
         left: 0,
         right: 0,
-        child: AnimatedSquareButton(
+        child: AnimatedSquareButton.square(
           isProcessing:
               state.previewState == CameraPreviewState.photoProcessing,
           onPressed: controller.onCameraButtonPressed,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../error/app_error.dart';
+import 'animated_square_button.dart';
 
 class ErrorDisplayWidget extends StatelessWidget {
   final AppError error;
@@ -28,10 +30,10 @@ class ErrorDisplayWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Theme.of(context).colorScheme.error,
+            SvgPicture.asset(
+              'packages/presentation/assets/icon_failure.svg',
+              width: 64,
+              height: 64,
             ),
             const SizedBox(height: 16),
             Text(
@@ -54,9 +56,12 @@ class ErrorDisplayWidget extends StatelessWidget {
             ],
             if (error.isRetryable && error.onRetry != null) ...[
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: error.onRetry,
-                child: const Text('Retry'),
+              _buildStyledButton(
+                context: context,
+                onPressed: error.onRetry!,
+                label: 'Retry',
+                width: 100.0,
+                height: 52.0,
               ),
             ],
           ],
@@ -78,9 +83,10 @@ class ErrorDisplayWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.error_outline,
-                color: Theme.of(context).colorScheme.error,
+              SvgPicture.asset(
+                'packages/presentation/assets/icon_failure.svg',
+                width: 24,
+                height: 24,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -109,13 +115,44 @@ class ErrorDisplayWidget extends StatelessWidget {
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: error.onRetry,
-                child: const Text('Retry'),
+              child: _buildStyledButton(
+                context: context,
+                onPressed: error.onRetry!,
+                label: 'Retry',
+                width: 100.0,
+                height: 52.0,
+                iconSize: 20.0,
               ),
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildStyledButton({
+    required BuildContext context,
+    required VoidCallback onPressed,
+    required String label,
+    double width = AnimatedSquareButtonConstants.defaultSize,
+    double height = AnimatedSquareButtonConstants.defaultSize,
+    double iconSize = AnimatedSquareButtonConstants.defaultIconSize,
+  }) {
+    return AnimatedSquareButton(
+      isProcessing: false,
+      onPressed: onPressed,
+      height: height,
+      width: width,
+      iconSize: iconSize,
+      borderColor: Colors.white,
+      backgroundColor: Colors.black,
+      icon: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
       ),
     );
   }

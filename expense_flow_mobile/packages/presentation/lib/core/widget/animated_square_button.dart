@@ -13,7 +13,8 @@ class AnimatedSquareButton extends StatelessWidget {
   final bool isProcessing;
   final VoidCallback onPressed;
   final Widget icon;
-  final double size;
+  final double width;
+  final double height;
   final double iconSize;
   final Color borderColor;
   final Color backgroundColor;
@@ -23,7 +24,8 @@ class AnimatedSquareButton extends StatelessWidget {
   /// [isProcessing] determines if the button is in a processing state
   /// [onPressed] callback for button press
   /// [icon] widget to display in the button
-  /// [size] overall button size (defaults to 64.0)
+  /// [width] button width (defaults to 64.0)
+  /// [height] button height (defaults to 64.0)
   /// [iconSize] size of the icon (defaults to 40.0)
   /// [borderColor] color of button border (defaults to white)
   /// [backgroundColor] color of button background (defaults to black)
@@ -32,11 +34,39 @@ class AnimatedSquareButton extends StatelessWidget {
     required this.isProcessing,
     required this.onPressed,
     required this.icon,
-    this.size = AnimatedSquareButtonConstants.defaultSize,
+    this.width = AnimatedSquareButtonConstants.defaultSize,
+    this.height = AnimatedSquareButtonConstants.defaultSize,
     this.iconSize = AnimatedSquareButtonConstants.defaultIconSize,
     this.borderColor = Colors.white,
     this.backgroundColor = Colors.black,
   });
+
+  /// Creates an animated button with equal width and height.
+  ///
+  /// This constructor provides backward compatibility with the original implementation.
+  /// [size] is used for both width and height.
+  factory AnimatedSquareButton.square({
+    Key? key,
+    required bool isProcessing,
+    required VoidCallback onPressed,
+    required Widget icon,
+    double size = AnimatedSquareButtonConstants.defaultSize,
+    double iconSize = AnimatedSquareButtonConstants.defaultIconSize,
+    Color borderColor = Colors.white,
+    Color backgroundColor = Colors.black,
+  }) {
+    return AnimatedSquareButton(
+      key: key,
+      isProcessing: isProcessing,
+      onPressed: onPressed,
+      icon: icon,
+      width: size,
+      height: size,
+      iconSize: iconSize,
+      borderColor: borderColor,
+      backgroundColor: backgroundColor,
+    );
+  }
 
   @override
   Widget build(BuildContext context) => Center(
@@ -56,8 +86,8 @@ class AnimatedSquareButton extends StatelessWidget {
       );
 
   Widget _buildButtonContainer(BuildContext context) => Container(
-        width: size,
-        height: size,
+        width: width,
+        height: height,
         decoration: BoxDecoration(
           border: Border.all(color: borderColor),
           borderRadius:
