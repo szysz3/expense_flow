@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../../../core/error/app_error.dart';
@@ -14,13 +15,11 @@ import 'summary_state.dart';
 class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
   final GetMonthsSummaryUseCase _getMonthsSummaryUseCase;
   final Logger _errorLogger;
+  final LocalizationService _localizationService;
 
-  SummaryBloc({
-    required GetMonthsSummaryUseCase getMonthsSummaryUseCase,
-    required Logger errorLogger,
-  })  : _getMonthsSummaryUseCase = getMonthsSummaryUseCase,
-        _errorLogger = errorLogger,
-        super(const SummaryState()) {
+  SummaryBloc(this._getMonthsSummaryUseCase, this._errorLogger,
+      this._localizationService)
+      : super(const SummaryState()) {
     on<InitEvent>(_handleInit);
     on<ToggleMonthEvent>(_handleToggleMonth);
   }
@@ -52,10 +51,9 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
 
           emit(state.copyWith(
             isLoading: false,
-            error: AppError.fromFailure(
-              failure,
-              onRetry: () => add(const SummaryEvent.init()),
-            ),
+            error: AppError.fromFailure(failure,
+                onRetry: () => add(const SummaryEvent.init()),
+                localizationService: _localizationService),
           ));
           _refreshCompleter?.complete();
         },
@@ -94,10 +92,9 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
 
       emit(state.copyWith(
         isLoading: false,
-        error: AppError.fromException(
-          e,
-          onRetry: () => add(const SummaryEvent.init()),
-        ),
+        error: AppError.fromException(e,
+            onRetry: () => add(const SummaryEvent.init()),
+            localizationService: _localizationService),
       ));
       _refreshCompleter?.complete();
     }

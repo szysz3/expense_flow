@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:domain/model/receipt_item.dart';
 import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../../../core/error/app_error.dart';
@@ -12,10 +13,12 @@ import 'add_item_state.dart';
 class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
   final CreateReceiptUseCase _createReceiptUseCase;
   final Logger _errorLogger;
+  final LocalizationService _localizationService;
 
   AddItemBloc(
     this._createReceiptUseCase,
     this._errorLogger,
+    this._localizationService,
   ) : super(const AddItemState()) {
     on<DescriptionChanged>(_handleDescriptionChanged);
     on<QuantityChanged>(_handleQuantityChanged);
@@ -94,8 +97,8 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     if (!state.isValid) {
       emit(state.copyWith(
         error: AppError(
-          message: 'Invalid Data',
-          details: 'Please fill in all required fields.',
+          message: _localizationService.localizations.invalidData,
+          details: _localizationService.localizations.fillAllRequiredFields,
           isRetryable: false,
         ),
       ));
@@ -123,7 +126,8 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
 
           emit(state.copyWith(
             isSubmitting: false,
-            error: AppError.fromFailure(failure),
+            error: AppError.fromFailure(failure,
+                localizationService: _localizationService),
           ));
         },
         (receipt) {
@@ -149,7 +153,8 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
 
       emit(state.copyWith(
         isSubmitting: false,
-        error: AppError.fromException(e),
+        error: AppError.fromException(e,
+            localizationService: _localizationService),
       ));
     }
   }

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/localization.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_bloc.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_event.dart';
@@ -24,6 +24,7 @@ class AddItemScreen extends StatelessWidget {
       create: (_) => AddItemBloc(
             getIt<CreateReceiptUseCase>(),
             getIt<Logger>(),
+            getIt<LocalizationService>(),
           ),
       child: const AddItemView());
 }

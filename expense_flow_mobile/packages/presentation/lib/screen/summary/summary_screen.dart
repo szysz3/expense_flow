@@ -2,6 +2,7 @@ import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/screen/summary/bloc/summary_bloc.dart';
 import 'package:presentation/screen/summary/bloc/summary_events.dart';
@@ -18,8 +19,9 @@ class SummaryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BlocProvider(
         create: (_) => SummaryBloc(
-          getMonthsSummaryUseCase: getIt<GetMonthsSummaryUseCase>(),
-          errorLogger: getIt<Logger>(),
+          getIt<GetMonthsSummaryUseCase>(),
+          getIt<Logger>(),
+          getIt<LocalizationService>(),
         )..add(const SummaryEvent.init()),
         child: const Padding(
           padding: EdgeInsets.all(16.0),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../../../core/error/app_error.dart';
@@ -12,13 +13,11 @@ class UnprocessedReceiptsBloc
     extends Bloc<UnprocessedReceiptsEvent, UnprocessedReceiptsState> {
   final ReceiptRepository _repository;
   final Logger _errorLogger;
+  final LocalizationService _localizationService;
 
-  UnprocessedReceiptsBloc({
-    required ReceiptRepository repository,
-    required Logger errorLogger,
-  })  : _repository = repository,
-        _errorLogger = errorLogger,
-        super(const UnprocessedReceiptsState()) {
+  UnprocessedReceiptsBloc(
+      this._repository, this._errorLogger, this._localizationService)
+      : super(const UnprocessedReceiptsState()) {
     on<InitEvent>(_handleInit);
     on<RefreshEvent>(_handleRefresh);
   }
@@ -58,10 +57,9 @@ class UnprocessedReceiptsBloc
 
           emit(state.copyWith(
             isLoading: false,
-            error: AppError.fromFailure(
-              failure,
-              onRetry: () => add(const UnprocessedReceiptsEvent.refresh()),
-            ),
+            error: AppError.fromFailure(failure,
+                onRetry: () => add(const UnprocessedReceiptsEvent.refresh()),
+                localizationService: _localizationService),
           ));
           _refreshCompleter?.complete();
         },
@@ -83,10 +81,9 @@ class UnprocessedReceiptsBloc
 
       emit(state.copyWith(
         isLoading: false,
-        error: AppError.fromException(
-          e,
-          onRetry: () => add(const UnprocessedReceiptsEvent.refresh()),
-        ),
+        error: AppError.fromException(e,
+            onRetry: () => add(const UnprocessedReceiptsEvent.refresh()),
+            localizationService: _localizationService),
       ));
       _refreshCompleter?.complete();
     }

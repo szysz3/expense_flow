@@ -2,6 +2,7 @@ import 'package:domain/repository/receipt_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
@@ -18,8 +19,9 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BlocProvider(
         create: (_) => UnprocessedReceiptsBloc(
-          repository: getIt<ReceiptRepository>(),
-          errorLogger: getIt<Logger>(),
+          getIt<ReceiptRepository>(),
+          getIt<Logger>(),
+          getIt<LocalizationService>(),
         )..add(const UnprocessedReceiptsEvent.init()),
         child: const Padding(
           padding: EdgeInsets.all(16.0),

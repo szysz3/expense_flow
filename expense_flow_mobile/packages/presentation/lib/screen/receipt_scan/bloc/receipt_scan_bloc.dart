@@ -1,5 +1,6 @@
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:vibration/vibration.dart';
@@ -12,11 +13,13 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
   final CameraService _cameraService;
   final AnalyzeReceiptUseCase _analyzeReceiptUseCase;
   final Logger _errorLogger;
+  final LocalizationService _localizationService;
 
   ReceiptScanBloc(
     this._cameraService,
     this._analyzeReceiptUseCase,
     this._errorLogger,
+    this._localizationService,
   ) : super(ReceiptScanInitState()) {
     on<InitializeCameraEvent>(_initializeCamera);
     on<TakePhotoEvent>(_takePhoto);
@@ -43,10 +46,9 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
 
       emit(ReceiptScanState(
         controller: null,
-        error: AppError.fromException(
-          e,
-          onRetry: () => add(InitializeCameraEvent()),
-        ),
+        error: AppError.fromException(e,
+            onRetry: () => add(InitializeCameraEvent()),
+            localizationService: _localizationService),
       ));
     }
   }
@@ -86,8 +88,8 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       if (scanState.photoPath == null) {
         emit(scanState.copyWith(
           error: AppError(
-            message: 'No photo available',
-            details: 'Please take a photo first',
+            message: _localizationService.localizations.noPhotoAvailable,
+            details: _localizationService.localizations.takePhotoFirst,
           ),
         ));
         return;
@@ -115,10 +117,9 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
 
             emit(scanState.copyWith(
               cameraPreviewState: CameraPreviewState.uploadFailure,
-              error: AppError.fromFailure(
-                failure,
-                onRetry: () => add(PhotoAcceptedEvent()),
-              ),
+              error: AppError.fromFailure(failure,
+                  onRetry: () => add(PhotoAcceptedEvent()),
+                  localizationService: _localizationService),
             ));
           },
           (receipt) {
@@ -157,10 +158,9 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
 
         emit(scanState.copyWith(
           cameraPreviewState: CameraPreviewState.uploadFailure,
-          error: AppError.fromException(
-            e,
-            onRetry: () => add(PhotoAcceptedEvent()),
-          ),
+          error: AppError.fromException(e,
+              onRetry: () => add(PhotoAcceptedEvent()),
+              localizationService: _localizationService),
         ));
 
         // Wait a moment then reset to idle state
@@ -247,10 +247,9 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
 
         emit(scanState.copyWith(
           cameraPreviewState: CameraPreviewState.cameraPreview,
-          error: AppError.fromException(
-            e,
-            onRetry: () => add(TakePhotoEvent()),
-          ),
+          error: AppError.fromException(e,
+              onRetry: () => add(TakePhotoEvent()),
+              localizationService: _localizationService),
         ));
       }
     }

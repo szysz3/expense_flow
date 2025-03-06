@@ -1,6 +1,7 @@
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/di/di.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_bloc.dart';
@@ -23,6 +24,7 @@ class ReceiptScanScreen extends StatelessWidget {
           getIt<CameraService>(),
           getIt<AnalyzeReceiptUseCase>(),
           getIt<Logger>(),
+          getIt<LocalizationService>(),
         )..add(InitializeCameraEvent()),
         child: const Padding(
           padding: EdgeInsets.all(16.0),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../../../core/error/app_error.dart';
@@ -14,13 +15,13 @@ import 'categories_state.dart';
 class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
   final GetCategoriesUseCase _getCategoriesUseCase;
   final Logger _errorLogger;
+  final LocalizationService _localizationService;
 
-  CategoriesBloc({
-    required GetCategoriesUseCase getCategoriesUseCase,
-    required Logger errorLogger,
-  })  : _getCategoriesUseCase = getCategoriesUseCase,
-        _errorLogger = errorLogger,
-        super(const CategoriesState()) {
+  CategoriesBloc(
+    this._getCategoriesUseCase,
+    this._errorLogger,
+    this._localizationService,
+  ) : super(const CategoriesState()) {
     on<InitEvent>(_handleInit);
     on<ToggleCategoryEvent>(_handleToggleCategory);
   }
@@ -59,6 +60,7 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
             error: AppError.fromFailure(
               failure,
               onRetry: () => add(const CategoriesEvent.init()),
+              localizationService: _localizationService,
             ),
           ));
           _refreshCompleter?.complete();
@@ -97,10 +99,9 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
 
       emit(state.copyWith(
         isLoading: false,
-        error: AppError.fromException(
-          e,
-          onRetry: () => add(const CategoriesEvent.init()),
-        ),
+        error: AppError.fromException(e,
+            onRetry: () => add(const CategoriesEvent.init()),
+            localizationService: _localizationService),
       ));
       _refreshCompleter?.complete();
     }

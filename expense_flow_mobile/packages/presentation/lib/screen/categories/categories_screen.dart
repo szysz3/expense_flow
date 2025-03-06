@@ -2,6 +2,7 @@ import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/screen/categories/widget/category_list_item.dart';
 
@@ -18,8 +19,9 @@ class CategoriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BlocProvider(
         create: (_) => CategoriesBloc(
-          getCategoriesUseCase: getIt<GetCategoriesUseCase>(),
-          errorLogger: getIt<Logger>(),
+          getIt<GetCategoriesUseCase>(),
+          getIt<Logger>(),
+          getIt<LocalizationService>(),
         )..add(const CategoriesEvent.init()),
         child: const Padding(
           padding: EdgeInsets.all(16.0),

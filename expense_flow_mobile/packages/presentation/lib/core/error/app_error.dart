@@ -1,5 +1,6 @@
 import 'package:domain/model/failure/failures.dart';
 import 'package:flutter/material.dart';
+import 'package:localization/localization_service.dart';
 
 class AppError {
   final String message;
@@ -16,42 +17,45 @@ class AppError {
 
   factory AppError.fromFailure(
     Failure failure, {
+    required LocalizationService localizationService,
     VoidCallback? onRetry,
   }) {
+    final l10n = localizationService.localizations;
+
     if (failure is ConnectionFailure) {
       return AppError(
-        message: 'Network error',
-        details: 'Please check your internet connection and try again.',
+        message: l10n.networkError,
+        details: l10n.checkInternetConnection,
         isRetryable: true,
         onRetry: onRetry,
       );
     } else if (failure is UnauthorizedFailure) {
       return AppError(
-        message: 'Authentication error',
-        details: 'Your session has expired. Please sign in again.',
+        message: l10n.authenticationError,
+        details: l10n.sessionExpired,
         isRetryable: false,
       );
     } else if (failure is NotFoundFailure) {
       return AppError(
-        message: 'Not found',
-        details: 'The requested resource could not be found.',
+        message: l10n.notFound,
+        details: l10n.resourceNotFound,
         isRetryable: false,
       );
     } else if (failure is ValidationFailure) {
-      String detailMessage = 'Please check your input and try again.';
+      String detailMessage = l10n.checkInputAndTryAgain;
       if (failure.details.isNotEmpty &&
           failure.details.first.containsKey('msg')) {
         detailMessage = failure.details.first['msg'] as String;
       }
 
       return AppError(
-        message: 'Invalid data',
+        message: l10n.invalidData,
         details: detailMessage,
         isRetryable: false,
       );
     } else {
       return AppError(
-        message: 'Something went wrong',
+        message: l10n.somethingWentWrong,
         details: failure.message,
         isRetryable: true,
         onRetry: onRetry,
@@ -61,10 +65,13 @@ class AppError {
 
   factory AppError.fromException(
     dynamic exception, {
+    required LocalizationService localizationService,
     VoidCallback? onRetry,
   }) {
+    final l10n = localizationService.localizations;
+
     return AppError(
-      message: 'Unexpected error',
+      message: l10n.unexpectedError,
       details: exception.toString(),
       isRetryable: true,
       onRetry: onRetry,
