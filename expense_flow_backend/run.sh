@@ -100,7 +100,6 @@ if [ $# -eq 0 ]; then
     usage
 fi
 
-check_venv
 activate_venv
 
 # Parse command

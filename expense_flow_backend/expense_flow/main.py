@@ -1,5 +1,6 @@
 import sys
 import os
+import asyncio
 from datetime import datetime 
 import json
 from rich.console import Console
@@ -56,7 +57,7 @@ def load_json_data(filepath: str, console: Console) -> dict:
             console.print(f"[bold red]Error loading file: {e}[/]")
             sys.exit(1)
 
-def analyze_with_fallback_chain(config, receipt_data: dict, console: Console) -> dict:
+async def analyze_with_fallback_chain(config, receipt_data: dict, console: Console) -> dict:
     """
     Attempt analysis with local LLM, fallback LLM, and finally ChatGPT
     
@@ -70,7 +71,7 @@ def analyze_with_fallback_chain(config, receipt_data: dict, console: Console) ->
     """
     try:
         local_analyzer = LocalLLMAnalyzer(config)
-        return local_analyzer.analyze(receipt_data)
+        return await local_analyzer.analyze(receipt_data)
     except Exception as e:
         console.print(f"[yellow]Primary local LLM failed: {str(e)}[/]")
         
@@ -83,17 +84,16 @@ def analyze_with_fallback_chain(config, receipt_data: dict, console: Console) ->
         
         try:
             chatgpt_analyzer = ChatGPTAnalyzer(config)
-            return chatgpt_analyzer.analyze(receipt_data)
+            return await chatgpt_analyzer.analyze(receipt_data)
         except Exception as chatgpt_error:
             console.print("[bold red]ChatGPT analysis also failed[/]")
             raise Exception(f"All analysis attempts failed. Last error: {str(chatgpt_error)}")
 
-def main():
+async def async_main():
     if len(sys.argv) < 2:
         Console().print("[bold red]Usage: python receipt_analyzer.py <receipt_file>[/]")
         sys.exit(1)
     
-    # Load configuration
     config = get_config()
     console = Console()
     
@@ -117,13 +117,19 @@ def main():
             raw_data = doc_processor.process_image(processed_path if success else input_file)
             receipt_data = doc_processor.preprocess_receipt(raw_data)
                 
-        analysis_result = analyze_with_fallback_chain(config, receipt_data, console)
+        analysis_result = await analyze_with_fallback_chain(config, receipt_data, console)
         
         save_result(input_file, analysis_result, console)
 
     except Exception as e:
         console.print(f"[bold red]Error: {e}[/]")
         sys.exit(1)
+
+def main():
+    """
+    Entry point that runs the async main function
+    """
+    asyncio.run(async_main())
 
 if __name__ == "__main__":
     main()
