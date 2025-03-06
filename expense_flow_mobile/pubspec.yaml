@@ -36,6 +36,8 @@ dependencies:
     path: packages/data
   presentation:
     path: packages/presentation
+  localization:
+    path: packages/localization
   flutter_native_splash: ^2.3.5
 
   # The following adds the Cupertino Icons font to your application.

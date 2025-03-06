@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_bloc.dart';
 import 'package:presentation/screen/add_item/bloc/add_item_event.dart';
@@ -83,7 +84,7 @@ class _AddItemViewState extends State<AddItemView> {
                               children: [
                                 _buildCategorySection(state),
                                 const SizedBox(height: 12),
-                                _buildDescriptionSection(),
+                                _buildDescriptionSection(context),
                                 const SizedBox(height: 12),
                                 _buildQuantityAndPriceSection(context),
                               ],
@@ -128,7 +129,7 @@ class _AddItemViewState extends State<AddItemView> {
         ),
       );
 
-  Widget _buildDescriptionSection() => Container(
+  Widget _buildDescriptionSection(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
@@ -140,8 +141,8 @@ class _AddItemViewState extends State<AddItemView> {
           onChanged: (value) => context.read<AddItemBloc>().add(
                 AddItemEvent.descriptionChanged(value),
               ),
-          decoration: const InputDecoration(
-            labelText: 'Description',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context).description,
             hintText: 'Enter item description',
             border: InputBorder.none,
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:localization/localization.dart';
 import 'package:presentation/di/di.dart';
 import 'package:presentation/screen/main/main_screen.dart';
 import 'package:presentation/theme/expense_flow_theme.dart';
@@ -23,6 +24,8 @@ class ExpenseFlowApp extends StatelessWidget {
       theme: ExpenseFlowTheme.darkTheme,
       darkTheme: ExpenseFlowTheme.darkTheme,
       themeMode: ThemeMode.dark,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [AppLocalizations.delegate],
       home: MainScreen(),
     );
   }

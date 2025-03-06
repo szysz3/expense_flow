@@ -1,0 +1,323 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Expense Flow",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button to retry an action"
+  },
+
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Button to refresh data"
+  },
+
+  "checkAgain": "Check Again",
+  "@checkAgain": {
+    "description": "Button to check for updates"
+  },
+
+  "scan": "Scan",
+  "@scan": {
+    "description": "Navigation label for scan tab"
+  },
+
+  "orders": "Orders",
+  "@orders": {
+    "description": "Navigation label for orders tab"
+  },
+
+  "categories": "Categories",
+  "@categories": {
+    "description": "Navigation label for categories tab"
+  },
+
+  "summary": "Summary",
+  "@summary": {
+    "description": "Navigation label for summary tab"
+  },
+
+  "unprocessed": "Unprocessed",
+  "@unprocessed": {
+    "description": "Navigation label for unprocessed tab"
+  },
+
+  "networkError": "Network error",
+  "@networkError": {
+    "description": "Error message for network connectivity issues"
+  },
+
+  "checkInternetConnection": "Please check your internet connection and try again.",
+  "@checkInternetConnection": {
+    "description": "Suggestion to check internet connection"
+  },
+
+  "authenticationError": "Authentication error",
+  "@authenticationError": {
+    "description": "Error message for authentication issues"
+  },
+
+  "sessionExpired": "Your session has expired. Please sign in again.",
+  "@sessionExpired": {
+    "description": "Message when user session has expired"
+  },
+
+  "notFound": "Not found",
+  "@notFound": {
+    "description": "Error message when a resource is not found"
+  },
+
+  "resourceNotFound": "The requested resource could not be found.",
+  "@resourceNotFound": {
+    "description": "Detailed message when a resource is not found"
+  },
+
+  "invalidData": "Invalid data",
+  "@invalidData": {
+    "description": "Error message for invalid data submission"
+  },
+
+  "checkInputAndTryAgain": "Please check your input and try again.",
+  "@checkInputAndTryAgain": {
+    "description": "Suggestion to review input data"
+  },
+
+  "somethingWentWrong": "Something went wrong",
+  "@somethingWentWrong": {
+    "description": "Generic error message"
+  },
+
+  "unexpectedError": "Unexpected error",
+  "@unexpectedError": {
+    "description": "Error message for unexpected exceptions"
+  },
+
+  "noMonthlyData": "No Monthly Summaries",
+  "@noMonthlyData": {
+    "description": "Text shown when there is no monthly summary data"
+  },
+
+  "addExpensesToSeeMonthly": "Add expenses to see your monthly summary",
+  "@addExpensesToSeeMonthly": {
+    "description": "Guidance text when monthly summary is empty"
+  },
+
+  "noCategories": "No Categories",
+  "@noCategories": {
+    "description": "Text shown when there are no categories"
+  },
+
+  "addExpensesToSeeCategories": "Add expenses to see your expense categories",
+  "@addExpensesToSeeCategories": {
+    "description": "Guidance text when categories are empty"
+  },
+
+  "noUnprocessedReceipts": "No Unprocessed Receipts",
+  "@noUnprocessedReceipts": {
+    "description": "Text shown when there are no unprocessed receipts"
+  },
+
+  "allReceiptsProcessed": "All receipts have been processed",
+  "@allReceiptsProcessed": {
+    "description": "Message when all receipts have been processed"
+  },
+
+  "uploadFailed": "Upload failed!",
+  "@uploadFailed": {
+    "description": "Error message when receipt upload fails"
+  },
+
+  "noPhotoAvailable": "No photo available",
+  "@noPhotoAvailable": {
+    "description": "Error message when no photo is available"
+  },
+
+  "takePhotoFirst": "Please take a photo first",
+  "@takePhotoFirst": {
+    "description": "Instruction to take a photo before proceeding"
+  },
+
+  "invalidInputData": "Invalid Data",
+  "@invalidInputData": {
+    "description": "Error title for invalid input data"
+  },
+
+  "fillAllRequiredFields": "Please fill in all required fields.",
+  "@fillAllRequiredFields": {
+    "description": "Error message for incomplete form data"
+  },
+
+  "description": "Description",
+  "@description": {
+    "description": "Label for item description field"
+  },
+
+  "enterItemDescription": "Enter item description",
+  "@enterItemDescription": {
+    "description": "Hint text for item description field"
+  },
+
+  "quantity": "Quantity",
+  "@quantity": {
+    "description": "Label for quantity field"
+  },
+
+  "enterQuantity": "Enter quantity",
+  "@enterQuantity": {
+    "description": "Hint text for quantity field"
+  },
+
+  "totalPrice": "Total Price",
+  "@totalPrice": {
+    "description": "Label for total price field"
+  },
+
+  "enterPrice": "Enter price",
+  "@enterPrice": {
+    "description": "Hint text for price field"
+  },
+
+  "category": "Category",
+  "@category": {
+    "description": "Label for category selection"
+  },
+
+  "groceries": "Groceries",
+  "@groceries": {
+    "description": "Category name for groceries"
+  },
+
+  "alcohol": "Alcohol",
+  "@alcohol": {
+    "description": "Category name for alcoholic beverages"
+  },
+
+  "personalCare": "Personal Care",
+  "@personalCare": {
+    "description": "Category name for personal care items"
+  },
+
+  "household": "Household",
+  "@household": {
+    "description": "Category name for household items"
+  },
+
+  "clothing": "Clothing",
+  "@clothing": {
+    "description": "Category name for clothing items"
+  },
+
+  "entertainment": "Entertainment",
+  "@entertainment": {
+    "description": "Category name for entertainment expenses"
+  },
+
+  "transportation": "Transportation",
+  "@transportation": {
+    "description": "Category name for transportation expenses"
+  },
+
+  "pet": "Pet",
+  "@pet": {
+    "description": "Category name for pet expenses"
+  },
+
+  "other": "Other",
+  "@other": {
+    "description": "Category name for miscellaneous expenses"
+  },
+
+  "standingOrders": "Standing Orders",
+  "@standingOrders": {
+    "description": "Category name for recurring payments"
+  },
+
+  "settings": "Settings",
+  "@settings": {
+    "description": "Title for settings screen"
+  },
+
+  "languageSettings": "Language Settings",
+  "@languageSettings": {
+    "description": "Title for language settings screen"
+  },
+
+  "languageChanged": "Language changed successfully",
+  "@languageChanged": {
+    "description": "Confirmation message after changing language"
+  },
+
+  "pending": "Pending",
+  "@pending": {
+    "description": "Status for pending receipts"
+  },
+
+  "processing": "Processing",
+  "@processing": {
+    "description": "Status for receipts being processed"
+  },
+
+  "error": "Error",
+  "@error": {
+    "description": "Status for receipts with errors"
+  },
+
+  "itemCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@itemCount": {
+    "description": "Count of items with pluralization",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+
+  "processingItemMessage": "Processing {itemName}...",
+  "@processingItemMessage": {
+    "description": "Message shown when processing a specific item",
+    "placeholders": {
+      "itemName": {
+        "type": "String",
+        "example": "receipt"
+      }
+    }
+  },
+
+  "receiptCreatedSuccess": "Receipt item created successfully: {id}",
+  "@receiptCreatedSuccess": {
+    "description": "Success message when a receipt is created",
+    "placeholders": {
+      "id": {
+        "type": "String",
+        "example": "ABC123"
+      }
+    }
+  },
+
+  "receiptAnalyzedSuccess": "Receipt analyzed successfully: {id}",
+  "@receiptAnalyzedSuccess": {
+    "description": "Success message when a receipt is analyzed",
+    "placeholders": {
+      "id": {
+        "type": "String",
+        "example": "ABC123"
+      }
+    }
+  },
+
+  "failedToAnalyzeReceipt": "Failed to analyze receipt: {error}",
+  "@failedToAnalyzeReceipt": {
+    "description": "Error message when receipt analysis fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Connection timeout"
+      }
+    }
+  }
+}
