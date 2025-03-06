@@ -1,6 +1,7 @@
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
@@ -81,12 +82,12 @@ class UnprocessedReceiptsView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No Unprocessed Receipts',
+            AppLocalizations.of(context).noUnprocessedReceipts,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'All receipts have been processed',
+            AppLocalizations.of(context).allReceiptsProcessed,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color:
@@ -100,7 +101,7 @@ class UnprocessedReceiptsView extends StatelessWidget {
                     const UnprocessedReceiptsEvent.refresh(),
                   );
             },
-            child: const Text('Check Again'),
+            child: Text(AppLocalizations.of(context).checkAgain),
           ),
         ],
       ),

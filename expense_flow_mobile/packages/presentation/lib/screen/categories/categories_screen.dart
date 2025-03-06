@@ -1,6 +1,7 @@
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/screen/categories/widget/category_list_item.dart';
 
@@ -85,12 +86,12 @@ class CategoriesScreenView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No Categories',
+            AppLocalizations.of(context).noCategories,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Add expenses to see your expense categories',
+            AppLocalizations.of(context).addExpensesToSeeCategories,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color:
@@ -102,7 +103,7 @@ class CategoriesScreenView extends StatelessWidget {
             onPressed: () {
               context.read<CategoriesBloc>().add(const CategoriesEvent.init());
             },
-            child: const Text('Refresh'),
+            child: Text(AppLocalizations.of(context).refresh),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:presentation/navigation/bloc/navigation_bloc.dart';
 import 'package:presentation/navigation/bloc/navigation_event.dart';
 import 'package:presentation/navigation/bloc/navigation_state.dart';
@@ -14,13 +15,15 @@ class BottomNavigation extends StatelessWidget {
   static const _iconSummary = 'icon_summary.svg';
   static const _iconUnprocessed = 'icon_unprocessed.svg';
 
-  static const _navigationItems = [
-    ('Scan', _iconScan),
-    ('Orders', _iconOrders),
-    ('Categories', _iconCategories),
-    ('Summary', _iconSummary),
-    ('Unprocessed', _iconUnprocessed),
-  ];
+  List<(String, String)> _getNavigationItems(BuildContext context) {
+    return [
+      (AppLocalizations.of(context).scan, _iconScan),
+      (AppLocalizations.of(context).orders, _iconOrders),
+      (AppLocalizations.of(context).categories, _iconCategories),
+      (AppLocalizations.of(context).summary, _iconSummary),
+      (AppLocalizations.of(context).unprocessed, _iconUnprocessed),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +38,7 @@ class BottomNavigation extends StatelessWidget {
           onTap: (index) {
             context.read<NavigationBloc>().add(NavigateToIndex(index));
           },
-          items: _navigationItems
+          items: _getNavigationItems(context)
               .map(
                 (item) => BottomNavigationBarItem(
                   icon: _buildSvgIcon(

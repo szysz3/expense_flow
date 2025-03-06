@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 
 import '../error/app_error.dart';
 import 'animated_square_button.dart';
@@ -59,7 +60,7 @@ class ErrorDisplayWidget extends StatelessWidget {
               _buildStyledButton(
                 context: context,
                 onPressed: error.onRetry!,
-                label: 'Retry',
+                label: AppLocalizations.of(context).retry,
                 width: 100.0,
                 height: 52.0,
               ),
@@ -118,7 +119,7 @@ class ErrorDisplayWidget extends StatelessWidget {
               child: _buildStyledButton(
                 context: context,
                 onPressed: error.onRetry!,
-                label: 'Retry',
+                label: AppLocalizations.of(context).retry,
                 width: 100.0,
                 height: 52.0,
                 iconSize: 20.0,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 
 import '../error/app_error.dart';
 
@@ -37,7 +38,7 @@ class ErrorUtils {
       margin: const EdgeInsets.all(8),
       action: error.isRetryable && error.onRetry != null
           ? SnackBarAction(
-              label: 'Retry',
+              label: AppLocalizations.of(context).retry,
               textColor: Colors.white,
               onPressed: error.onRetry!,
             )

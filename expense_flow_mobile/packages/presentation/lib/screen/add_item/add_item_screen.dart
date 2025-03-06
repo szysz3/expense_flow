@@ -143,7 +143,7 @@ class _AddItemViewState extends State<AddItemView> {
               ),
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context).description,
-            hintText: 'Enter item description',
+            hintText: AppLocalizations.of(context).enterItemDescription,
             border: InputBorder.none,
           ),
         ),
@@ -167,9 +167,9 @@ class _AddItemViewState extends State<AddItemView> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Quantity',
-                  hintText: 'Enter quantity',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).quantity,
+                  hintText: AppLocalizations.of(context).enterQuantity,
                   border: InputBorder.none,
                 ),
               ),
@@ -194,9 +194,9 @@ class _AddItemViewState extends State<AddItemView> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Total Price',
-                  hintText: 'Enter price',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).totalPrice,
+                  hintText: AppLocalizations.of(context).enterPrice,
                   border: InputBorder.none,
                 ),
                 inputFormatters: [
@@ -247,8 +247,8 @@ class _AddItemViewState extends State<AddItemView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Category',
+            Text(
+              AppLocalizations.of(context).category,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -282,25 +282,25 @@ class _AddItemViewState extends State<AddItemView> {
   String _getCategoryLabel(ItemCategory category) {
     switch (category) {
       case ItemCategory.groceries:
-        return 'Groceries';
+        return AppLocalizations.of(context).groceries;
       case ItemCategory.alcoholic_beverages:
-        return 'Alcohol';
+        return AppLocalizations.of(context).alcohol;
       case ItemCategory.personal_care:
-        return 'Personal Care';
+        return AppLocalizations.of(context).personalCare;
       case ItemCategory.household:
-        return 'Household';
+        return AppLocalizations.of(context).household;
       case ItemCategory.clothing:
-        return 'Clothing';
+        return AppLocalizations.of(context).clothing;
       case ItemCategory.entertainment:
-        return 'Entertainment';
+        return AppLocalizations.of(context).entertainment;
       case ItemCategory.transportation:
-        return 'Transportation';
+        return AppLocalizations.of(context).transportation;
       case ItemCategory.pet:
-        return 'Pet';
+        return AppLocalizations.of(context).pet;
       case ItemCategory.other:
-        return 'Other';
+        return AppLocalizations.of(context).other;
       case ItemCategory.standing_orders:
-        return 'Standing Orders';
+        return AppLocalizations.of(context).standingOrders;
     }
   }
 }
