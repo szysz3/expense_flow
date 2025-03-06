@@ -8,14 +8,12 @@ import 'package:presentation/navigation/bloc/navigation_state.dart';
 class BottomNavigation extends StatelessWidget {
   const BottomNavigation({super.key});
 
-  // Constants for icon assets
   static const _iconScan = 'icon_scan.svg';
   static const _iconCategories = 'icon_categories.svg';
   static const _iconOrders = 'icon_standing_orders.svg';
   static const _iconSummary = 'icon_summary.svg';
   static const _iconUnprocessed = 'icon_unprocessed.svg';
 
-  // Navigation items configuration
   static const _navigationItems = [
     ('Scan', _iconScan),
     ('Orders', _iconOrders),

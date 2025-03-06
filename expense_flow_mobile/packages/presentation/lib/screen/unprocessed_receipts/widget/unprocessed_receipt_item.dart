@@ -1,4 +1,3 @@
-// lib/screen/unprocessed_receipts/widget/unprocessed_receipt_item.dart
 import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';

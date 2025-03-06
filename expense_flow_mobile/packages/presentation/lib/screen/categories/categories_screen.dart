@@ -1,4 +1,3 @@
-// lib/presentation/screen/categories/categories_screen.dart
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,12 +50,10 @@ class CategoriesScreenView extends StatelessWidget {
           );
         }
 
-        // Show empty state if we have no data and no error
         if (state.categories.isEmpty) {
           return _buildEmptyState(context);
         }
 
-        // Show the main content
         return RefreshIndicator(
           onRefresh: () => context.read<CategoriesBloc>().refresh(),
           child: ListView.builder(
@@ -103,7 +100,6 @@ class CategoriesScreenView extends StatelessWidget {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
-              // Refresh data
               context.read<CategoriesBloc>().add(const CategoriesEvent.init());
             },
             child: const Text('Refresh'),

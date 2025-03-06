@@ -1,4 +1,3 @@
-// lib/presentation/screen/add_item/add_item_screen.dart
 import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

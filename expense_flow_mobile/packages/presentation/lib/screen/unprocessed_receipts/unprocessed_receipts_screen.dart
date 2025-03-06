@@ -96,7 +96,6 @@ class UnprocessedReceiptsView extends StatelessWidget {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
-              // Refresh data
               context.read<UnprocessedReceiptsBloc>().add(
                     const UnprocessedReceiptsEvent.refresh(),
                   );

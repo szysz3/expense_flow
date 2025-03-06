@@ -128,7 +128,6 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
     String? context,
   }) async {
     try {
-      // Check connectivity first
       final connectivityCheck = await _checkConnectivity();
       if (connectivityCheck.isLeft()) {
         return Left(connectivityCheck.fold(
