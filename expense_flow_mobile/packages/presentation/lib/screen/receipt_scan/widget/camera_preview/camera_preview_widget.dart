@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:presentation/screen/receipt_scan/widget/action_bar/action_bar.dart';
 import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_controller.dart';
@@ -48,7 +49,8 @@ class CameraPreviewWidget extends StatelessWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Center(child: Text('Upload failed!')),
+            content:
+                Center(child: Text(AppLocalizations.of(context).uploadFailed)),
             backgroundColor: Theme.of(context).colorScheme.error,
             duration: Duration(seconds: 5),
           ),
