@@ -1,11 +1,13 @@
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
+import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
 import 'bloc/unprocessed_receipts_bloc.dart';
@@ -77,10 +79,10 @@ class UnprocessedReceiptsView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+          SvgPicture.asset(
+            'packages/presentation/assets/icon_unprocessed.svg',
+            width: 64,
+            height: 64,
           ),
           const SizedBox(height: 16),
           Text(
@@ -97,14 +99,27 @@ class UnprocessedReceiptsView extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
+          AnimatedSquareButton(
+            isProcessing: false,
             onPressed: () {
               context.read<UnprocessedReceiptsBloc>().add(
                     const UnprocessedReceiptsEvent.refresh(),
                   );
             },
-            child: Text(AppLocalizations.of(context).checkAgain),
-          ),
+            width: 124.0,
+            height: 52.0,
+            iconSize: 20.0,
+            borderColor: Colors.white,
+            backgroundColor: Colors.black,
+            icon: Text(
+              AppLocalizations.of(context).checkAgain,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          )
         ],
       ),
     );

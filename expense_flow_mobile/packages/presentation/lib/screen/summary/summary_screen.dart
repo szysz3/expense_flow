@@ -1,6 +1,7 @@
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -10,6 +11,7 @@ import 'package:presentation/screen/summary/bloc/summary_state.dart';
 import 'package:presentation/screen/summary/widget/summary_item_widget.dart';
 
 import '../../core/error/error_utils.dart';
+import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
 
@@ -81,10 +83,10 @@ class SummaryScreenView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.calendar_today_outlined,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+          SvgPicture.asset(
+            'packages/presentation/assets/icon_summary.svg',
+            width: 64,
+            height: 64,
           ),
           const SizedBox(height: 16),
           Text(
@@ -101,12 +103,25 @@ class SummaryScreenView extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
+          AnimatedSquareButton(
+            isProcessing: false,
             onPressed: () {
               context.read<SummaryBloc>().add(const SummaryEvent.init());
             },
-            child: Text(AppLocalizations.of(context).refresh),
-          ),
+            width: 100.0,
+            height: 52.0,
+            iconSize: 20.0,
+            borderColor: Colors.white,
+            backgroundColor: Colors.black,
+            icon: Text(
+              AppLocalizations.of(context).refresh,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          )
         ],
       ),
     );

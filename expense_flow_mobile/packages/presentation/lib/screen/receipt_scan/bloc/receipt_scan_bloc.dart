@@ -82,97 +82,86 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     PhotoAcceptedEvent event,
     Emitter<BaseReceiptScanState> emit,
   ) async {
-    if (state is ReceiptScanState) {
-      final scanState = state as ReceiptScanState;
+    if (state is! ReceiptScanState) return;
 
-      if (scanState.photoPath == null) {
-        emit(scanState.copyWith(
-          error: AppError(
-            message: _localizationService.localizations.noPhotoAvailable,
-            details: _localizationService.localizations.takePhotoFirst,
-          ),
-        ));
-        return;
-      }
+    final scanState = state as ReceiptScanState;
+
+    // Validate photo exists
+    if (scanState.photoPath == null) {
+      emit(scanState.copyWith(
+        error: AppError(
+          message: _localizationService.localizations.noPhotoAvailable,
+          details: _localizationService.localizations.takePhotoFirst,
+        ),
+      ));
+      return;
+    }
+
+    // Set loading state
+    emit(scanState.copyWith(
+      cameraPreviewState: CameraPreviewState.loading,
+      error: null,
+    ));
+
+    try {
+      // Analyze receipt
+      final result = await _analyzeReceiptUseCase(
+        AnalyzeReceiptParams(
+          filePath: scanState.photoPath!,
+          llmType: 'local',
+        ),
+      );
+
+      // Handle success or failure
+      result.fold(
+        (failure) {
+          _errorLogger.e('Failed to analyze receipt', error: failure);
+          emit(scanState.copyWith(
+            cameraPreviewState: CameraPreviewState.uploadFailure,
+            error: AppError.fromFailure(failure,
+                onRetry: () => add(PhotoAcceptedEvent()),
+                localizationService: _localizationService),
+          ));
+        },
+        (receipt) {
+          _errorLogger.i('Receipt analyzed successfully: ${receipt.id}');
+          emit(scanState.copyWith(
+            cameraPreviewState: CameraPreviewState.uploadSuccess,
+            error: null,
+          ));
+        },
+      );
+    } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Exception during receipt analysis',
+        error: e,
+        stackTrace: stackTrace,
+      );
 
       emit(scanState.copyWith(
-        cameraPreviewState: CameraPreviewState.loading,
-        error: null,
+        cameraPreviewState: CameraPreviewState.uploadFailure,
+        error: AppError.fromException(e,
+            onRetry: () => add(PhotoAcceptedEvent()),
+            localizationService: _localizationService),
       ));
+    }
 
-      try {
-        final result = await _analyzeReceiptUseCase(
-          AnalyzeReceiptParams(
-            filePath: scanState.photoPath!,
-            llmType: 'local',
-          ),
-        );
+    // Wait for animation to complete
+    await Future.delayed(const Duration(milliseconds: 1500));
 
-        result.fold(
-          (failure) {
-            _errorLogger.e(
-              'Failed to analyze receipt',
-              error: failure,
-            );
+    // Reset state if still in success/failure state
+    if (state is ReceiptScanState) {
+      final currentState = state as ReceiptScanState;
+      final isCompleted = currentState.cameraPreviewState ==
+              CameraPreviewState.uploadSuccess ||
+          currentState.cameraPreviewState == CameraPreviewState.uploadFailure;
 
-            emit(scanState.copyWith(
-              cameraPreviewState: CameraPreviewState.uploadFailure,
-              error: AppError.fromFailure(failure,
-                  onRetry: () => add(PhotoAcceptedEvent()),
-                  localizationService: _localizationService),
-            ));
-          },
-          (receipt) {
-            _errorLogger.i('Receipt analyzed successfully: ${receipt.id}');
-
-            emit(scanState.copyWith(
-              cameraPreviewState: CameraPreviewState.uploadSuccess,
-              error: null,
-            ));
-          },
-        );
-
-        // Wait for the success/failure animation to complete
-        await Future.delayed(const Duration(milliseconds: 1500));
-
-        if (state is ReceiptScanState) {
-          final currentState = state as ReceiptScanState;
-
-          if (currentState.cameraPreviewState ==
-                  CameraPreviewState.uploadSuccess ||
-              currentState.cameraPreviewState ==
-                  CameraPreviewState.uploadFailure) {
-            emit(currentState.copyWith(
-              photoPath: null,
-              cameraPreviewState: CameraPreviewState.idle,
-              // Keep error if we had a failure
-            ));
-          }
-        }
-      } catch (e, stackTrace) {
-        _errorLogger.e(
-          'Exception during receipt analysis',
-          error: e,
-          stackTrace: stackTrace,
-        );
-
-        emit(scanState.copyWith(
-          cameraPreviewState: CameraPreviewState.uploadFailure,
-          error: AppError.fromException(e,
-              onRetry: () => add(PhotoAcceptedEvent()),
-              localizationService: _localizationService),
+      if (isCompleted) {
+        emit(currentState.copyWith(
+          photoPath: null,
+          cameraPreviewState: CameraPreviewState.idle,
+          // Preserves error if there was a failure
         ));
-
-        // Wait a moment then reset to idle state
-        await Future.delayed(const Duration(milliseconds: 1500));
-
-        if (state is ReceiptScanState) {
-          emit((state as ReceiptScanState).copyWith(
-            photoPath: null,
-            cameraPreviewState: CameraPreviewState.idle,
-            // Keep the error
-          ));
-        }
       }
     }
   }
