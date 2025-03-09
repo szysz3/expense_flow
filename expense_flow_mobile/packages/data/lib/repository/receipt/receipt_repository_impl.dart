@@ -99,11 +99,11 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
       };
 
       return Right(Receipt.fromJson(transformedData));
-    } on DioError catch (e, stackTrace) {
+    } on DioException catch (e, stackTrace) {
       _errorLogger.e('API error during receipt analysis',
           error: e, stackTrace: stackTrace);
       return Left(_handleDioError(e));
-    } catch (e, stackTrace) {
+    } catch (e) {
       _errorLogger.e('Exception during receipt analysis', error: e);
       return Left(ServerFailure(e.toString()));
     }
@@ -136,7 +136,7 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
 
       final result = await request();
       return Right(result);
-    } on DioError catch (e, stackTrace) {
+    } on DioException catch (e, stackTrace) {
       _errorLogger.e(
         'API error in repository',
         error: e,
@@ -153,7 +153,7 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
     }
   }
 
-  Failure _handleDioError(DioError e) {
+  Failure _handleDioError(DioException e) {
     if (e.response != null) {
       switch (e.response!.statusCode) {
         case HttpConstants.statusUnauthorized:
@@ -179,21 +179,21 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
     }
 
     switch (e.type) {
-      case DioErrorType.connectionError:
+      case DioExceptionType.connectionError:
         return ConnectionFailure();
-      case DioErrorType.badResponse:
+      case DioExceptionType.badResponse:
         return ServerFailure('Bad response from server');
-      case DioErrorType.cancel:
+      case DioExceptionType.cancel:
         return ServerFailure('Request was cancelled');
       default:
         return ServerFailure(e.message ?? ErrorMessages.unknownServerError);
     }
   }
 
-  bool _isTimeoutError(DioError e) {
-    return e.type == DioErrorType.connectionTimeout ||
-        e.type == DioErrorType.receiveTimeout ||
-        e.type == DioErrorType.sendTimeout;
+  bool _isTimeoutError(DioException e) {
+    return e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout;
   }
 
   @override

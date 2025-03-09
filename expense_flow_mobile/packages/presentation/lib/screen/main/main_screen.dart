@@ -14,7 +14,7 @@ import 'package:presentation/screen/main/bloc/camera_preview_state.dart';
 import 'package:presentation/screen/receipt_scan/receipt_scan_screen.dart';
 import 'package:presentation/screen/summary/summary_screen.dart';
 import 'package:presentation/screen/unprocessed_receipts/unprocessed_receipts_screen.dart';
-import 'package:presentation/theme/expense_flow_color_scheme.dart';
+import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../core/service/camera/camera_service.dart';
 import '../add_item/add_item_screen.dart';
@@ -100,10 +100,7 @@ class _CameraPreview extends StatelessWidget {
                   imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                   child: ColorFiltered(
                     colorFilter: ColorFilter.mode(
-                      Theme.of(context)
-                          .colorScheme
-                          .accentDelicate
-                          .withAlpha(250),
+                      ExpenseFlowColors.darkAccentDelicate.withAlpha(250),
                       BlendMode.modulate,
                     ),
                     child: CameraPreview(controller),

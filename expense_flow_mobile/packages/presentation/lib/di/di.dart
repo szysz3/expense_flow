@@ -24,28 +24,18 @@ final getIt = GetIt.instance;
   asExtension: true,
 )
 Future<void> configureDependencies() async {
-  await EnvConfig.load();
-  EnvConfig.validate();
+  await _loadEnv();
 
   getIt.init();
 
   final logger = Logger(printer: PrettyPrinter());
   getIt.registerLazySingleton(() => logger);
-  getIt.registerLazySingleton(() => Connectivity());
 
-  final dio = Dio();
-  dio.interceptors.add(PrettyDioLogger(
-    request: true,
-    requestHeader: true,
-    requestBody: true,
-    responseHeader: true,
-    responseBody: true,
-    error: true,
-  ));
+  getIt.registerLazySingleton(() => Connectivity());
 
   getIt.registerLazySingleton<ReceiptRepository>(
     () => ReceiptRepositoryImpl(
-      dio: dio,
+      dio: _getDio(),
       config: RepositoryConfig(
         baseUrl: EnvConfig.baseUrl,
         apiKey: EnvConfig.apiKey,
@@ -74,6 +64,25 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<LocalizationService>(
     LocalizationService.fromLocaleName("en"),
   );
+}
+
+Future<void> _loadEnv() async {
+  await EnvConfig.load();
+  EnvConfig.validate();
+}
+
+Dio _getDio() {
+  final dio = Dio();
+  dio.interceptors.add(PrettyDioLogger(
+    request: true,
+    requestHeader: true,
+    requestBody: true,
+    responseHeader: true,
+    responseBody: true,
+    error: true,
+  ));
+
+  return dio;
 }
 
 class EnvConfig {

@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 
 class ExpenseFlowColors {
-  static const lightAccentDelicate = Color(0xFFB8A2FF);
-  static const lightAccentMild = Color(0xFFC0B0A0);
-  static const lightAccentNormal = Color(0xFFFFA6D0);
-  static const lightAccentIntense = Color(0xFFFFD0A0);
-
   static const darkPrimary = Color(0xFFBD93F9);
   static const darkOnPrimary = Color(0xFF282A36);
   static const darkSecondary = Color(0xFF50FA7B);

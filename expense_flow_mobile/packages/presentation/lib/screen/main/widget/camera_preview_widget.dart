@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:presentation/theme/expense_flow_color_scheme.dart';
+import 'package:presentation/theme/expense_flow_colors.dart';
 
 class CameraPreview extends StatelessWidget {
   final CameraController controller;
@@ -35,7 +35,7 @@ class CameraPreview extends StatelessWidget {
               imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: ColorFiltered(
                 colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.accentDelicate,
+                  ExpenseFlowColors.darkAccentDelicate,
                   BlendMode.modulate,
                 ),
                 child: Transform.rotate(

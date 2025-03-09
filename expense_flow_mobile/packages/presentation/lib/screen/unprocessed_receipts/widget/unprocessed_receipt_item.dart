@@ -74,7 +74,6 @@ class UnprocessedReceiptItem extends StatelessWidget {
 
   Widget _buildAmount(BuildContext context) {
     final amount = receipt.rawData.total;
-    final locale = Localizations.localeOf(context).toString();
 
     return Text(
       '$amount',

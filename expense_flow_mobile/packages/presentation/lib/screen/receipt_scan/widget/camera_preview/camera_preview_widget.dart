@@ -109,6 +109,6 @@ class CameraPreviewWidget extends StatelessWidget {
 bool _shouldShowScanIcon(CameraPreviewState state) {
   return [
     CameraPreviewState.cameraPreview,
-    CameraPreviewState.photoProcessing, // Keep scan icon during processing
+    CameraPreviewState.photoProcessing,
   ].contains(state);
 }

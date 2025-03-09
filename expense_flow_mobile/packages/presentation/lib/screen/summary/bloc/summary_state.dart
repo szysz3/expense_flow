@@ -10,6 +10,6 @@ class SummaryState with _$SummaryState {
   const factory SummaryState({
     @Default([]) List<MonthSummary> months,
     @Default(false) bool isLoading,
-    AppError? error, // Add error field
+    AppError? error,
   }) = _SummaryState;
 }
