@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 
-import '../bloc/add_item_bloc.dart';
-import '../bloc/add_item_event.dart';
-import '../bloc/add_item_state.dart';
+import '../model/expense_category.dart';
 import 'category_button.dart';
 
-// TODO: decouple view from BLoC
 class CategorySection extends StatelessWidget {
-  final AddItemState state;
+  final ExpenseCategory? selectedCategory;
+  final Function(ExpenseCategory) onCategorySelected;
 
   const CategorySection({
     super.key,
-    required this.state,
+    required this.selectedCategory,
+    required this.onCategorySelected,
   });
 
   @override
@@ -41,16 +39,14 @@ class CategorySection extends StatelessWidget {
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
               childAspectRatio: 0.75,
-              children: ItemCategory.values.map((category) {
-                final isSelected = state.selectedCategory == category;
+              children: ExpenseCategory.values.map((category) {
+                final isSelected = selectedCategory == category;
                 return CategoryButton(
                   icon:
                       'packages/presentation/assets/icon_${category.name}.svg',
                   label: _getCategoryLabel(context, category),
                   isSelected: isSelected,
-                  onPressed: () => context.read<AddItemBloc>().add(
-                        AddItemEvent.categorySelected(category),
-                      ),
+                  onPressed: () => onCategorySelected(category),
                 );
               }).toList(),
             ),
@@ -58,27 +54,27 @@ class CategorySection extends StatelessWidget {
         ),
       );
 
-  String _getCategoryLabel(BuildContext context, ItemCategory category) {
+  String _getCategoryLabel(BuildContext context, ExpenseCategory category) {
     switch (category) {
-      case ItemCategory.groceries:
+      case ExpenseCategory.groceries:
         return AppLocalizations.of(context).groceries;
-      case ItemCategory.alcoholic_beverages:
+      case ExpenseCategory.alcoholic_beverages:
         return AppLocalizations.of(context).alcohol;
-      case ItemCategory.personal_care:
+      case ExpenseCategory.personal_care:
         return AppLocalizations.of(context).personalCare;
-      case ItemCategory.household:
+      case ExpenseCategory.household:
         return AppLocalizations.of(context).household;
-      case ItemCategory.clothing:
+      case ExpenseCategory.clothing:
         return AppLocalizations.of(context).clothing;
-      case ItemCategory.entertainment:
+      case ExpenseCategory.entertainment:
         return AppLocalizations.of(context).entertainment;
-      case ItemCategory.transportation:
+      case ExpenseCategory.transportation:
         return AppLocalizations.of(context).transportation;
-      case ItemCategory.pet:
+      case ExpenseCategory.pet:
         return AppLocalizations.of(context).pet;
-      case ItemCategory.other:
+      case ExpenseCategory.other:
         return AppLocalizations.of(context).other;
-      case ItemCategory.standing_orders:
+      case ExpenseCategory.standing_orders:
         return AppLocalizations.of(context).standingOrders;
     }
   }

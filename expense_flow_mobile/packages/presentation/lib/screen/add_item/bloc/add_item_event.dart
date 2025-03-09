@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'add_item_state.dart';
+import '../model/expense_category.dart';
 
 part 'add_item_event.freezed.dart';
 
@@ -13,7 +13,7 @@ class AddItemEvent with _$AddItemEvent {
 
   const factory AddItemEvent.priceChanged(String price) = PriceChanged;
 
-  const factory AddItemEvent.categorySelected(ItemCategory category) =
+  const factory AddItemEvent.categorySelected(ExpenseCategory category) =
       CategorySelected;
 
   const factory AddItemEvent.submitted() = Submitted;

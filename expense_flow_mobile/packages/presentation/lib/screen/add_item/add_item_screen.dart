@@ -87,14 +87,37 @@ class _AddItemViewState extends State<AddItemView> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              CategorySection(state: state),
+                              CategorySection(
+                                selectedCategory: state.selectedCategory,
+                                onCategorySelected: (category) {
+                                  context.read<AddItemBloc>().add(
+                                        AddItemEvent.categorySelected(category),
+                                      );
+                                },
+                              ),
                               const SizedBox(height: 12),
                               DescriptionSection(
-                                  controller: _descriptionController),
+                                controller: _descriptionController,
+                                onDescriptionChanged: (value) {
+                                  context.read<AddItemBloc>().add(
+                                        AddItemEvent.descriptionChanged(value),
+                                      );
+                                },
+                              ),
                               const SizedBox(height: 12),
                               QuantityPriceSection(
                                 quantityController: _quantityController,
                                 priceController: _priceController,
+                                onQuantityChanged: (value) {
+                                  context.read<AddItemBloc>().add(
+                                        AddItemEvent.quantityChanged(value),
+                                      );
+                                },
+                                onPriceChanged: (value) {
+                                  context.read<AddItemBloc>().add(
+                                        AddItemEvent.priceChanged(value),
+                                      );
+                                },
                               ),
                             ],
                           ),

@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 
-import '../bloc/add_item_bloc.dart';
-import '../bloc/add_item_event.dart';
-
-// TODO: decouple view from BLoC
 class QuantityPriceSection extends StatelessWidget {
   final TextEditingController quantityController;
   final TextEditingController priceController;
+  final Function(String) onQuantityChanged;
+  final Function(String) onPriceChanged;
 
   const QuantityPriceSection({
     super.key,
     required this.quantityController,
     required this.priceController,
+    required this.onQuantityChanged,
+    required this.onPriceChanged,
   });
 
   @override
@@ -31,9 +30,7 @@ class QuantityPriceSection extends StatelessWidget {
             Expanded(
               child: TextField(
                 controller: quantityController,
-                onChanged: (value) => context.read<AddItemBloc>().add(
-                      AddItemEvent.quantityChanged(value),
-                    ),
+                onChanged: onQuantityChanged,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -63,9 +60,7 @@ class QuantityPriceSection extends StatelessWidget {
             normalizedValue = value.replaceAll(decimalSeparator, '.');
           }
 
-          context.read<AddItemBloc>().add(
-                AddItemEvent.priceChanged(normalizedValue),
-              );
+          onPriceChanged(normalizedValue);
         },
         keyboardType: const TextInputType.numberWithOptions(
           decimal: true,

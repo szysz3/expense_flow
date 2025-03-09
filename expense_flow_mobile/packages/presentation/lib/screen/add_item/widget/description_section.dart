@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 
-import '../bloc/add_item_bloc.dart';
-import '../bloc/add_item_event.dart';
-
-// TODO: decouple view from BLoC
 class DescriptionSection extends StatelessWidget {
   final TextEditingController controller;
+  final Function(String) onDescriptionChanged;
 
   const DescriptionSection({
     super.key,
     required this.controller,
+    required this.onDescriptionChanged,
   });
 
   @override
@@ -24,9 +21,7 @@ class DescriptionSection extends StatelessWidget {
         ),
         child: TextField(
           controller: controller,
-          onChanged: (value) => context.read<AddItemBloc>().add(
-                AddItemEvent.descriptionChanged(value),
-              ),
+          onChanged: onDescriptionChanged,
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context).description,
             hintText: AppLocalizations.of(context).enterItemDescription,
