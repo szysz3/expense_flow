@@ -1,8 +1,8 @@
-abstract class NavigationEvent {
-  const NavigationEvent();
-}
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class NavigateToIndex extends NavigationEvent {
-  final int index;
-  const NavigateToIndex(this.index);
+part 'navigation_event.freezed.dart';
+
+@freezed
+class NavigationEvent with _$NavigationEvent {
+  const factory NavigationEvent.navigateToIndex(int index) = NavigateToIndex;
 }

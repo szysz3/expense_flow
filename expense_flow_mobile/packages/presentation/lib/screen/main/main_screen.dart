@@ -29,7 +29,7 @@ class MainScreen extends StatelessWidget {
         BlocProvider(create: (context) => NavigationBloc()),
         BlocProvider(
             create: (context) => CameraPreviewBloc(getIt<CameraService>())
-              ..add(InitializeCameraEvent())),
+              ..add(const CameraPreviewEvent.initialize())),
       ],
       child: Scaffold(
         extendBody: true,

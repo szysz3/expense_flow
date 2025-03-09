@@ -36,7 +36,9 @@ class BottomNavigation extends StatelessWidget {
           unselectedItemColor: colorScheme.onSurface.withAlpha(100),
           currentIndex: state.currentIndex,
           onTap: (index) {
-            context.read<NavigationBloc>().add(NavigateToIndex(index));
+            context
+                .read<NavigationBloc>()
+                .add(NavigationEvent.navigateToIndex(index));
           },
           items: _getNavigationItems(context)
               .map(

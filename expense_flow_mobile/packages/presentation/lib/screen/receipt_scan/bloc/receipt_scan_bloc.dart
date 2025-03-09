@@ -47,7 +47,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       emit(ReceiptScanState(
         controller: null,
         error: AppError.fromException(e,
-            onRetry: () => add(InitializeCameraEvent()),
+            onRetry: () => add(const ReceiptScanEvent.initializeCamera()),
             localizationService: _localizationService),
       ));
     }
@@ -67,7 +67,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
 
       if (scanState.cameraPreviewState != CameraPreviewState.photoProcessing) {
         if (scanState.cameraPreviewState == CameraPreviewState.cameraPreview) {
-          add(TakePhotoEvent());
+          add(const ReceiptScanEvent.takePhoto());
         } else {
           emit(scanState.copyWith(
             cameraPreviewState: CameraPreviewState.cameraPreview,
@@ -119,7 +119,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
           emit(scanState.copyWith(
             cameraPreviewState: CameraPreviewState.uploadFailure,
             error: AppError.fromFailure(failure,
-                onRetry: () => add(PhotoAcceptedEvent()),
+                onRetry: () => add(const ReceiptScanEvent.photoAccepted()),
                 localizationService: _localizationService),
           ));
         },
@@ -141,7 +141,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       emit(scanState.copyWith(
         cameraPreviewState: CameraPreviewState.uploadFailure,
         error: AppError.fromException(e,
-            onRetry: () => add(PhotoAcceptedEvent()),
+            onRetry: () => add(const ReceiptScanEvent.photoAccepted()),
             localizationService: _localizationService),
       ));
     }
@@ -237,7 +237,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
         emit(scanState.copyWith(
           cameraPreviewState: CameraPreviewState.cameraPreview,
           error: AppError.fromException(e,
-              onRetry: () => add(TakePhotoEvent()),
+              onRetry: () => add(const ReceiptScanEvent.takePhoto()),
               localizationService: _localizationService),
         ));
       }

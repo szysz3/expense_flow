@@ -1,21 +1,24 @@
 import 'dart:ui';
 
-abstract class ReceiptScanEvent {}
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class InitializeCameraEvent extends ReceiptScanEvent {}
+part 'receipt_scan_events.freezed.dart';
 
-class TakePhotoEvent extends ReceiptScanEvent {}
+@freezed
+class ReceiptScanEvent with _$ReceiptScanEvent {
+  const factory ReceiptScanEvent.initializeCamera() = InitializeCameraEvent;
 
-class CameraButtonPressedEvent extends ReceiptScanEvent {}
+  const factory ReceiptScanEvent.takePhoto() = TakePhotoEvent;
 
-class SetFocusPointEvent extends ReceiptScanEvent {
-  final Offset point;
+  const factory ReceiptScanEvent.cameraButtonPressed() =
+      CameraButtonPressedEvent;
 
-  SetFocusPointEvent(this.point);
+  const factory ReceiptScanEvent.setFocusPoint(Offset point) =
+      SetFocusPointEvent;
+
+  const factory ReceiptScanEvent.photoRejected() = PhotoRejectedEvent;
+
+  const factory ReceiptScanEvent.photoAccepted() = PhotoAcceptedEvent;
+
+  const factory ReceiptScanEvent.dismissError() = DismissErrorEvent;
 }
-
-class PhotoRejectedEvent extends ReceiptScanEvent {}
-
-class PhotoAcceptedEvent extends ReceiptScanEvent {}
-
-class DismissErrorEvent extends ReceiptScanEvent {}

@@ -15,26 +15,28 @@ class ReceiptScanController implements CameraPreviewController {
       details.localPosition.dx / size.width,
       details.localPosition.dy / size.height,
     );
-    context.read<ReceiptScanBloc>().add(SetFocusPointEvent(point));
+    context.read<ReceiptScanBloc>().add(ReceiptScanEvent.setFocusPoint(point));
   }
 
   @override
   void onCameraButtonPressed() {
-    context.read<ReceiptScanBloc>().add(CameraButtonPressedEvent());
+    context
+        .read<ReceiptScanBloc>()
+        .add(const ReceiptScanEvent.cameraButtonPressed());
   }
 
   @override
   void onPhotoRejectButtonPressed() {
-    context.read<ReceiptScanBloc>().add(PhotoRejectedEvent());
+    context.read<ReceiptScanBloc>().add(const ReceiptScanEvent.photoRejected());
   }
 
   @override
   void onPhotoAcceptedButtonPressed() {
-    context.read<ReceiptScanBloc>().add(PhotoAcceptedEvent());
+    context.read<ReceiptScanBloc>().add(const ReceiptScanEvent.photoAccepted());
   }
 
   @override
   void onErrorDismissed() {
-    context.read<ReceiptScanBloc>().add(DismissErrorEvent());
+    context.read<ReceiptScanBloc>().add(const ReceiptScanEvent.dismissError());
   }
 }

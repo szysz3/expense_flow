@@ -1,3 +1,8 @@
-abstract class CameraPreviewEvent {}
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class InitializeCameraEvent extends CameraPreviewEvent {}
+part 'camera_preview_event.freezed.dart';
+
+@freezed
+class CameraPreviewEvent with _$CameraPreviewEvent {
+  const factory CameraPreviewEvent.initialize() = InitializeCameraEvent;
+}

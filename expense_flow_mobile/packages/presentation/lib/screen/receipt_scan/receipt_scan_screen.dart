@@ -25,7 +25,7 @@ class ReceiptScanScreen extends StatelessWidget {
           getIt<AnalyzeReceiptUseCase>(),
           getIt<Logger>(),
           getIt<LocalizationService>(),
-        )..add(InitializeCameraEvent()),
+        )..add(const ReceiptScanEvent.initializeCamera()),
         child: const Padding(
           padding: EdgeInsets.all(16.0),
           child: ReceiptScanView(),
