@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:presentation/screen/summary/model/summary_item_data.dart';
-import 'package:presentation/screen/summary/model/summary_item_header_data.dart';
 
 import '../../../core/widget/expandable_list_item/expandable_list_item.dart';
 import '../model/category_summary.dart';
 import '../model/month_summary.dart';
+import '../model/summary_item_data.dart';
+import '../model/summary_item_header_data.dart';
 
 class SummaryItemWidget extends StatelessWidget {
   final MonthSummary month;

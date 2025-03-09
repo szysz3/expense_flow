@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_bloc.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_events.dart';
-import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_controller.dart';
+
+import '../bloc/receipt_scan_bloc.dart';
+import '../bloc/receipt_scan_events.dart';
+import '../widget/camera_preview/camera_preview_controller.dart';
 
 class ReceiptScanController implements CameraPreviewController {
   final BuildContext context;

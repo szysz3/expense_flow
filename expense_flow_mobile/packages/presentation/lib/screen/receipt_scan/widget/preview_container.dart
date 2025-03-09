@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
-import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
-import 'package:presentation/screen/receipt_scan/widget/preview_content.dart';
+
+import '../model/camera_preview_state.dart';
+import 'camera_preview/camera_preview_widget_state.dart';
+import 'preview_content.dart';
 
 class PreviewContainer extends StatelessWidget {
   final CameraPreviewWidgetState state;

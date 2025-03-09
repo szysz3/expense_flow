@@ -2,12 +2,13 @@ import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
 import 'package:vibration/vibration.dart';
 
 import '../../../../core/error/app_error.dart';
 import '../../../core/service/camera/camera_service.dart';
+import '../model/camera_preview_state.dart';
 import 'receipt_scan_events.dart';
+import 'receipt_scan_state.dart';
 
 class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
   final CameraService _cameraService;

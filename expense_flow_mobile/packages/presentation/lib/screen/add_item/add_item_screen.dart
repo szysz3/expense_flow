@@ -4,17 +4,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:localization/localization.dart';
 import 'package:logger/logger.dart';
-import 'package:presentation/screen/add_item/bloc/add_item_bloc.dart';
-import 'package:presentation/screen/add_item/bloc/add_item_event.dart';
-import 'package:presentation/screen/add_item/bloc/add_item_state.dart';
-import 'package:presentation/screen/add_item/widget/category_section.dart';
-import 'package:presentation/screen/add_item/widget/description_section.dart';
-import 'package:presentation/screen/add_item/widget/quantity_price_section.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/loading_indicator_widget.dart';
 import '../../di/di.dart';
+import 'bloc/add_item_bloc.dart';
+import 'bloc/add_item_event.dart';
+import 'bloc/add_item_state.dart';
+import 'widget/category_section.dart';
+import 'widget/description_section.dart';
+import 'widget/quantity_price_section.dart';
 
 class AddItemScreen extends StatelessWidget {
   const AddItemScreen({super.key});

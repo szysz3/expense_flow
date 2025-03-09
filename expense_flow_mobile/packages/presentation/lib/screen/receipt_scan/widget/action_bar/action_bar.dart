@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:presentation/screen/receipt_scan/widget/action_bar/action_bar_content.dart';
+
+import 'action_bar_content.dart';
 
 class ActionBar extends StatelessWidget {
   static const _animationDuration = Duration(milliseconds: 300);

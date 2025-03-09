@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
-import 'package:presentation/screen/categories/models/category_item_data.dart';
-import 'package:presentation/screen/categories/models/category_item_header_data.dart';
 
 import '../../../core/widget/expandable_list_item/expandable_list_item.dart';
 import '../models/category.dart';
+import '../models/category_item_data.dart';
+import '../models/category_item_header_data.dart';
 
 class CategoryListItem extends StatelessWidget {
   final Category category;

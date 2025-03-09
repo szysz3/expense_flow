@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
-import 'package:presentation/screen/categories/widget/category_list_item.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/error_display_widget.dart';
@@ -12,6 +11,7 @@ import '../../di/di.dart';
 import 'bloc/categories_bloc.dart';
 import 'bloc/categories_events.dart';
 import 'bloc/categories_state.dart';
+import 'widget/category_list_item.dart';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});

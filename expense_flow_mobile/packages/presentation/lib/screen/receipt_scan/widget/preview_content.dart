@@ -1,8 +1,10 @@
 import 'dart:io';
-import 'package:flutter/widgets.dart';
+
 import 'package:camera/camera.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
-import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
+import 'package:flutter/widgets.dart';
+
+import '../model/camera_preview_state.dart';
+import 'camera_preview/camera_preview_widget_state.dart';
 
 class PreviewContent extends StatelessWidget {
   static const _animationDuration = Duration(milliseconds: 300);

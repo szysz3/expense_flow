@@ -3,7 +3,8 @@ import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:presentation/theme/expense_flow_colors.dart';
+
+import '../../../theme/expense_flow_colors.dart';
 
 class CameraPreview extends StatelessWidget {
   final CameraController controller;

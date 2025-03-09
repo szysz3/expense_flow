@@ -3,21 +3,21 @@ import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:presentation/di/di.dart';
-import 'package:presentation/navigation/bloc/navigation_bloc.dart';
-import 'package:presentation/navigation/bloc/navigation_state.dart';
-import 'package:presentation/navigation/widget/bottom_navigation.dart';
-import 'package:presentation/screen/categories/categories_screen.dart';
-import 'package:presentation/screen/main/bloc/camera_preview_bloc.dart';
-import 'package:presentation/screen/main/bloc/camera_preview_event.dart';
-import 'package:presentation/screen/main/bloc/camera_preview_state.dart';
-import 'package:presentation/screen/receipt_scan/receipt_scan_screen.dart';
-import 'package:presentation/screen/summary/summary_screen.dart';
-import 'package:presentation/screen/unprocessed_receipts/unprocessed_receipts_screen.dart';
-import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../core/service/camera/camera_service.dart';
+import '../../di/di.dart';
+import '../../navigation/bloc/navigation_bloc.dart';
+import '../../navigation/bloc/navigation_state.dart';
+import '../../navigation/widget/bottom_navigation.dart';
+import '../../theme/expense_flow_colors.dart';
 import '../add_item/add_item_screen.dart';
+import '../categories/categories_screen.dart';
+import '../receipt_scan/receipt_scan_screen.dart';
+import '../summary/summary_screen.dart';
+import '../unprocessed_receipts/unprocessed_receipts_screen.dart';
+import 'bloc/camera_preview_bloc.dart';
+import 'bloc/camera_preview_event.dart';
+import 'bloc/camera_preview_state.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});

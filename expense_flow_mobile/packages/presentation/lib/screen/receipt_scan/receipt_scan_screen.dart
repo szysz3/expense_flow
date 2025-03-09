@@ -3,17 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
-import 'package:presentation/di/di.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_bloc.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_events.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
-import 'package:presentation/screen/receipt_scan/controller/receipt_scan_controller.dart';
-import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
-import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_widget.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/service/camera/camera_service.dart';
 import '../../core/widget/error_display_widget.dart';
+import '../../di/di.dart';
+import 'bloc/receipt_scan_bloc.dart';
+import 'bloc/receipt_scan_events.dart';
+import 'bloc/receipt_scan_state.dart';
+import 'controller/receipt_scan_controller.dart';
+import 'model/camera_preview_state.dart';
+import 'widget/camera_preview/camera_preview_widget.dart';
+import 'widget/camera_preview/camera_preview_widget_state.dart';
 
 class ReceiptScanScreen extends StatelessWidget {
   const ReceiptScanScreen({super.key});

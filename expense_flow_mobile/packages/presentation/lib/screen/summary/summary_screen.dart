@@ -5,15 +5,15 @@ import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
-import 'package:presentation/screen/summary/bloc/summary_bloc.dart';
-import 'package:presentation/screen/summary/bloc/summary_events.dart';
-import 'package:presentation/screen/summary/bloc/summary_state.dart';
-import 'package:presentation/screen/summary/widget/summary_item_widget.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
+import 'bloc/summary_bloc.dart';
+import 'bloc/summary_events.dart';
+import 'bloc/summary_state.dart';
+import 'widget/summary_item_widget.dart';
 
 class SummaryScreen extends StatelessWidget {
   const SummaryScreen({super.key});

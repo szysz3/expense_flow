@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:presentation/screen/receipt_scan/widget/action_bar/action_button.dart';
+
+import 'action_button.dart';
 
 class ActionBarContent extends StatelessWidget {
   final VoidCallback onBackPressed;

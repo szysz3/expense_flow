@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
-import 'package:presentation/screen/receipt_scan/bloc/receipt_scan_state.dart';
-import 'package:presentation/screen/receipt_scan/widget/action_bar/action_bar.dart';
-import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_controller.dart';
-import 'package:presentation/screen/receipt_scan/widget/camera_preview/camera_preview_state.dart';
-import 'package:presentation/screen/receipt_scan/widget/preview_container.dart';
 
 import '../../../../core/widget/animated_square_button.dart';
 import '../../../../core/widget/loading_indicator_widget.dart';
+import '../../model/camera_preview_state.dart';
+import '../action_bar/action_bar.dart';
+import '../preview_container.dart';
+import 'camera_preview_controller.dart';
+import 'camera_preview_widget_state.dart';
 
 class CameraPreviewWidget extends StatelessWidget {
   final CameraPreviewController controller;
