@@ -1,6 +1,7 @@
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
@@ -21,17 +22,27 @@ class ReceiptScanScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (_) => ReceiptScanBloc(
-          getIt<CameraService>(),
-          getIt<AnalyzeReceiptUseCase>(),
-          getIt<Logger>(),
-          getIt<LocalizationService>(),
-        )..add(const ReceiptScanEvent.initializeCamera()),
-        child: const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: ReceiptScanView(),
-        ),
-      );
+      create: (_) => ReceiptScanBloc(
+            getIt<CameraService>(),
+            getIt<AnalyzeReceiptUseCase>(),
+            getIt<Logger>(),
+            getIt<LocalizationService>(),
+          )..add(const ReceiptScanEvent.initializeCamera()),
+      child: Stack(
+        children: [
+          Expanded(
+              child: Opacity(
+            opacity: 0.2,
+            child: SvgPicture.asset(
+              'packages/presentation/assets/background_receipt_scanning.svg',
+            ),
+          )),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: ReceiptScanView(),
+          ),
+        ],
+      ));
 }
 
 class ReceiptScanView extends StatelessWidget {
