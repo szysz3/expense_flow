@@ -1,5 +1,8 @@
-# expense_flow
+# <img src="https://github.com/user-attachments/assets/40f6c7b3-30d2-47df-8229-29fc836bf4e6" width="48" height="48"> expense_flow
+
 Guides families through their spending patterns with clear direction!
+
+![main2](https://github.com/user-attachments/assets/eca64f9c-1f94-4c0a-ab8a-46b58a442bb6)
 
 ## System overview
 
