@@ -31,12 +31,13 @@ class ReceiptScanScreen extends StatelessWidget {
       child: Stack(
         children: [
           Expanded(
-              child: Opacity(
-            opacity: 0.2,
             child: SvgPicture.asset(
               'packages/presentation/assets/background_receipt_scanning.svg',
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
             ),
-          )),
+          ),
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: ReceiptScanView(),

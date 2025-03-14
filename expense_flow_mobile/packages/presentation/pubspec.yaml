@@ -75,6 +75,10 @@ flutter:
     - assets/icon_unprocessed.svg
     - assets/icon_failure.svg
     - assets/background_receipt_scanning.svg
+    - assets/background_add_item.svg
+    - assets/background_categories.svg
+    - assets/background_summary.svg
+    - assets/background_unprocessed.svg
 
 
   # To add assets to your package, add an assets section, like this:

@@ -26,7 +26,17 @@ class AddItemScreen extends StatelessWidget {
             getIt<Logger>(),
             getIt<LocalizationService>(),
           ),
-      child: const AddItemView());
+      child: Stack(children: [
+        Expanded(
+          child: SvgPicture.asset(
+            'packages/presentation/assets/background_add_item.svg',
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+          ),
+        ),
+        const AddItemView(),
+      ]));
 }
 
 class AddItemView extends StatefulWidget {

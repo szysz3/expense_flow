@@ -1,0 +1,131 @@
+<svg viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg">
+    <!-- Transparent background -->
+    <rect fill="transparent" height="844" width="390" />
+
+    <!-- Ambient grid pattern - standardized -->
+    <g opacity="0.10">
+        <path d="M0 80 L390 80" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 160 L390 160" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 240 L390 240" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 320 L390 320" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 400 L390 400" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 480 L390 480" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 560 L390 560" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 640 L390 640" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 720 L390 720" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 800 L390 800" stroke="#8a8d96" stroke-width="1" />
+
+        <path d="M80 0 L80 844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M160 0 L160 844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M240 0 L240 844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M320 0 L320 844" stroke="#8a8d96" stroke-width="1" />
+    </g>
+
+    <!-- Faint diagonal line pattern -->
+    <g opacity="0.03">
+        <path d="M0,0 L390,844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0,211 L390,1055" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0,422 L390,1266" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0,633 L390,1477" stroke="#8a8d96" stroke-width="1" />
+
+        <path d="M390,0 L0,844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M390,211 L0,1055" stroke="#8a8d96" stroke-width="1" />
+        <path d="M390,422 L0,1266" stroke="#8a8d96" stroke-width="1" />
+        <path d="M390,633 L0,1477" stroke="#8a8d96" stroke-width="1" />
+    </g>
+
+    <!-- Subtle glowing circle in the center -->
+    <circle cx="195" cy="422" fill="transparent" opacity="0.08" r="80" stroke="#8be9fd"
+        stroke-width="1" />
+    <circle cx="195" cy="422" fill="transparent" opacity="0.1" r="50" stroke="#8be9fd"
+        stroke-width="1" />
+
+    <!-- Minimalist circuit patterns -->
+    <g opacity="0.15">
+        <!-- Top left section -->
+        <path d="M80,80 L80,160 L160,160" fill="none" stroke="#8be9fd" stroke-width="1" />
+        <circle cx="80" cy="80" fill="#8be9fd" r="2" />
+        <circle cx="80" cy="160" fill="#8be9fd" r="2" />
+        <circle cx="160" cy="160" fill="#8be9fd" r="2" />
+
+        <!-- Top right section -->
+        <path d="M310,80 L310,160 L230,160" fill="none" stroke="#8be9fd" stroke-width="1" />
+        <circle cx="310" cy="80" fill="#8be9fd" r="2" />
+        <circle cx="310" cy="160" fill="#8be9fd" r="2" />
+        <circle cx="230" cy="160" fill="#8be9fd" r="2" />
+
+        <!-- Bottom left section -->
+        <path d="M80,764 L80,684 L160,684" fill="none" stroke="#8be9fd" stroke-width="1" />
+        <circle cx="80" cy="764" fill="#8be9fd" r="2" />
+        <circle cx="80" cy="684" fill="#8be9fd" r="2" />
+        <circle cx="160" cy="684" fill="#8be9fd" r="2" />
+
+        <!-- Bottom right section -->
+        <path d="M310,764 L310,684 L230,684" fill="none" stroke="#8be9fd" stroke-width="1" />
+        <circle cx="310" cy="764" fill="#8be9fd" r="2" />
+        <circle cx="310" cy="684" fill="#8be9fd" r="2" />
+        <circle cx="230" cy="684" fill="#8be9fd" r="2" />
+    </g>
+
+    <!-- Radial dotted lines from center -->
+    <g opacity="0.08">
+        <line stroke="#bd93f9" stroke-dasharray="3,6" stroke-width="1" x1="195" x2="80" y1="422"
+            y2="307" />
+        <line stroke="#bd93f9" stroke-dasharray="3,6" stroke-width="1" x1="195" x2="310" y1="422"
+            y2="307" />
+        <line stroke="#bd93f9" stroke-dasharray="3,6" stroke-width="1" x1="195" x2="80" y1="422"
+            y2="537" />
+        <line stroke="#bd93f9" stroke-dasharray="3,6" stroke-width="1" x1="195" x2="310" y1="422"
+            y2="537" />
+    </g>
+
+    <!-- Corner accents -->
+    <g opacity="0.12">
+        <path d="M40,120 A80,80 0 0,1 120,40" fill="none" stroke="#ff79c6" stroke-width="1" />
+        <path d="M350,120 A80,80 0 0,0 270,40" fill="none" stroke="#ff79c6" stroke-width="1" />
+        <path d="M40,724 A80,80 0 0,0 120,804" fill="none" stroke="#ff79c6" stroke-width="1" />
+        <path d="M350,724 A80,80 0 0,1 270,804" fill="none" stroke="#ff79c6" stroke-width="1" />
+    </g>
+
+    <!-- Binary markers as subtle accents -->
+    <g opacity="0.15">
+        <circle cx="40" cy="240" fill="#8be9fd" r="3" />
+        <circle cx="40" cy="280" fill="#bd93f9" r="3" />
+        <circle cx="40" cy="320" fill="#ff79c6" r="3" />
+
+        <circle cx="350" cy="240" fill="#ff79c6" r="3" />
+        <circle cx="350" cy="280" fill="#bd93f9" r="3" />
+        <circle cx="350" cy="320" fill="#8be9fd" r="3" />
+
+        <circle cx="40" cy="524" fill="#ff79c6" r="3" />
+        <circle cx="40" cy="564" fill="#bd93f9" r="3" />
+        <circle cx="40" cy="604" fill="#8be9fd" r="3" />
+
+        <circle cx="350" cy="524" fill="#8be9fd" r="3" />
+        <circle cx="350" cy="564" fill="#bd93f9" r="3" />
+        <circle cx="350" cy="604" fill="#ff79c6" r="3" />
+    </g>
+
+    <!-- Horizontal data lines -->
+    <g opacity="0.1">
+        <line stroke="#8be9fd" stroke-width="1" x1="120" x2="270" y1="422" y2="422" />
+    </g>
+
+    <!-- Grid intersection dots -->
+    <g opacity="0.1">
+        <circle cx="80" cy="240" fill="#ff79c6" r="1" />
+        <circle cx="160" cy="240" fill="#bd93f9" r="1" />
+        <circle cx="240" cy="240" fill="#8be9fd" r="1" />
+        <circle cx="320" cy="240" fill="#ff79c6" r="1" />
+
+        <circle cx="80" cy="400" fill="#bd93f9" r="1" />
+        <circle cx="160" cy="400" fill="#8be9fd" r="1" />
+        <circle cx="240" cy="400" fill="#ff79c6" r="1" />
+        <circle cx="320" cy="400" fill="#bd93f9" r="1" />
+
+        <circle cx="80" cy="560" fill="#8be9fd" r="1" />
+        <circle cx="160" cy="560" fill="#ff79c6" r="1" />
+        <circle cx="240" cy="560" fill="#bd93f9" r="1" />
+        <circle cx="320" cy="560" fill="#8be9fd" r="1" />
+    </g>
+</svg>

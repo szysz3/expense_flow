@@ -20,16 +20,25 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (_) => UnprocessedReceiptsBloc(
-          getIt<ReceiptRepository>(),
-          getIt<Logger>(),
-          getIt<LocalizationService>(),
-        )..add(const UnprocessedReceiptsEvent.init()),
-        child: const Padding(
+      create: (_) => UnprocessedReceiptsBloc(
+            getIt<ReceiptRepository>(),
+            getIt<Logger>(),
+            getIt<LocalizationService>(),
+          )..add(const UnprocessedReceiptsEvent.init()),
+      child: Stack(children: [
+        Expanded(
+          child: SvgPicture.asset(
+            'packages/presentation/assets/background_unprocessed.svg',
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+          ),
+        ),
+        const Padding(
           padding: EdgeInsets.all(16.0),
           child: UnprocessedReceiptsView(),
         ),
-      );
+      ]));
 }
 
 class UnprocessedReceiptsView extends StatelessWidget {

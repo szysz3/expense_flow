@@ -164,7 +164,7 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
               children: [
                 Flexible(
                   child: Text(
-                    item.name,
+                    item.name.toLowerCase(),
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 14, color: textColor),
                   ),

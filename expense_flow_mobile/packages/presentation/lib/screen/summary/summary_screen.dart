@@ -20,16 +20,25 @@ class SummaryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (_) => SummaryBloc(
-          getIt<GetMonthsSummaryUseCase>(),
-          getIt<Logger>(),
-          getIt<LocalizationService>(),
-        )..add(const SummaryEvent.init()),
-        child: const Padding(
+      create: (_) => SummaryBloc(
+            getIt<GetMonthsSummaryUseCase>(),
+            getIt<Logger>(),
+            getIt<LocalizationService>(),
+          )..add(const SummaryEvent.init()),
+      child: Stack(children: [
+        Expanded(
+          child: SvgPicture.asset(
+            'packages/presentation/assets/background_summary.svg',
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+          ),
+        ),
+        const Padding(
           padding: EdgeInsets.all(16.0),
           child: SummaryScreenView(),
         ),
-      );
+      ]));
 }
 
 class SummaryScreenView extends StatelessWidget {

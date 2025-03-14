@@ -1,0 +1,56 @@
+<svg viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg">
+    <!-- Transparent background -->
+    <rect fill="transparent" height="844" width="390" />
+
+    <!-- Ambient grid pattern - EXACT SAME as original -->
+    <g opacity="0.10">
+        <path d="M0 80 L390 80" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 160 L390 160" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 240 L390 240" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 320 L390 320" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 400 L390 400" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 480 L390 480" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 560 L390 560" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 640 L390 640" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 720 L390 720" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 800 L390 800" stroke="#8a8d96" stroke-width="1" />
+
+        <path d="M80 0 L80 844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M160 0 L160 844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M240 0 L240 844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M320 0 L320 844" stroke="#8a8d96" stroke-width="1" />
+    </g>
+
+    <!-- Minimalist corner circuit patterns -->
+    <g opacity="0.12">
+        <path d="M40,120 L80,120 L80,80" fill="none" stroke="#8be9fd" stroke-width="1" />
+        <path d="M350,120 L310,120 L310,80" fill="none" stroke="#8be9fd" stroke-width="1" />
+        <path d="M40,724 L80,724 L80,764" fill="none" stroke="#8be9fd" stroke-width="1" />
+        <path d="M350,724 L310,724 L310,764" fill="none" stroke="#8be9fd" stroke-width="1" />
+    </g>
+
+    <!-- Status indicators - just a few dots -->
+    <g opacity="0.15">
+        <circle cx="35" cy="270" fill="#8be9fd" r="3" />
+        <circle cx="35" cy="280" fill="#bd93f9" r="3" />
+        <circle cx="35" cy="290" fill="#ff79c6" r="3" />
+
+        <circle cx="355" cy="554" fill="#8be9fd" r="3" />
+        <circle cx="355" cy="564" fill="#bd93f9" r="3" />
+        <circle cx="355" cy="574" fill="#ff79c6" r="3" />
+    </g>
+
+    <!-- Central data line -->
+    <g opacity="0.15">
+        <line stroke="#bd93f9" stroke-dasharray="4,4" stroke-width="1" x1="120" x2="270" y1="422"
+            y2="422" />
+    </g>
+
+    <!-- Digital noise dots - just a few -->
+    <g opacity="0.1">
+        <circle cx="110" cy="180" fill="#ff79c6" r="1" />
+        <circle cx="280" cy="220" fill="#bd93f9" r="1" />
+        <circle cx="110" cy="664" fill="#ff79c6" r="1" />
+        <circle cx="280" cy="624" fill="#bd93f9" r="1" />
+    </g>
+</svg>

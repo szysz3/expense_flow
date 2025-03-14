@@ -1,9 +1,9 @@
 <svg viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg">
-    <!-- Dark background -->
-    <rect fill="#282A36" height="844" width="390" />
+    <!-- Transparent background -->
+    <rect fill="transparent" height="844" width="390" />
 
-    <!-- Ambient grid pattern -->
-    <g opacity="0.15">
+    <!-- Ambient grid pattern - standardized -->
+    <g opacity="0.10">
         <path d="M0 80 L390 80" stroke="#8a8d96" stroke-width="1" />
         <path d="M0 160 L390 160" stroke="#8a8d96" stroke-width="1" />
         <path d="M0 240 L390 240" stroke="#8a8d96" stroke-width="1" />
@@ -21,152 +21,146 @@
         <path d="M320 0 L320 844" stroke="#8a8d96" stroke-width="1" />
     </g>
 
-    <!-- Subtle circuit pattern in background -->
-    <path d="M20,200 L60,200 L60,240 L100,240 L100,280 L140,280 L140,320" fill="none" opacity="0.3"
-        stroke="#484b56" stroke-width="2" />
-    <path d="M370,600 L330,600 L330,560 L290,560 L290,520 L250,520 L250,480" fill="none"
-        opacity="0.3" stroke="#484b56" stroke-width="2" />
-    <path d="M195,150 L195,190 L235,190 L235,230 L195,230 L195,270 L235,270" fill="none"
-        opacity="0.3" stroke="#484b56" stroke-width="2" />
+    <!-- New elements with neo-retro cyberpunk style -->
+    <!-- Diagonal tech lines -->
+    <g opacity="0.15">
+        <path d="M0,0 L120,120" stroke="#ff79c6" stroke-width="1" />
+        <path d="M0,80 L80,160" stroke="#ff79c6" stroke-width="1" />
+        <path d="M80,0 L160,80" stroke="#ff79c6" stroke-width="1" />
 
-    <!-- Glitch effects - receipt outline (large) -->
-    <path
-        d="M95,242 L295,242 L295,602 L275,582 L245,602 L215,582 L185,602 L155,582 L125,602 L95,582 Z"
-        fill="none" opacity="0.4" stroke="#ff00ff" stroke-width="8" />
-    <path
-        d="M100,247 L290,247 L290,597 L272,580 L245,597 L218,580 L190,597 L163,580 L135,597 L100,577 Z"
-        fill="none" opacity="0.6" stroke="#00ffff" stroke-width="6" />
+        <path d="M390,0 L270,120" stroke="#8be9fd" stroke-width="1" />
+        <path d="M390,80 L310,160" stroke="#8be9fd" stroke-width="1" />
+        <path d="M310,0 L230,80" stroke="#8be9fd" stroke-width="1" />
 
-    <!-- Main receipt outline -->
-    <path
-        d="M105,252 L285,252 L285,592 L270,577 L245,592 L220,577 L195,592 L170,577 L145,592 L120,577 L105,592 Z"
-        fill="none" stroke="#ffffff" stroke-width="4" />
+        <path d="M0,844 L120,724" stroke="#8be9fd" stroke-width="1" />
+        <path d="M0,764 L80,684" stroke="#8be9fd" stroke-width="1" />
+        <path d="M80,844 L160,764" stroke="#8be9fd" stroke-width="1" />
 
-    <!-- Receipt lines -->
-    <line stroke="#ffffff" stroke-width="2" x1="125" x2="265" y1="292" y2="292" />
-    <line stroke="#ffffff" stroke-width="2" x1="125" x2="265" y1="322" y2="322" />
-    <line stroke="#ffffff" stroke-width="2" x1="125" x2="265" y1="352" y2="352" />
-    <line stroke="#ffffff" stroke-width="2" x1="125" x2="230" y1="382" y2="382" />
-    <line stroke="#ffffff" stroke-width="2" x1="125" x2="245" y1="412" y2="412" />
-    <line stroke="#ffffff" stroke-width="2" x1="125" x2="265" y1="442" y2="442" />
-    <line stroke="#ffffff" stroke-width="2" x1="125" x2="210" y1="472" y2="472" />
-    <line stroke="#ffffff" stroke-width="2" x1="125" x2="265" y1="502" y2="502" />
-    <line stroke="#ffffff" stroke-width="2" x1="125" x2="240" y1="532" y2="532" />
+        <path d="M390,844 L270,724" stroke="#ff79c6" stroke-width="1" />
+        <path d="M390,764 L310,684" stroke="#ff79c6" stroke-width="1" />
+        <path d="M310,844 L230,764" stroke="#ff79c6" stroke-width="1" />
+    </g>
 
-    <!-- Scanning line -->
-    <line opacity="0.9" stroke="#00ff99" stroke-width="3" x1="105" x2="285" y1="422" y2="422">
-        <animate attributeName="y1" dur="4s" repeatCount="indefinite" values="292;532;292" />
-        <animate attributeName="y2" dur="4s" repeatCount="indefinite" values="292;532;292" />
-    </line>
+    <!-- Central data node -->
+    <g opacity="0.2">
+        <circle cx="195" cy="422" fill="none" r="40" stroke="#8be9fd" stroke-width="1" />
+        <circle cx="195" cy="422" fill="none" r="30" stroke="#8be9fd" stroke-width="1" />
+        <circle cx="195" cy="422" fill="none" r="20" stroke="#8be9fd" stroke-width="1" />
+    </g>
 
-    <!-- Scanning area corners -->
-    <path d="M105,252 L105,272 L125,272" fill="none" stroke="#00ff99" stroke-width="3" />
-    <path d="M285,252 L285,272 L265,272" fill="none" stroke="#00ff99" stroke-width="3" />
-    <path d="M105,592 L105,572 L125,572" fill="none" stroke="#00ff99" stroke-width="3" />
-    <path d="M285,592 L285,572 L265,572" fill="none" stroke="#00ff99" stroke-width="3" />
+    <!-- Data connection points -->
+    <g opacity="0.3">
+        <circle cx="150" cy="377" fill="#8be9fd" r="3" />
+        <circle cx="240" cy="377" fill="#8be9fd" r="3" />
+        <circle cx="150" cy="467" fill="#8be9fd" r="3" />
+        <circle cx="240" cy="467" fill="#8be9fd" r="3" />
+        <circle cx="195" cy="332" fill="#8be9fd" r="3" />
+        <circle cx="195" cy="512" fill="#8be9fd" r="3" />
+    </g>
 
-    <!-- Circuit connection lines -->
-    <line stroke="#00ff99" stroke-width="2" x1="65" x2="105" y1="252" y2="252" />
-    <line stroke="#00ff99" stroke-width="2" x1="285" x2="325" y1="252" y2="252" />
-    <line stroke="#00ff99" stroke-width="2" x1="65" x2="105" y1="592" y2="592" />
-    <line stroke="#00ff99" stroke-width="2" x1="285" x2="325" y1="592" y2="592" />
+    <!-- Data connection lines -->
+    <g opacity="0.2">
+        <path d="M150,377 L195,422 L240,377" fill="none" stroke="#8be9fd" stroke-width="1" />
+        <path d="M150,467 L195,422 L240,467" fill="none" stroke="#8be9fd" stroke-width="1" />
+        <path d="M195,332 L195,422 L195,512" fill="none" stroke="#8be9fd" stroke-width="1" />
+    </g>
 
-    <!-- Connector nodes -->
-    <circle cx="105" cy="252" fill="#00ff99" r="4" />
-    <circle cx="285" cy="252" fill="#00ff99" r="4" />
-    <circle cx="105" cy="592" fill="#00ff99" r="4" />
-    <circle cx="285" cy="592" fill="#00ff99" r="4" />
+    <!-- Corner digital blocks -->
+    <g opacity="0.15">
+        <!-- Top left -->
+        <rect fill="#bd93f9" height="5" width="30" x="20" y="20" />
+        <rect fill="#bd93f9" height="5" width="20" x="20" y="30" />
+        <rect fill="#bd93f9" height="5" width="25" x="20" y="40" />
 
-    <!-- Small cyberspace dots -->
-    <circle cx="65" cy="252" fill="#ff00ff" opacity="0.7" r="2" />
-    <circle cx="325" cy="252" fill="#00ffff" opacity="0.7" r="2" />
-    <circle cx="65" cy="592" fill="#00ffff" opacity="0.7" r="2" />
-    <circle cx="325" cy="592" fill="#ff00ff" opacity="0.7" r="2" />
+        <!-- Top right -->
+        <rect fill="#50fa7b" height="5" width="30" x="340" y="20" />
+        <rect fill="#50fa7b" height="5" width="20" x="350" y="30" />
+        <rect fill="#50fa7b" height="5" width="25" x="345" y="40" />
 
-    <!-- Random circuit patterns -->
-    <path d="M40,150 L60,150 L60,170 L80,170 L80,190" fill="none" opacity="0.4" stroke="#00ff99"
-        stroke-width="1" />
-    <path d="M350,150 L330,150 L330,170 L310,170 L310,190" fill="none" opacity="0.4"
-        stroke="#00ff99" stroke-width="1" />
-    <path d="M40,694 L60,694 L60,674 L80,674 L80,654" fill="none" opacity="0.4" stroke="#00ff99"
-        stroke-width="1" />
-    <path d="M350,694 L330,694 L330,674 L310,674 L310,654" fill="none" opacity="0.4"
-        stroke="#00ff99" stroke-width="1" />
+        <!-- Bottom left -->
+        <rect fill="#50fa7b" height="5" width="30" x="20" y="784" />
+        <rect fill="#50fa7b" height="5" width="20" x="20" y="794" />
+        <rect fill="#50fa7b" height="5" width="25" x="20" y="804" />
 
-    <!-- Status indicators -->
-    <circle cx="30" cy="220" fill="#00ff99" r="5">
-        <animate attributeName="opacity" dur="2s" repeatCount="indefinite" values="0.3;0.9;0.3" />
-    </circle>
-    <circle cx="30" cy="240" fill="#00ffff" r="5">
-        <animate attributeName="opacity" dur="3s" repeatCount="indefinite" values="0.9;0.3;0.9" />
-    </circle>
-    <circle cx="30" cy="260" fill="#ff00ff" r="5">
-        <animate attributeName="opacity" dur="4s" repeatCount="indefinite" values="0.6;0.3;0.6" />
-    </circle>
+        <!-- Bottom right -->
+        <rect fill="#bd93f9" height="5" width="30" x="340" y="784" />
+        <rect fill="#bd93f9" height="5" width="20" x="350" y="794" />
+        <rect fill="#bd93f9" height="5" width="25" x="345" y="804" />
+    </g>
 
-    <circle cx="360" cy="220" fill="#00ff99" r="5">
-        <animate attributeName="opacity" dur="3s" repeatCount="indefinite" values="0.9;0.3;0.9" />
-    </circle>
-    <circle cx="360" cy="240" fill="#00ffff" r="5">
-        <animate attributeName="opacity" dur="2s" repeatCount="indefinite" values="0.3;0.9;0.3" />
-    </circle>
-    <circle cx="360" cy="260" fill="#ff00ff" r="5">
-        <animate attributeName="opacity" dur="4s" repeatCount="indefinite" values="0.3;0.6;0.3" />
-    </circle>
+    <!-- Circuit patterns -->
+    <g opacity="0.2">
+        <path d="M80,240 L120,240 L120,280 L160,280 L160,320" fill="none" stroke="#ff79c6"
+            stroke-width="1" />
+        <path d="M310,240 L270,240 L270,280 L230,280 L230,320" fill="none" stroke="#ff79c6"
+            stroke-width="1" />
+        <path d="M80,604 L120,604 L120,564 L160,564 L160,524" fill="none" stroke="#ff79c6"
+            stroke-width="1" />
+        <path d="M310,604 L270,604 L270,564 L230,564 L230,524" fill="none" stroke="#ff79c6"
+            stroke-width="1" />
+    </g>
 
-    <!-- Digital noise effect -->
-    <rect fill="#00ffff" height="3" opacity="0.6" width="3" x="195" y="120" />
-    <rect fill="#ff00ff" height="8" opacity="0.4" width="2" x="216" y="95" />
-    <rect fill="#00ff99" height="2" opacity="0.5" width="5" x="174" y="102" />
-    <rect fill="#00ffff" height="4" opacity="0.6" width="4" x="155" y="636" />
-    <rect fill="#ff00ff" height="2" opacity="0.4" width="6" x="235" y="648" />
-    <rect fill="#00ff99" height="5" opacity="0.5" width="2" x="195" y="670" />
+    <!-- Circuit connection points -->
+    <g opacity="0.3">
+        <circle cx="120" cy="240" fill="#ff79c6" r="3" />
+        <circle cx="120" cy="280" fill="#ff79c6" r="3" />
+        <circle cx="160" cy="280" fill="#ff79c6" r="3" />
+        <circle cx="160" cy="320" fill="#ff79c6" r="3" />
 
-    <!-- Power indicators -->
-    <path d="M25,300 L40,300" stroke="#00ff99" stroke-width="1.5">
-        <animate attributeName="opacity" dur="0.5s" repeatCount="indefinite" values="0.2;0.8;0.2" />
-    </path>
-    <path d="M25,310 L35,310" stroke="#00ff99" stroke-width="1.5">
-        <animate attributeName="opacity" dur="0.7s" repeatCount="indefinite" values="0.4;1.0;0.4" />
-    </path>
-    <path d="M25,320 L38,320" stroke="#00ff99" stroke-width="1.5">
-        <animate attributeName="opacity" dur="0.9s" repeatCount="indefinite" values="0.6;0.2;0.6" />
-    </path>
+        <circle cx="270" cy="240" fill="#ff79c6" r="3" />
+        <circle cx="270" cy="280" fill="#ff79c6" r="3" />
+        <circle cx="230" cy="280" fill="#ff79c6" r="3" />
+        <circle cx="230" cy="320" fill="#ff79c6" r="3" />
 
-    <path d="M365,300 L350,300" stroke="#00ff99" stroke-width="1.5">
-        <animate attributeName="opacity" dur="0.9s" repeatCount="indefinite" values="0.6;0.2;0.6" />
-    </path>
-    <path d="M365,310 L355,310" stroke="#00ff99" stroke-width="1.5">
-        <animate attributeName="opacity" dur="0.7s" repeatCount="indefinite" values="0.4;1.0;0.4" />
-    </path>
-    <path d="M365,320 L352,320" stroke="#00ff99" stroke-width="1.5">
-        <animate attributeName="opacity" dur="0.5s" repeatCount="indefinite" values="0.2;0.8;0.2" />
-    </path>
+        <circle cx="120" cy="604" fill="#ff79c6" r="3" />
+        <circle cx="120" cy="564" fill="#ff79c6" r="3" />
+        <circle cx="160" cy="564" fill="#ff79c6" r="3" />
+        <circle cx="160" cy="524" fill="#ff79c6" r="3" />
 
-    <!-- "SCAN" text with glitch effect -->
-    <text fill="#ffffff" font-family="monospace" font-size="18" opacity="0.8" text-anchor="middle"
-        x="195" y="200">SCAN RECEIPT
-    </text>
-    <text fill="#ff00ff" font-family="monospace" font-size="18" opacity="0.4" text-anchor="middle"
-        x="197" y="200">SCAN RECEIPT
-    </text>
-    <text fill="#00ffff" font-family="monospace" font-size="18" opacity="0.4" text-anchor="middle"
-        x="193" y="200">SCAN RECEIPT
-    </text>
+        <circle cx="270" cy="604" fill="#ff79c6" r="3" />
+        <circle cx="270" cy="564" fill="#ff79c6" r="3" />
+        <circle cx="230" cy="564" fill="#ff79c6" r="3" />
+        <circle cx="230" cy="524" fill="#ff79c6" r="3" />
+    </g>
 
-    <!-- Status text -->
-    <text fill="#ffffff" font-family="monospace" font-size="12" opacity="0.7" text-anchor="middle"
-        x="195" y="650">SCANNING IN PROGRESS
-    </text>
-    <text fill="#ff00ff" font-family="monospace" font-size="12" opacity="0.3" text-anchor="middle"
-        x="197" y="650">SCANNING IN PROGRESS
-    </text>
-    <text fill="#00ffff" font-family="monospace" font-size="12" opacity="0.3" text-anchor="middle"
-        x="193" y="650">SCANNING IN PROGRESS
-    </text>
+    <!-- Status indicators with no animation -->
+    <g opacity="0.25">
+        <circle cx="30" cy="220" fill="#8be9fd" r="4" />
+        <circle cx="30" cy="240" fill="#50fa7b" r="4" />
+        <circle cx="30" cy="260" fill="#ff79c6" r="4" />
 
-    <!-- Bottom status -->
-    <text fill="#00ff99" font-family="monospace" font-size="10" opacity="0.9" text-anchor="middle"
-        x="195" y="700">SYSTEM READY
-    </text>
+        <circle cx="360" cy="220" fill="#8be9fd" r="4" />
+        <circle cx="360" cy="240" fill="#50fa7b" r="4" />
+        <circle cx="360" cy="260" fill="#ff79c6" r="4" />
+    </g>
+
+    <!-- Digital noise dots -->
+    <g opacity="0.2">
+        <circle cx="110" cy="342" fill="#ff79c6" r="1" />
+        <circle cx="280" cy="402" fill="#bd93f9" r="1" />
+        <circle cx="195" cy="422" fill="#50fa7b" r="1" />
+        <circle cx="150" cy="512" fill="#ff79c6" r="1" />
+        <circle cx="240" cy="332" fill="#bd93f9" r="1" />
+        <circle cx="125" cy="400" fill="#ff79c6" r="1" />
+        <circle cx="265" cy="444" fill="#bd93f9" r="1" />
+        <circle cx="175" cy="378" fill="#50fa7b" r="1" />
+        <circle cx="215" cy="466" fill="#ff79c6" r="1" />
+        <circle cx="200" cy="498" fill="#bd93f9" r="1" />
+    </g>
+
+    <!-- Horizontal data line -->
+    <line opacity="0.3" stroke="#f1fa8c" stroke-dasharray="5,3" stroke-width="1" x1="105" x2="285"
+        y1="422" y2="422" />
+
+    <!-- Additional hex patterns -->
+    <g opacity="0.15">
+        <path d="M45,180 L55,165 L75,165 L85,180 L75,195 L55,195 Z" fill="none" stroke="#ff79c6"
+            stroke-width="1" />
+        <path d="M305,180 L315,165 L335,165 L345,180 L335,195 L315,195 Z" fill="none"
+            stroke="#ff79c6" stroke-width="1" />
+        <path d="M45,664 L55,649 L75,649 L85,664 L75,679 L55,679 Z" fill="none" stroke="#ff79c6"
+            stroke-width="1" />
+        <path d="M305,664 L315,649 L335,649 L345,664 L335,679 L315,679 Z" fill="none"
+            stroke="#ff79c6" stroke-width="1" />
+    </g>
 </svg>

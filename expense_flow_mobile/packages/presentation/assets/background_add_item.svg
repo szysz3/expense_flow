@@ -1,0 +1,95 @@
+<svg viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg">
+    <!-- Transparent background -->
+    <rect fill="transparent" height="844" width="390" />
+
+    <!-- Ambient grid pattern -->
+    <g opacity="0.10">
+        <path d="M0 80 L390 80" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 160 L390 160" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 240 L390 240" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 320 L390 320" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 400 L390 400" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 480 L390 480" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 560 L390 560" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 640 L390 640" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 720 L390 720" stroke="#8a8d96" stroke-width="1" />
+        <path d="M0 800 L390 800" stroke="#8a8d96" stroke-width="1" />
+
+        <path d="M80 0 L80 844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M160 0 L160 844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M240 0 L240 844" stroke="#8a8d96" stroke-width="1" />
+        <path d="M320 0 L320 844" stroke="#8a8d96" stroke-width="1" />
+    </g>
+
+    <!-- Subtle circuit pattern in background -->
+    <path d="M20,200 L60,200 L60,240 L100,240 L100,280 L140,280 L140,320" fill="none" opacity="0.2"
+        stroke="#8be9fd" stroke-width="2" />
+    <path d="M370,600 L330,600 L330,560 L290,560 L290,520 L250,520 L250,480" fill="none"
+        opacity="0.2" stroke="#8be9fd" stroke-width="2" />
+    <path d="M195,150 L195,190 L235,190 L235,230 L195,230 L195,270 L235,270" fill="none"
+        opacity="0.2" stroke="#8be9fd" stroke-width="2" />
+
+    <!-- Circuit connection lines -->
+    <line opacity="0.3" stroke="#50fa7b" stroke-width="1" x1="65" x2="125" y1="252" y2="252" />
+    <line opacity="0.3" stroke="#50fa7b" stroke-width="1" x1="265" x2="325" y1="252" y2="252" />
+    <line opacity="0.3" stroke="#50fa7b" stroke-width="1" x1="65" x2="125" y1="592" y2="592" />
+    <line opacity="0.3" stroke="#50fa7b" stroke-width="1" x1="265" x2="325" y1="592" y2="592" />
+
+    <!-- Connector nodes -->
+    <circle cx="125" cy="252" fill="#50fa7b" opacity="0.3" r="3" />
+    <circle cx="265" cy="252" fill="#50fa7b" opacity="0.3" r="3" />
+    <circle cx="125" cy="592" fill="#50fa7b" opacity="0.3" r="3" />
+    <circle cx="265" cy="592" fill="#50fa7b" opacity="0.3" r="3" />
+
+    <!-- Small cyberspace dots -->
+    <circle cx="65" cy="252" fill="#ff79c6" opacity="0.4" r="2" />
+    <circle cx="325" cy="252" fill="#8be9fd" opacity="0.4" r="2" />
+    <circle cx="65" cy="592" fill="#8be9fd" opacity="0.4" r="2" />
+    <circle cx="325" cy="592" fill="#ff79c6" opacity="0.4" r="2" />
+
+    <!-- Random circuit patterns -->
+    <path d="M40,150 L60,150 L60,170 L80,170 L80,190" fill="none" opacity="0.3" stroke="#50fa7b"
+        stroke-width="1" />
+    <path d="M350,150 L330,150 L330,170 L310,170 L310,190" fill="none" opacity="0.3"
+        stroke="#50fa7b" stroke-width="1" />
+    <path d="M40,694 L60,694 L60,674 L80,674 L80,654" fill="none" opacity="0.3" stroke="#50fa7b"
+        stroke-width="1" />
+    <path d="M350,694 L330,694 L330,674 L310,674 L310,654" fill="none" opacity="0.3"
+        stroke="#50fa7b" stroke-width="1" />
+
+    <!-- Status indicators -->
+    <circle cx="30" cy="220" fill="#50fa7b" opacity="0.25" r="4" />
+    <circle cx="30" cy="240" fill="#8be9fd" opacity="0.25" r="4" />
+    <circle cx="30" cy="260" fill="#ff79c6" opacity="0.25" r="4" />
+
+    <circle cx="360" cy="220" fill="#50fa7b" opacity="0.25" r="4" />
+    <circle cx="360" cy="240" fill="#8be9fd" opacity="0.25" r="4" />
+    <circle cx="360" cy="260" fill="#ff79c6" opacity="0.25" r="4" />
+
+    <!-- Digital noise effect -->
+    <rect fill="#8be9fd" height="3" opacity="0.3" width="3" x="195" y="120" />
+    <rect fill="#ff79c6" height="8" opacity="0.2" width="2" x="216" y="95" />
+    <rect fill="#50fa7b" height="2" opacity="0.25" width="5" x="174" y="102" />
+    <rect fill="#8be9fd" height="4" opacity="0.3" width="4" x="155" y="636" />
+    <rect fill="#ff79c6" height="2" opacity="0.2" width="6" x="235" y="648" />
+    <rect fill="#50fa7b" height="5" opacity="0.25" width="2" x="195" y="670" />
+
+    <!-- Power indicators -->
+    <path d="M25,300 L40,300" opacity="0.2" stroke="#50fa7b" stroke-width="1" />
+    <path d="M25,310 L35,310" opacity="0.3" stroke="#50fa7b" stroke-width="1" />
+    <path d="M25,320 L38,320" opacity="0.2" stroke="#50fa7b" stroke-width="1" />
+
+    <path d="M365,300 L350,300" opacity="0.2" stroke="#50fa7b" stroke-width="1" />
+    <path d="M365,310 L355,310" opacity="0.3" stroke="#50fa7b" stroke-width="1" />
+    <path d="M365,320 L352,320" opacity="0.2" stroke="#50fa7b" stroke-width="1" />
+
+    <!-- Static line (formerly scanning line) -->
+    <line opacity="0.3" stroke="#50fa7b" stroke-width="2" x1="105" x2="285" y1="422" y2="422" />
+
+    <!-- Digital noise dots scattered around -->
+    <circle cx="110" cy="342" fill="#8be9fd" opacity="0.2" r="1" />
+    <circle cx="280" cy="402" fill="#ff79c6" opacity="0.2" r="1" />
+    <circle cx="195" cy="422" fill="#50fa7b" opacity="0.2" r="1" />
+    <circle cx="150" cy="512" fill="#8be9fd" opacity="0.2" r="1" />
+    <circle cx="240" cy="332" fill="#ff79c6" opacity="0.2" r="1" />
+</svg>

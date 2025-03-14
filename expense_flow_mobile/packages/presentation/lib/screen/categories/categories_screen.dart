@@ -1,6 +1,7 @@
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -18,16 +19,27 @@ class CategoriesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (_) => CategoriesBloc(
-          getIt<GetCategoriesUseCase>(),
-          getIt<Logger>(),
-          getIt<LocalizationService>(),
-        )..add(const CategoriesEvent.init()),
-        child: const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: CategoriesScreenView(),
-        ),
-      );
+      create: (_) => CategoriesBloc(
+            getIt<GetCategoriesUseCase>(),
+            getIt<Logger>(),
+            getIt<LocalizationService>(),
+          )..add(const CategoriesEvent.init()),
+      child: Stack(
+        children: [
+          Expanded(
+            child: SvgPicture.asset(
+              'packages/presentation/assets/background_categories.svg',
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: CategoriesScreenView(),
+          ),
+        ],
+      ));
 }
 
 class CategoriesScreenView extends StatelessWidget {
