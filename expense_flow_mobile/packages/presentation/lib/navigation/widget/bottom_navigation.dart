@@ -30,30 +30,49 @@ class BottomNavigation extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return BlocBuilder<NavigationBloc, NavigationState>(
       builder: (context, state) {
-        return BottomNavigationBar(
-          elevation: 0,
-          selectedItemColor: colorScheme.onSurface,
-          unselectedItemColor: colorScheme.onSurface.withAlpha(100),
-          currentIndex: state.currentIndex,
-          onTap: (index) {
-            context
-                .read<NavigationBloc>()
-                .add(NavigationEvent.navigateToIndex(index));
-          },
-          items: _getNavigationItems(context)
-              .map(
-                (item) => BottomNavigationBarItem(
-                  icon: _buildSvgIcon(
-                    item.$2,
+        return Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(50),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+            border: Border(
+              top: BorderSide(
+                color: colorScheme.outline.withAlpha(50),
+                width: 1,
+              ),
+            ),
+          ),
+          child: BottomNavigationBar(
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            selectedItemColor: colorScheme.onSurface,
+            unselectedItemColor: colorScheme.onSurface.withAlpha(100),
+            currentIndex: state.currentIndex,
+            onTap: (index) {
+              context
+                  .read<NavigationBloc>()
+                  .add(NavigationEvent.navigateToIndex(index));
+            },
+            items: _getNavigationItems(context)
+                .map(
+                  (item) => BottomNavigationBarItem(
+                    icon: _buildSvgIcon(
+                      item.$2,
+                    ),
+                    activeIcon: _buildSvgIcon(
+                      item.$2,
+                    ),
+                    backgroundColor: Colors.transparent,
+                    label: item.$1,
                   ),
-                  activeIcon: _buildSvgIcon(
-                    item.$2,
-                  ),
-                  backgroundColor: Colors.transparent,
-                  label: item.$1,
-                ),
-              )
-              .toList(),
+                )
+                .toList(),
+          ),
         );
       },
     );
