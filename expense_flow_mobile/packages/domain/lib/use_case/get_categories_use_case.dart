@@ -13,6 +13,12 @@ class GetCategoriesUseCase
 
   @override
   Future<Either<Failure, List<CategoryWithItems>>> call(NoParams params) async {
-    return await repository.getCategories();
+    final result = await repository.getCategories();
+
+    return result.map((categories) => categories.map((category) {
+          final sortedItems = List.of(category.items)
+            ..sort((a, b) => b.amount.compareTo(a.amount));
+          return category.copyWith(items: sortedItems);
+        }).toList());
   }
 }

@@ -16,6 +16,7 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
   final GetMonthsSummaryUseCase _getMonthsSummaryUseCase;
   final Logger _errorLogger;
   final LocalizationService _localizationService;
+  Completer<void>? _refreshCompleter;
 
   SummaryBloc(this._getMonthsSummaryUseCase, this._errorLogger,
       this._localizationService)
@@ -23,8 +24,6 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
     on<InitEvent>(_handleInit);
     on<ToggleMonthEvent>(_handleToggleMonth);
   }
-
-  Completer<void>? _refreshCompleter;
 
   Future<void> refresh() async {
     add(const SummaryEvent.init());
