@@ -2,8 +2,8 @@
     <!-- Transparent background -->
     <rect fill="transparent" height="844" width="390" />
 
-    <!-- Ambient grid pattern - standardized -->
-    <g opacity="0.10">
+    <!-- Ambient grid pattern - keeping main structure -->
+    <g opacity="0.08">
         <path d="M0 80 L390 80" stroke="#8a8d96" stroke-width="1" />
         <path d="M0 160 L390 160" stroke="#8a8d96" stroke-width="1" />
         <path d="M0 240 L390 240" stroke="#8a8d96" stroke-width="1" />
@@ -21,151 +21,47 @@
         <path d="M320 0 L320 844" stroke="#8a8d96" stroke-width="1" />
     </g>
 
-    <!-- Subtle dotted grid overlay -->
+    <!-- Reduced dotted grid overlay - only at key intersections -->
     <g opacity="0.05">
-        <circle cx="80" cy="80" fill="#8a8d96" r="1" />
-        <circle cx="80" cy="160" fill="#8a8d96" r="1" />
-        <circle cx="80" cy="240" fill="#8a8d96" r="1" />
-        <circle cx="80" cy="320" fill="#8a8d96" r="1" />
-        <circle cx="80" cy="400" fill="#8a8d96" r="1" />
-        <circle cx="80" cy="480" fill="#8a8d96" r="1" />
-        <circle cx="80" cy="560" fill="#8a8d96" r="1" />
-        <circle cx="80" cy="640" fill="#8a8d96" r="1" />
-        <circle cx="80" cy="720" fill="#8a8d96" r="1" />
-        <circle cx="80" cy="800" fill="#8a8d96" r="1" />
-
-        <circle cx="160" cy="80" fill="#8a8d96" r="1" />
         <circle cx="160" cy="160" fill="#8a8d96" r="1" />
-        <circle cx="160" cy="240" fill="#8a8d96" r="1" />
         <circle cx="160" cy="320" fill="#8a8d96" r="1" />
-        <circle cx="160" cy="400" fill="#8a8d96" r="1" />
         <circle cx="160" cy="480" fill="#8a8d96" r="1" />
-        <circle cx="160" cy="560" fill="#8a8d96" r="1" />
         <circle cx="160" cy="640" fill="#8a8d96" r="1" />
-        <circle cx="160" cy="720" fill="#8a8d96" r="1" />
-        <circle cx="160" cy="800" fill="#8a8d96" r="1" />
 
-        <circle cx="240" cy="80" fill="#8a8d96" r="1" />
         <circle cx="240" cy="160" fill="#8a8d96" r="1" />
-        <circle cx="240" cy="240" fill="#8a8d96" r="1" />
         <circle cx="240" cy="320" fill="#8a8d96" r="1" />
-        <circle cx="240" cy="400" fill="#8a8d96" r="1" />
         <circle cx="240" cy="480" fill="#8a8d96" r="1" />
-        <circle cx="240" cy="560" fill="#8a8d96" r="1" />
         <circle cx="240" cy="640" fill="#8a8d96" r="1" />
-        <circle cx="240" cy="720" fill="#8a8d96" r="1" />
-        <circle cx="240" cy="800" fill="#8a8d96" r="1" />
-
-        <circle cx="320" cy="80" fill="#8a8d96" r="1" />
-        <circle cx="320" cy="160" fill="#8a8d96" r="1" />
-        <circle cx="320" cy="240" fill="#8a8d96" r="1" />
-        <circle cx="320" cy="320" fill="#8a8d96" r="1" />
-        <circle cx="320" cy="400" fill="#8a8d96" r="1" />
-        <circle cx="320" cy="480" fill="#8a8d96" r="1" />
-        <circle cx="320" cy="560" fill="#8a8d96" r="1" />
-        <circle cx="320" cy="640" fill="#8a8d96" r="1" />
-        <circle cx="320" cy="720" fill="#8a8d96" r="1" />
-        <circle cx="320" cy="800" fill="#8a8d96" r="1" />
     </g>
-
-    <!-- New circuit pattern - geometric shapes -->
-    <g opacity="0.12">
-        <path d="M35,200 L35,240 L75,240" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M35,206 L41,206" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M35,212 L41,212" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M35,218 L41,218" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M35,224 L41,224" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M35,230 L41,230" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M35,236 L41,236" fill="none" stroke="#8be9fd" stroke-width="1" />
-
-        <path d="M355,644 L355,604 L315,604" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M355,638 L349,638" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M355,632 L349,632" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M355,626 L349,626" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M355,620 L349,620" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M355,614 L349,614" fill="none" stroke="#8be9fd" stroke-width="1" />
-        <path d="M355,608 L349,608" fill="none" stroke="#8be9fd" stroke-width="1" />
-    </g>
-
-    <!-- Horizontal data bars - new element -->
-    <g opacity="0.15">
-        <rect fill="#8be9fd" height="2" width="40" x="30" y="350" />
-        <rect fill="#8be9fd" height="2" width="25" x="30" y="358" />
-        <rect fill="#8be9fd" height="2" width="35" x="30" y="366" />
-
-        <rect fill="#8be9fd" height="2" width="40" x="320" y="350" />
-        <rect fill="#8be9fd" height="2" width="25" x="335" y="358" />
-        <rect fill="#8be9fd" height="2" width="35" x="325" y="366" />
-
-        <rect fill="#8be9fd" height="2" width="40" x="30" y="480" />
-        <rect fill="#8be9fd" height="2" width="25" x="30" y="488" />
-        <rect fill="#8be9fd" height="2" width="35" x="30" y="496" />
-
-        <rect fill="#8be9fd" height="2" width="40" x="320" y="480" />
-        <rect fill="#8be9fd" height="2" width="25" x="335" y="488" />
-        <rect fill="#8be9fd" height="2" width="35" x="325" y="496" />
-    </g>
-
-    <!-- Diagonal path elements - new -->
+    
+    <!-- Reduced diagonal paths - only two -->
     <g opacity="0.12">
         <path d="M110,150 L150,190" fill="none" stroke="#50fa7b" stroke-dasharray="4,4"
-            stroke-width="1" />
-        <path d="M280,150 L240,190" fill="none" stroke="#50fa7b" stroke-dasharray="4,4"
-            stroke-width="1" />
-        <path d="M110,694 L150,654" fill="none" stroke="#50fa7b" stroke-dasharray="4,4"
             stroke-width="1" />
         <path d="M280,694 L240,654" fill="none" stroke="#50fa7b" stroke-dasharray="4,4"
             stroke-width="1" />
     </g>
 
-    <!-- Central element - subtle hexagon -->
+    <!-- Kept central element - simplified hexagon -->
     <g opacity="0.15">
         <path d="M175,390 L215,390 L235,422 L215,454 L175,454 L155,422 Z" fill="none"
             stroke="#bd93f9" stroke-width="1" />
-        <circle cx="195" cy="422" fill="none" r="25" stroke="#bd93f9" stroke-dasharray="2,2"
-            stroke-width="1" />
-        <line stroke="#bd93f9" stroke-dasharray="2,2" stroke-width="1" x1="175" x2="175" y1="390"
-            y2="454" />
-        <line stroke="#bd93f9" stroke-dasharray="2,2" stroke-width="1" x1="215" x2="215" y1="390"
-            y2="454" />
         <line stroke="#bd93f9" stroke-dasharray="2,2" stroke-width="1" x1="155" x2="235" y1="422"
             y2="422" />
     </g>
 
-    <!-- Status indicators but in different positions -->
+    <!-- Reduced status indicators - only one set -->
     <g opacity="0.15">
         <circle cx="45" cy="280" fill="#8be9fd" r="3" />
         <circle cx="45" cy="290" fill="#50fa7b" r="3" />
         <circle cx="45" cy="300" fill="#ff79c6" r="3" />
-
-        <circle cx="345" cy="564" fill="#8be9fd" r="3" />
-        <circle cx="345" cy="554" fill="#50fa7b" r="3" />
-        <circle cx="345" cy="544" fill="#ff79c6" r="3" />
     </g>
 
-    <!-- Digital noise scattered sparingly -->
+    <!-- Minimal digital noise - just four elements -->
     <g opacity="0.08">
         <rect fill="#8be9fd" height="3" width="3" x="95" y="105" />
-        <rect fill="#ff79c6" height="3" width="3" x="292" y="105" />
-        <rect fill="#ff79c6" height="3" width="3" x="95" y="736" />
-        <rect fill="#8be9fd" height="3" width="3" x="292" y="736" />
-
+        <rect fill="#ff79c6" height="3" width="3" x="292" y="736" />
         <rect fill="#50fa7b" height="2" width="2" x="180" y="320" />
-        <rect fill="#50fa7b" height="2" width="2" x="208" y="320" />
-        <rect fill="#50fa7b" height="2" width="2" x="180" y="524" />
         <rect fill="#50fa7b" height="2" width="2" x="208" y="524" />
-    </g>
-
-    <!-- Random small dots -->
-    <g opacity="0.08">
-        <circle cx="120" cy="230" fill="#ff79c6" r="1" />
-        <circle cx="270" cy="230" fill="#8be9fd" r="1" />
-        <circle cx="120" cy="614" fill="#8be9fd" r="1" />
-        <circle cx="270" cy="614" fill="#ff79c6" r="1" />
-
-        <circle cx="195" cy="330" fill="#50fa7b" r="1" />
-        <circle cx="195" cy="514" fill="#50fa7b" r="1" />
-        <circle cx="155" cy="422" fill="#ff79c6" r="1" />
-        <circle cx="235" cy="422" fill="#8be9fd" r="1" />
     </g>
 </svg>
