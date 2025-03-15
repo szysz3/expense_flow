@@ -30,7 +30,7 @@ class ReceiptScanScreen extends StatelessWidget {
           )..add(const ReceiptScanEvent.initializeCamera()),
       child: Stack(
         children: [
-          Expanded(
+          Positioned.fill(
             child: SvgPicture.asset(
               'packages/presentation/assets/background_receipt_scanning.svg',
               width: double.infinity,

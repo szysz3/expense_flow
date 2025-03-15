@@ -27,7 +27,7 @@ class AddItemScreen extends StatelessWidget {
             getIt<LocalizationService>(),
           ),
       child: Stack(children: [
-        Expanded(
+        Positioned.fill(
           child: SvgPicture.asset(
             'packages/presentation/assets/background_add_item.svg',
             width: double.infinity,

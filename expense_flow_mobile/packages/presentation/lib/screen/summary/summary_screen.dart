@@ -26,7 +26,7 @@ class SummaryScreen extends StatelessWidget {
             getIt<LocalizationService>(),
           )..add(const SummaryEvent.init()),
       child: Stack(children: [
-        Expanded(
+        Positioned.fill(
           child: SvgPicture.asset(
             'packages/presentation/assets/background_summary.svg',
             width: double.infinity,

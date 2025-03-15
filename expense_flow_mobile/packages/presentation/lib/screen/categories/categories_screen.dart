@@ -26,7 +26,7 @@ class CategoriesScreen extends StatelessWidget {
           )..add(const CategoriesEvent.init()),
       child: Stack(
         children: [
-          Expanded(
+          Positioned.fill(
             child: SvgPicture.asset(
               'packages/presentation/assets/background_categories.svg',
               width: double.infinity,

@@ -26,7 +26,7 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
             getIt<LocalizationService>(),
           )..add(const UnprocessedReceiptsEvent.init()),
       child: Stack(children: [
-        Expanded(
+        Positioned.fill(
           child: SvgPicture.asset(
             'packages/presentation/assets/background_unprocessed.svg',
             width: double.infinity,
