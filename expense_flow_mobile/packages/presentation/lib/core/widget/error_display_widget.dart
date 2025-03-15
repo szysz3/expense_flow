@@ -27,11 +27,7 @@ class ErrorDisplayWidget extends StatelessWidget {
   Widget _buildFullScreenError(BuildContext context) {
     return Column(children: [
       Expanded(
-          child: Container(
-              // TODO: remporarily make error layer transparent
-              // decoration:
-              //     BoxDecoration(color: Theme.of(context).colorScheme.surface),
-              child: Center(
+          child: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -74,7 +70,7 @@ class ErrorDisplayWidget extends StatelessWidget {
             ],
           ),
         ),
-      )))
+      ))
     ]);
   }
 

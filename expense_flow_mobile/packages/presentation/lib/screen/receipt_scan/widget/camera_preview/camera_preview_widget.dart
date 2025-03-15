@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
 
 import '../../../../core/widget/animated_square_button.dart';
 import '../../../../core/widget/loading_indicator_widget.dart';
@@ -45,19 +44,6 @@ class CameraPreviewWidget extends StatelessWidget {
       );
 
   Widget _buildLoadingIndicator(BuildContext context) {
-    if (state.previewState == CameraPreviewState.uploadFailure) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Center(child: Text(AppLocalizations.of(context).uploadFailed)),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            duration: Duration(seconds: 5),
-          ),
-        );
-      });
-    }
-
     return Center(
       child: LoadingIndicatorWidget(
         isSuccess: state.previewState == CameraPreviewState.uploadSuccess,

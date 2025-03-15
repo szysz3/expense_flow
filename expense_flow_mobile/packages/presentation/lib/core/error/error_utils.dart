@@ -17,7 +17,7 @@ class ErrorUtils {
             error.message,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onError.withOpacity(0.8),
+              color: Theme.of(context).colorScheme.onError,
             ),
           ),
           if (error.details != null)
@@ -25,7 +25,7 @@ class ErrorUtils {
               error.details!,
               style: TextStyle(
                 fontSize: 12,
-                color: Theme.of(context).colorScheme.onError.withOpacity(0.8),
+                color: Theme.of(context).colorScheme.onError,
               ),
             ),
         ],

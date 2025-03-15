@@ -66,6 +66,7 @@ class AppError {
   factory AppError.fromException(
     dynamic exception, {
     required LocalizationService localizationService,
+    isRetryable = true,
     VoidCallback? onRetry,
   }) {
     final l10n = localizationService.localizations;
@@ -73,7 +74,7 @@ class AppError {
     return AppError(
       message: l10n.unexpectedError,
       details: exception.toString(),
-      isRetryable: true,
+      isRetryable: isRetryable,
       onRetry: onRetry,
     );
   }

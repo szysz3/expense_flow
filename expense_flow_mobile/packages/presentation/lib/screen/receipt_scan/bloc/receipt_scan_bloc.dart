@@ -48,6 +48,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       emit(ReceiptScanState(
         controller: null,
         error: AppError.fromException(e,
+            isRetryable: false,
             onRetry: () => add(const ReceiptScanEvent.initializeCamera()),
             localizationService: _localizationService),
       ));
@@ -142,6 +143,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       emit(scanState.copyWith(
         cameraPreviewState: CameraPreviewState.uploadFailure,
         error: AppError.fromException(e,
+            isRetryable: false,
             onRetry: () => add(const ReceiptScanEvent.photoAccepted()),
             localizationService: _localizationService),
       ));
@@ -238,6 +240,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
         emit(scanState.copyWith(
           cameraPreviewState: CameraPreviewState.cameraPreview,
           error: AppError.fromException(e,
+              isRetryable: false,
               onRetry: () => add(const ReceiptScanEvent.takePhoto()),
               localizationService: _localizationService),
         ));
