@@ -25,55 +25,57 @@ class ErrorDisplayWidget extends StatelessWidget {
   }
 
   Widget _buildFullScreenError(BuildContext context) {
-    return Expanded(
-        child: Container(
-            // TODO: remporarily make error layer transparent
-            // decoration:
-            //     BoxDecoration(color: Theme.of(context).colorScheme.surface),
-            child: Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(
-              'packages/presentation/assets/icon_failure.svg',
-              width: 64,
-              height: 64,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              error.message,
-              style: Theme.of(context).textTheme.titleLarge,
-              textAlign: TextAlign.center,
-            ),
-            if (error.details != null) ...[
-              const SizedBox(height: 8),
+    return Column(children: [
+      Expanded(
+          child: Container(
+              // TODO: remporarily make error layer transparent
+              // decoration:
+              //     BoxDecoration(color: Theme.of(context).colorScheme.surface),
+              child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'packages/presentation/assets/icon_failure.svg',
+                width: 64,
+                height: 64,
+              ),
+              const SizedBox(height: 16),
               Text(
-                error.details!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withOpacity(0.7),
-                    ),
+                error.message,
+                style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
+              if (error.details != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  error.details!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.7),
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              if (error.isRetryable && error.onRetry != null) ...[
+                const SizedBox(height: 24),
+                _buildStyledButton(
+                  context: context,
+                  onPressed: error.onRetry!,
+                  label: AppLocalizations.of(context).retry,
+                  width: 100.0,
+                  height: 52.0,
+                ),
+              ],
             ],
-            if (error.isRetryable && error.onRetry != null) ...[
-              const SizedBox(height: 24),
-              _buildStyledButton(
-                context: context,
-                onPressed: error.onRetry!,
-                label: AppLocalizations.of(context).retry,
-                width: 100.0,
-                height: 52.0,
-              ),
-            ],
-          ],
+          ),
         ),
-      ),
-    )));
+      )))
+    ]);
   }
 
   Widget _buildInlineError(BuildContext context) {
