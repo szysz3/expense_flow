@@ -1,0 +1,36 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Glitch effect layers - circle base -->
+    <circle cx="50" cy="50" fill="none" opacity="0.4" r="30" stroke="#ff00ff" stroke-width="8" />
+    <circle cx="50" cy="50" fill="none" opacity="0.6" r="28" stroke="#00ffff" stroke-width="6" />
+
+    <!-- Main circle -->
+    <circle cx="50" cy="50" fill="none" r="25" stroke="#ffffff" stroke-width="4" />
+
+    <!-- Pie slices with glitch effects -->
+    <path d="M50,50 L75,50 A25,25 0 0,1 62.5,81.7 Z" fill="#ff00ff" opacity="0.5" />
+    <path d="M50,50 L62.5,81.7 A25,25 0 0,1 25,50 Z" fill="#00ffff" opacity="0.5" />
+    <path d="M50,50 L25,50 A25,25 0 0,1 50,25 Z" fill="#ffffff" opacity="0.7" />
+    <path d="M50,50 L50,25 A25,25 0 0,1 75,50 Z" fill="#00ff99" opacity="0.5" />
+
+    <!-- Slice dividers with glitch effects -->
+    <line opacity="0.8" stroke="#ff00ff" stroke-width="2" x1="50" x2="75" y1="50" y2="50" />
+    <line opacity="0.8" stroke="#00ffff" stroke-width="2" x1="50" x2="62.5" y1="50" y2="81.7" />
+    <line stroke="#ffffff" stroke-width="2" x1="50" x2="25" y1="50" y2="50" />
+    <line stroke="#00ff99" stroke-width="2" x1="50" x2="50" y1="50" y2="25" />
+
+    <!-- Circuit details -->
+    <line stroke="#00ff99" stroke-width="2" x1="50" x2="50" y1="5" y2="15" />
+    <line stroke="#00ff99" stroke-width="2" x1="85" x2="95" y1="50" y2="50" />
+
+    <!-- Accent points -->
+    <circle cx="50" cy="50" fill="#00ff99" r="4" />
+    <circle cx="75" cy="50" fill="#00ff99" r="3" />
+    <circle cx="62.5" cy="81.7" fill="#00ff99" r="3" />
+    <circle cx="25" cy="50" fill="#00ff99" r="3" />
+    <circle cx="50" cy="25" fill="#00ff99" r="3" />
+
+    <!-- Small binary data dots around the outer edge -->
+    <circle cx="80" cy="20" fill="#ff00ff" r="1" />
+    <circle cx="77" cy="25" fill="#00ffff" r="1" />
+    <circle cx="83" cy="27" fill="#ff00ff" r="1" />
+</svg>

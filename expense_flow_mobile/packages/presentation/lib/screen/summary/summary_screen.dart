@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
+import 'package:presentation/screen/summary/widget/speed_dial/speed_dial_menu.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
@@ -68,20 +69,29 @@ class SummaryScreenView extends StatelessWidget {
           return _buildEmptyState(context);
         }
 
-        return RefreshIndicator(
-          onRefresh: () => context.read<SummaryBloc>().refresh(),
-          child: ListView.builder(
-            itemCount: state.months.length,
-            itemBuilder: (context, index) {
-              final month = state.months[index];
-              return SummaryItemWidget(
-                month: month,
-                onToggle: () => context.read<SummaryBloc>().add(
-                      SummaryEvent.toggleMonth(month.id),
-                    ),
-              );
-            },
-          ),
+        return Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: () => context.read<SummaryBloc>().refresh(),
+              child: ListView.builder(
+                itemCount: state.months.length,
+                itemBuilder: (context, index) {
+                  final month = state.months[index];
+                  return SummaryItemWidget(
+                    month: month,
+                    onToggle: () => context.read<SummaryBloc>().add(
+                          SummaryEvent.toggleMonth(month.id),
+                        ),
+                  );
+                },
+              ),
+            ),
+            const Positioned(
+              right: 16,
+              bottom: 16,
+              child: SpeedDialMenu(),
+            ),
+          ],
         );
       },
     );

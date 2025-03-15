@@ -79,6 +79,10 @@ flutter:
     - assets/background_categories.svg
     - assets/background_summary.svg
     - assets/background_unprocessed.svg
+    - assets/icon_bar_chart.svg
+    - assets/icon_pie_chart.svg
+    - assets/icon_close.svg
+    - assets/icon_menu.svg
 
 
   # To add assets to your package, add an assets section, like this:

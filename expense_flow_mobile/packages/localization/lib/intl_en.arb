@@ -319,5 +319,20 @@
         "example": "Connection timeout"
       }
     }
-  }
+  },
+
+    "pieChart": "Pie Chart",
+    "@pieChart": {
+      "description": "Caption for pie chart"
+    },
+
+    "barChart": "Bar Chart",
+    "@settings": {
+      "description": "Caption for bar chart"
+    },
+
+    "list": "List",
+    "@settings": {
+      "description": "List caption"
+    }
 }
