@@ -202,7 +202,7 @@ class BaseRepository:
     
     def _normalize_text(self, text: str) -> str:
         """
-        Normalize text for comparison by removing extra spaces, lowercasing, etc.
+        Normalize text for product comparison while preserving important identifiers
         
         Args:
             text: String to normalize
@@ -210,14 +210,24 @@ class BaseRepository:
         Returns:
             Normalized string
         """
-        # Remove multiple spaces, special characters, lowercase
-        normalized = re.sub(r'\s+', ' ', text.lower().strip())
-        normalized = re.sub(r'[^\w\s]', '', normalized)
+        # Convert to lowercase and trim whitespace
+        normalized = text.lower().strip()
+        
+        # Normalize whitespace
+        normalized = re.sub(r'\s+', ' ', normalized)
+        
+        # Remove trailing single characters that might be batch codes
+        normalized = re.sub(r'[,\s]+[a-zA-Z]$', '', normalized)
+        
+        # Remove common punctuation but preserve product-relevant symbols
+        normalized = re.sub(r'[^\w\s\dx,.]', '', normalized)
+        
         return normalized
     
-    def _are_similar(self, text1: str, text2: str, threshold: float = 0.95) -> bool:
+    def _are_similar(self, text1: str, text2: str, threshold: float = 0.9) -> bool:
         """
-        Compare two strings for similarity after normalization
+        Compare two product strings for similarity, handling both spelling variations
+        and non-essential product codes
         
         Args:
             text1: First string to compare
@@ -225,11 +235,64 @@ class BaseRepository:
             threshold: Similarity threshold (0.0 to 1.0)
             
         Returns:
-            True if similarity ratio is above threshold
+            True if products are considered the same
         """
         normalized1 = self._normalize_text(text1)
         normalized2 = self._normalize_text(text2)
-        return SequenceMatcher(None, normalized1, normalized2).ratio() >= threshold
+        
+        # Overall similarity check
+        overall_similarity = SequenceMatcher(None, normalized1, normalized2).ratio()
+        if overall_similarity >= threshold:
+            return True
+        
+        # Token-by-token analysis for detecting variations like EXSTRA/EKSTRA
+        tokens1 = normalized1.split()
+        tokens2 = normalized2.split()
+        
+        # Check if we have the same number of tokens
+        if len(tokens1) == len(tokens2):
+            # Count matching and similar tokens
+            exact_matches = 0
+            similar_tokens = 0
+            
+            for t1, t2 in zip(tokens1, tokens2):
+                if t1 == t2:
+                    exact_matches += 1
+                elif SequenceMatcher(None, t1, t2).ratio() >= 0.8:
+                    similar_tokens += 1
+                    
+            # If all tokens match exactly except for one that's very similar
+            if exact_matches == len(tokens1) - 1 and similar_tokens == 1:
+                return True
+                
+            # Or if most tokens match exactly and the remaining are similar
+            total_token_count = len(tokens1)
+            if (exact_matches + similar_tokens == total_token_count and 
+                exact_matches >= total_token_count * 0.7):
+                return True
+        
+        # Check product core (name part before quantities)
+        # Extract the main product name (everything before quantities)
+        def extract_product_core(text):
+            # Match everything up to a number followed by unit (g, ml, tb, etc.)
+            match = re.match(r'^(.*?)(?:\d+\s*(?:[a-z]+))', text, re.IGNORECASE)
+            return match.group(1).strip() if match else text
+        
+        core1 = extract_product_core(normalized1)
+        core2 = extract_product_core(normalized2)
+        
+        # Check if the product cores are very similar
+        core_similarity = SequenceMatcher(None, core1, core2).ratio()
+        if core_similarity >= 0.9:
+            # Extract and compare quantities separately
+            quantity1 = normalized1[len(core1):].strip()
+            quantity2 = normalized2[len(core2):].strip()
+            
+            quantity_similarity = SequenceMatcher(None, quantity1, quantity2).ratio()
+            if quantity_similarity >= 0.9:
+                return True
+        
+        return False
     
     def build_query(self, query_conditions: List[Optional[Any]]) -> Callable:
         """
