@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: expense_flow_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./.data:/app/.data
+    environment:
+      - DATABASE_DB_PATH=.data/serve/receipts.db
+      - DATABASE_TEMP_DB_PATH=.data/serve/temp_receipts.db
+      - AZURE_ENDPOINT=${AZURE_ENDPOINT}
+      - AZURE_KEY=${AZURE_KEY}
+      - LLM_TYPE=${LLM_TYPE:-local}
+      - LLM_OLLAMA_HOST=${LLM_OLLAMA_HOST:-http://your-ollama-host:11434}
+      - LLM_CHATGPT_KEY=${LLM_CHATGPT_KEY}
+      - API_API_KEY=${API_API_KEY}
+    restart: unless-stopped
+    networks:
+      - expense_flow_network
+
+networks:
+  expense_flow_network:
+    driver: bridge
