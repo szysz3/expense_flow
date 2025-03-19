@@ -22,7 +22,6 @@ COPY . .
 
 # backup
 COPY setup-backup-cron.sh /app/
-RUN chmod +x /app/setup-backup-cron.sh
 RUN mkdir -p /var/log
 RUN touch /var/log/cron.log
 
@@ -35,7 +34,6 @@ USER appuser
 EXPOSE 8000
 
 COPY docker-entrypoint.sh /app/
-RUN chmod +x /app/docker-entrypoint.sh
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
