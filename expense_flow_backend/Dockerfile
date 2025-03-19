@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgl1-mesa-glx \
     libglib2.0-0 \
-    cron \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -19,11 +18,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-
-# backup
-COPY setup-backup-cron.sh /app/
-RUN mkdir -p /var/log
-RUN touch /var/log/cron.log
 
 RUN mkdir -p .data/serve .data/analyzis
 

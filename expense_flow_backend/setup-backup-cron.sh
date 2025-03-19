@@ -1,12 +1,24 @@
 #!/bin/bash
 set -e
 
-LOG_FILE="/app/.data/backup.log"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BACKUP_SCRIPT="${SCRIPT_DIR}/backup.py"
 
-touch "$LOG_FILE"
+if [ ! -f "$BACKUP_SCRIPT" ]; then
+    echo "Error: Backup script not found at $BACKUP_SCRIPT"
+    exit 1
+fi
 
-(crontab -l 2>/dev/null; echo "0 1 * * * cd /app && python -m expense_flow.backup --source=/app/.data --dest=/mnt/sdcard/expense_flow_backups --max-backups=14 >> \"$LOG_FILE\" 2>&1") | crontab -
+chmod +x "$BACKUP_SCRIPT"
 
-cron
+(crontab -l 2>/dev/null | grep -v "$BACKUP_SCRIPT") | crontab -
 
-echo "Backup cron job configured"
+(crontab -l 2>/dev/null; echo "0 1 * * * $BACKUP_SCRIPT >> $HOME/expense_flow_backup.log 2>&1") | crontab -
+
+echo "Backup job scheduled successfully:"
+echo "- Script: $BACKUP_SCRIPT"
+echo "- Log file: $HOME/expense_flow_backup.log"
+echo "- Runs daily at 1 AM"
+
+echo -e "\nCurrent crontab:"
+crontab -l
