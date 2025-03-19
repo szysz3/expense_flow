@@ -12,8 +12,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Backup ExpenseFlow data')
     parser.add_argument('--source', default='.data',
                       help='Source directory to backup (default: .data)')
-    parser.add_argument('--dest', default='/mnt/sdcard/expense_flow_backups',
-                      help='Destination directory for backups (default: /mnt/sdcard/expense_flow_backups)')
+    parser.add_argument('--dest', default='/mnt/sdcard/expense_flow_backups/',
+                      help='Destination directory for backups (default: /mnt/sdcard/expense_flow_backups/)')
     parser.add_argument('--max-backups', type=int, default=14,
                       help='Maximum number of backups to keep (default: 14)')
     return parser.parse_args()
