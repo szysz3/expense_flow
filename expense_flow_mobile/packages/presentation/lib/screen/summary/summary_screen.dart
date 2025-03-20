@@ -86,10 +86,26 @@ class SummaryScreenView extends StatelessWidget {
                 },
               ),
             ),
-            const Positioned(
+            Positioned(
               right: 16,
               bottom: 16,
-              child: SpeedDialMenu(),
+              child: SpeedDialMenu(
+                onBarChartSelected: () {
+                  context.read<SummaryBloc>().add(
+                        SummaryEvent.displayBarChart(),
+                      );
+                },
+                onPieChartSelected: () {
+                  context.read<SummaryBloc>().add(
+                        SummaryEvent.displayPieChart(),
+                      );
+                },
+                onSummarySelected: () {
+                  context.read<SummaryBloc>().add(
+                        SummaryEvent.displayList(),
+                      );
+                },
+              ),
             ),
           ],
         );
