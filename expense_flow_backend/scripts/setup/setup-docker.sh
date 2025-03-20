@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ../../
+
 set -e
 
 GREEN='\033[0;32m'

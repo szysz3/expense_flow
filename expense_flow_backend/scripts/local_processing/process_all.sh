@@ -10,7 +10,6 @@ usage() {
     exit 1
 }
 
-# Function to format time in human-readable format
 format_time() {
     local seconds=$1
     local minutes=$((seconds / 60))
@@ -22,7 +21,6 @@ format_time() {
     fi
 }
 
-# Check command line arguments
 if [ $# -lt 1 ]; then
     usage
 fi
@@ -30,7 +28,6 @@ fi
 JSON_DIR="$1"
 shift
 
-# Parse optional arguments
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --llm-type)
@@ -58,13 +55,11 @@ if [ ! -d "$JSON_DIR" ]; then
     exit 1
 fi
 
-# Initialize counters and timer
 total_files=$(find "$JSON_DIR" -maxdepth 1 -type f -name "*.json" | wc -l)
 processed_files=0
 failed_files=0
 start_time=$(date +%s)
 
-# Process files without using a pipeline
 while IFS= read -r json_file; do
     echo -e "\033[32m====================================\033[0m"
     echo -e "\033[32mProcessing: $(basename "$json_file")\033[0m"
@@ -91,7 +86,6 @@ done < <(find "$JSON_DIR" -maxdepth 1 -type f -name "*.json")
 end_time=$(date +%s)
 total_duration=$((end_time - start_time))
 
-# Print summary
 echo -e "\033[32m====================================\033[0m"
 echo -e "\033[32mExecution Summary\033[0m"
 echo -e "\033[32m====================================\033[0m"

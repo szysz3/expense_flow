@@ -68,7 +68,6 @@ serve_api() {
     local HOST="0.0.0.0"
     local PORT="8000"
 
-    # Parse serve command options
     while [ "$#" -gt 0 ]; do
         case "$1" in
             --host)
@@ -102,9 +101,10 @@ fi
 
 activate_venv
 
-# Parse command
 COMMAND="$1"
 shift
+
+cd ../../
 
 case "$COMMAND" in
     analyze)
@@ -112,7 +112,6 @@ case "$COMMAND" in
         LLM_TYPE="local"
         shift
 
-        # Parse analyze command options
         while [ "$#" -gt 0 ]; do
             case "$1" in
                 --llm-type)
