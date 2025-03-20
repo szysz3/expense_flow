@@ -9,6 +9,7 @@ import 'package:logger/logger.dart';
 import '../../../../core/error/app_error.dart';
 import '../model/category_summary.dart';
 import '../model/month_summary.dart';
+import '../model/summary_display_type.dart';
 import 'summary_events.dart';
 import 'summary_state.dart';
 
@@ -23,6 +24,9 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
       : super(const SummaryState()) {
     on<InitEvent>(_handleInit);
     on<ToggleMonthEvent>(_handleToggleMonth);
+    on<DisplayBarChartEvent>(_handleDisplayBarChart);
+    on<DisplayPieChartEvent>(_handleDisplayPieChart);
+    on<DisplayListEvent>(_handleDisplayList);
   }
 
   Future<void> refresh() async {
@@ -119,5 +123,26 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
         stackTrace: stackTrace,
       );
     }
+  }
+
+  void _handleDisplayBarChart(
+    DisplayBarChartEvent event,
+    Emitter<SummaryState> emit,
+  ) {
+    emit(state.copyWith(displayType: SummaryDisplayType.barChart));
+  }
+
+  void _handleDisplayPieChart(
+    DisplayPieChartEvent event,
+    Emitter<SummaryState> emit,
+  ) {
+    emit(state.copyWith(displayType: SummaryDisplayType.pieChart));
+  }
+
+  void _handleDisplayList(
+    DisplayListEvent event,
+    Emitter<SummaryState> emit,
+  ) {
+    emit(state.copyWith(displayType: SummaryDisplayType.list));
   }
 }

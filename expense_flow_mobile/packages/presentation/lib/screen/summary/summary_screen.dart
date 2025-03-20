@@ -5,6 +5,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
+import 'package:presentation/screen/summary/widget/chart/summary_bar_chart.dart';
+import 'package:presentation/screen/summary/widget/chart/summary_pie_chart.dart';
 import 'package:presentation/screen/summary/widget/speed_dial/speed_dial_menu.dart';
 
 import '../../core/error/error_utils.dart';
@@ -14,6 +16,7 @@ import '../../di/di.dart';
 import 'bloc/summary_bloc.dart';
 import 'bloc/summary_events.dart';
 import 'bloc/summary_state.dart';
+import 'model/summary_display_type.dart';
 import 'widget/summary_item_widget.dart';
 
 class SummaryScreen extends StatelessWidget {
@@ -71,21 +74,7 @@ class SummaryScreenView extends StatelessWidget {
 
         return Stack(
           children: [
-            RefreshIndicator(
-              onRefresh: () => context.read<SummaryBloc>().refresh(),
-              child: ListView.builder(
-                itemCount: state.months.length,
-                itemBuilder: (context, index) {
-                  final month = state.months[index];
-                  return SummaryItemWidget(
-                    month: month,
-                    onToggle: () => context.read<SummaryBloc>().add(
-                          SummaryEvent.toggleMonth(month.id),
-                        ),
-                  );
-                },
-              ),
-            ),
+            _buildContent(context, state),
             Positioned(
               right: 16,
               bottom: 16,
@@ -111,6 +100,38 @@ class SummaryScreenView extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget _buildContent(BuildContext context, SummaryState state) {
+    switch (state.displayType) {
+      case SummaryDisplayType.barChart:
+        return RefreshIndicator(
+          onRefresh: () => context.read<SummaryBloc>().refresh(),
+          child: SummaryBarChart(months: state.months),
+        );
+      case SummaryDisplayType.pieChart:
+        return RefreshIndicator(
+          onRefresh: () => context.read<SummaryBloc>().refresh(),
+          child: SummaryPieChart(months: state.months),
+        );
+      case SummaryDisplayType.list:
+      default:
+        return RefreshIndicator(
+          onRefresh: () => context.read<SummaryBloc>().refresh(),
+          child: ListView.builder(
+            itemCount: state.months.length,
+            itemBuilder: (context, index) {
+              final month = state.months[index];
+              return SummaryItemWidget(
+                month: month,
+                onToggle: () => context.read<SummaryBloc>().add(
+                      SummaryEvent.toggleMonth(month.id),
+                    ),
+              );
+            },
+          ),
+        );
+    }
   }
 
   Widget _buildEmptyState(BuildContext context) {
