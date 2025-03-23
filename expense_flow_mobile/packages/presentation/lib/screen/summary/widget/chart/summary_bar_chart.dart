@@ -12,109 +12,29 @@ class SummaryBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (months.isEmpty) {
-      return _buildEmptyChart(context);
+      return _buildEmptyState(context);
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
+    // Take only the most recent 12 months for display
     final displayMonths = months.take(12).toList();
+    final colorScheme = Theme.of(context).colorScheme;
+    final maxY = _calculateMaxY(displayMonths);
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            AppLocalizations.of(context).monthlySummaryChartTitle,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-        ),
+        _buildTitle(context),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: _calculateMaxY(displayMonths),
-                barTouchData: BarTouchData(
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      return BarTooltipItem(
-                        '${displayMonths[groupIndex].month}\n',
-                        const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        children: <TextSpan>[
-                          TextSpan(
-                            text: rod.toY.toStringAsFixed(2),
-                            style: TextStyle(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+            padding:
+                const EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 100),
+            child: Column(
+              children: [
+                Expanded(
+                  child: BarChart(
+                    _createChartData(displayMonths, colorScheme, maxY),
                   ),
                 ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        if (value < 0 || value >= displayMonths.length) {
-                          return const Text('');
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            _getShortMonthName(
-                                displayMonths[value.toInt()].month),
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                        );
-                      },
-                      reservedSize: 30,
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 10),
-                        );
-                      },
-                      reservedSize: 40,
-                    ),
-                  ),
-                ),
-                gridData: FlGridData(
-                  show: true,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(
-                      color: Colors.grey.shade300,
-                      strokeWidth: 1,
-                    );
-                  },
-                  drawVerticalLine: false,
-                ),
-                borderData: FlBorderData(
-                  show: true,
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey.shade300, width: 1),
-                    left: BorderSide(color: Colors.grey.shade300, width: 1),
-                  ),
-                ),
-                barGroups: _generateBarGroups(displayMonths, colorScheme),
-              ),
+              ],
             ),
           ),
         ),
@@ -122,35 +42,179 @@ class SummaryBarChart extends StatelessWidget {
     );
   }
 
-  List<BarChartGroupData> _generateBarGroups(
-      List<MonthSummary> displayMonths, ColorScheme colorScheme) {
-    final groups = <BarChartGroupData>[];
+  Widget _buildTitle(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Text(
+        AppLocalizations.of(context).monthlySummaryChartTitle,
+        style: Theme.of(context).textTheme.headlineSmall,
+      ),
+    );
+  }
 
-    for (int i = 0; i < displayMonths.length; i++) {
-      final month = displayMonths[i];
+  BarChartData _createChartData(
+    List<MonthSummary> displayMonths,
+    ColorScheme colorScheme,
+    double maxY,
+  ) {
+    return BarChartData(
+      alignment: BarChartAlignment.spaceAround,
+      maxY: maxY,
+      barTouchData: _createTooltipData(displayMonths, colorScheme),
+      titlesData: _createTitlesData(displayMonths),
+      gridData: _createGridData(),
+      borderData: _createBorderData(),
+      barGroups: _generateBarGroups(displayMonths, colorScheme),
+    );
+  }
 
-      final totalExpenses = month.categories
-          .fold<double>(0, (sum, category) => sum + category.amount);
-
-      groups.add(
-        BarChartGroupData(
-          x: i,
-          barRods: [
-            BarChartRodData(
-              toY: totalExpenses,
-              color: colorScheme.primary,
-              width: 20,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(4),
-                topRight: Radius.circular(4),
-              ),
+  BarTouchData _createTooltipData(
+    List<MonthSummary> displayMonths,
+    ColorScheme colorScheme,
+  ) {
+    return BarTouchData(
+      enabled: true,
+      touchTooltipData: BarTouchTooltipData(
+        getTooltipColor: (touchedSpot) => Colors.black.withOpacity(0.4),
+        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+          return BarTooltipItem(
+            '${displayMonths[groupIndex].month}\n',
+            const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        ),
-      );
-    }
+            children: <TextSpan>[
+              TextSpan(
+                text: rod.toY.toStringAsFixed(2),
+                style: TextStyle(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          );
+        },
+        fitInsideHorizontally: true,
+        fitInsideVertically: true,
+      ),
+    );
+  }
 
-    return groups;
+  FlTitlesData _createTitlesData(List<MonthSummary> displayMonths) {
+    return FlTitlesData(
+      show: true,
+      rightTitles: const AxisTitles(
+        sideTitles: SideTitles(showTitles: false),
+      ),
+      topTitles: const AxisTitles(
+        sideTitles: SideTitles(showTitles: false),
+      ),
+      bottomTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          getTitlesWidget: (value, meta) {
+            if (value < 0 || value >= displayMonths.length) {
+              return const Text('');
+            }
+            return Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                _shortenMonthName(displayMonths[value.toInt()].month),
+                style: const TextStyle(fontSize: 10),
+              ),
+            );
+          },
+          reservedSize: 30,
+        ),
+      ),
+      leftTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          getTitlesWidget: (value, meta) {
+            // Important: Don't show the max value to prevent overlap
+            double maxValue = _calculateMaxY(months);
+            if (value == maxValue) {
+              return const SizedBox.shrink();
+            }
+
+            if (value % 100 == 0) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text(
+                  value.toInt().toString(),
+                  style: const TextStyle(fontSize: 10),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+          reservedSize: 40,
+        ),
+      ),
+    );
+  }
+
+  FlGridData _createGridData() {
+    return FlGridData(
+      show: true,
+      getDrawingHorizontalLine: (value) {
+        if (value % 100 == 0) {
+          return FlLine(
+            color: Colors.grey.shade300,
+            strokeWidth: 1,
+            dashArray: [5, 5],
+          );
+        }
+        return FlLine(
+          color: Colors.transparent,
+        );
+      },
+      drawVerticalLine: false,
+    );
+  }
+
+  FlBorderData _createBorderData() {
+    return FlBorderData(
+      show: true,
+      border: Border(
+        bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+        left: BorderSide(color: Colors.grey.shade300, width: 1),
+      ),
+    );
+  }
+
+  List<BarChartGroupData> _generateBarGroups(
+    List<MonthSummary> displayMonths,
+    ColorScheme colorScheme,
+  ) {
+    return List.generate(displayMonths.length, (i) {
+      final month = displayMonths[i];
+      final totalExpenses = _calculateMonthTotal(month);
+
+      return BarChartGroupData(
+        x: i,
+        barRods: [
+          BarChartRodData(
+            toY: totalExpenses,
+            color: colorScheme.primary,
+            width: 20,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(4),
+              topRight: Radius.circular(4),
+            ),
+            backDrawRodData: BackgroundBarChartRodData(
+              show: false,
+            ),
+          ),
+        ],
+        showingTooltipIndicators: [],
+      );
+    });
+  }
+
+  double _calculateMonthTotal(MonthSummary month) {
+    return month.categories
+        .fold<double>(0, (sum, category) => sum + category.amount);
   }
 
   double _calculateMaxY(List<MonthSummary> months) {
@@ -158,19 +222,18 @@ class SummaryBarChart extends StatelessWidget {
 
     double maxValue = 0;
     for (final month in months) {
-      final totalExpenses = month.categories
-          .fold<double>(0, (sum, category) => sum + category.amount);
+      final totalExpenses = _calculateMonthTotal(month);
       maxValue = maxValue < totalExpenses ? totalExpenses : maxValue;
     }
 
-    return ((maxValue ~/ 100) + 1) * 100.0;
+    return ((maxValue ~/ 100) + 2) * 100.0;
   }
 
-  String _getShortMonthName(String fullMonth) {
+  String _shortenMonthName(String fullMonth) {
     return fullMonth.length > 3 ? fullMonth.substring(0, 3) : fullMonth;
   }
 
-  Widget _buildEmptyChart(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Text(
         AppLocalizations.of(context).noDataChartTitle,

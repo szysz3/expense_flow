@@ -336,7 +336,7 @@
       "description": "List caption"
     },
 
-    "monthlySummaryChartTitle": "Monthly expenses",
+    "monthlySummaryChartTitle": "Last 12 months",
     "@settings": {
       "description": "Monthly summary expenses"
     },
