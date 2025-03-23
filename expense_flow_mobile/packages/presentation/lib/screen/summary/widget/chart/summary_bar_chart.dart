@@ -16,17 +16,14 @@ class SummaryBarChart extends StatelessWidget {
     }
 
     final colorScheme = Theme.of(context).colorScheme;
-
-    // Using only the last 6 months (or less if not enough data)
-    final displayMonths = months.take(6).toList();
+    final displayMonths = months.take(12).toList();
 
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            "Monthly expense comparison",
-            // AppLocalizations.of(context).monthlyExpensesComparison,
+            AppLocalizations.of(context).monthlySummaryChartTitle,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
@@ -132,7 +129,6 @@ class SummaryBarChart extends StatelessWidget {
     for (int i = 0; i < displayMonths.length; i++) {
       final month = displayMonths[i];
 
-      // Calculate total expenses for the month
       final totalExpenses = month.categories
           .fold<double>(0, (sum, category) => sum + category.amount);
 
@@ -177,8 +173,7 @@ class SummaryBarChart extends StatelessWidget {
   Widget _buildEmptyChart(BuildContext context) {
     return Center(
       child: Text(
-        "No data to display",
-        // AppLocalizations.of(context).noDataToDisplay,
+        AppLocalizations.of(context).noDataChartTitle,
         style: Theme.of(context).textTheme.bodyLarge,
       ),
     );

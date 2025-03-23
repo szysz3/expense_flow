@@ -334,5 +334,20 @@
     "list": "List",
     "@settings": {
       "description": "List caption"
+    },
+
+    "monthlySummaryChartTitle": "Monthly expenses",
+    "@settings": {
+      "description": "Monthly summary expenses"
+    },
+
+    "noDataChartTitle": "No data to display",
+    "@settings": {
+      "description": "No data available to display on chart"
+    },
+
+    "totalChartData": "Total",
+    "@settings": {
+      "description": "Total expenses"
     }
 }
