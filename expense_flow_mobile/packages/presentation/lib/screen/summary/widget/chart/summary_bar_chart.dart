@@ -16,7 +16,7 @@ class SummaryBarChart extends StatelessWidget {
     }
 
     // Take only the most recent 12 months for display
-    final displayMonths = months.take(12).toList();
+    final displayMonths = months.take(12).toList().reversed.toList();
     final colorScheme = Theme.of(context).colorScheme;
     final maxY = _calculateMaxY(displayMonths);
 

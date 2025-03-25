@@ -73,6 +73,8 @@ class _SpeedDialMenuState extends State<SpeedDialMenu> {
           onPressed: _toggleDial,
           borderColor: Colors.white,
           backgroundColor: Colors.black,
+          opacity:
+              _isDialOpen ? 1 : AnimatedSquareButtonConstants.defaultOpacity,
           icon: SvgPicture.asset(
             _isDialOpen
                 ? 'packages/presentation/assets/icon_close.svg'

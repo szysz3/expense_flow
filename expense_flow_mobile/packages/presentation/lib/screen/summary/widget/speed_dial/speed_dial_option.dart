@@ -49,6 +49,7 @@ class SpeedDialOption extends StatelessWidget {
             iconSize: iconSize,
             borderColor: Colors.white,
             backgroundColor: Colors.black,
+            opacity: 1,
             icon: SvgPicture.asset(
               svgPath,
               width: iconSize,

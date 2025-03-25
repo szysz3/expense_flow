@@ -18,6 +18,7 @@ class AnimatedSquareButton extends StatelessWidget {
   final double iconSize;
   final Color borderColor;
   final Color backgroundColor;
+  final double opacity;
 
   /// Creates an animated square button with customizable properties.
   ///
@@ -29,6 +30,7 @@ class AnimatedSquareButton extends StatelessWidget {
   /// [iconSize] size of the icon (defaults to 40.0)
   /// [borderColor] color of button border (defaults to white)
   /// [backgroundColor] color of button background (defaults to black)
+  /// [opacity] opacity of the background color (defaults to 0.4)
   const AnimatedSquareButton({
     super.key,
     required this.isProcessing,
@@ -39,6 +41,7 @@ class AnimatedSquareButton extends StatelessWidget {
     this.iconSize = AnimatedSquareButtonConstants.defaultIconSize,
     this.borderColor = Colors.white,
     this.backgroundColor = Colors.black,
+    this.opacity = AnimatedSquareButtonConstants.defaultOpacity,
   });
 
   /// Creates an animated button with equal width and height.
@@ -54,6 +57,7 @@ class AnimatedSquareButton extends StatelessWidget {
     double iconSize = AnimatedSquareButtonConstants.defaultIconSize,
     Color borderColor = Colors.white,
     Color backgroundColor = Colors.black,
+    double opacity = AnimatedSquareButtonConstants.defaultOpacity,
   }) {
     return AnimatedSquareButton(
       key: key,
@@ -65,6 +69,7 @@ class AnimatedSquareButton extends StatelessWidget {
       iconSize: iconSize,
       borderColor: borderColor,
       backgroundColor: backgroundColor,
+      opacity: opacity,
     );
   }
 
@@ -92,8 +97,7 @@ class AnimatedSquareButton extends StatelessWidget {
           border: Border.all(color: borderColor),
           borderRadius:
               BorderRadius.circular(AnimatedSquareButtonConstants.borderRadius),
-          color: backgroundColor
-              .withOpacity(AnimatedSquareButtonConstants.defaultOpacity),
+          color: backgroundColor.withOpacity(opacity),
         ),
         child: _buildButtonContent(),
       );
