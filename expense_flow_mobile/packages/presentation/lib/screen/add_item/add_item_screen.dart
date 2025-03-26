@@ -7,13 +7,13 @@ import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
+import '../../core/widget/input_widget.dart';
 import '../../core/widget/loading_indicator_widget.dart';
 import '../../di/di.dart';
 import 'bloc/add_item_bloc.dart';
 import 'bloc/add_item_event.dart';
 import 'bloc/add_item_state.dart';
 import 'widget/category_section.dart';
-import 'widget/description_section.dart';
 import 'widget/quantity_price_section.dart';
 
 class AddItemScreen extends StatelessWidget {
@@ -106,13 +106,17 @@ class _AddItemViewState extends State<AddItemView> {
                               },
                             ),
                             const SizedBox(height: 24),
-                            DescriptionSection(
+                            InputWidget(
                               controller: _descriptionController,
                               onDescriptionChanged: (value) {
                                 context.read<AddItemBloc>().add(
                                       AddItemEvent.descriptionChanged(value),
                                     );
                               },
+                              labelText:
+                                  AppLocalizations.of(context).description,
+                              hintText: AppLocalizations.of(context)
+                                  .enterItemDescription,
                             ),
                             const SizedBox(height: 24),
                             QuantityPriceSection(

@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
 
-class DescriptionSection extends StatelessWidget {
+class InputWidget extends StatelessWidget {
   final TextEditingController controller;
   final Function(String) onDescriptionChanged;
+  final String labelText;
+  final String hintText;
+  final TextInputType? keyboardType;
 
-  const DescriptionSection({
+  const InputWidget({
     super.key,
     required this.controller,
     required this.onDescriptionChanged,
+    required this.labelText,
+    required this.hintText,
+    this.keyboardType,
   });
 
   @override
@@ -22,9 +27,10 @@ class DescriptionSection extends StatelessWidget {
         child: TextField(
           controller: controller,
           onChanged: onDescriptionChanged,
+          keyboardType: keyboardType ?? TextInputType.text,
           decoration: InputDecoration(
-            labelText: AppLocalizations.of(context).description,
-            hintText: AppLocalizations.of(context).enterItemDescription,
+            labelText: labelText,
+            hintText: hintText,
             border: InputBorder.none,
           ),
         ),

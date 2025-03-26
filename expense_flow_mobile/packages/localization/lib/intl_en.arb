@@ -374,5 +374,30 @@
     "appBarUnprocessedReceiptsTitle": "Unprocessed Receipts",
     "@settings": {
       "description": "Unprocessed receipts screen title"
+    },
+
+    "savingsAmount": "Saving Amount",
+    "@settings": {
+      "description": "Savings amount description field"
+    },
+
+    "savingsAmount": "Saving Amount",
+    "@settings": {
+      "description": "Savings amount description field"
+    },
+
+    "savingsAmountHint": "Enter amount you want to save",
+    "@settings": {
+      "description": "Savings amount hint field"
+    },
+
+    "income": "Income",
+    "@settings": {
+      "description": "Income description field"
+    },
+
+    "incomeHint": "Enter your total income",
+    "@settings": {
+      "description": "Income hint field"
     }
 }

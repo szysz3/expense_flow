@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/error_display_widget.dart';
+import '../../core/widget/input_widget.dart';
 import '../../di/di.dart';
 import 'bloc/settings_bloc.dart';
 import 'bloc/settings_event.dart';
@@ -28,25 +30,33 @@ class SettingsScreen extends StatelessWidget {
           getIt<Logger>(),
           getIt<LocalizationService>(),
         )..add(const SettingsEvent.init()),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.6,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-          ),
-          child: Column(
-            children: [
-              _buildModalHeader(context),
-              const Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: SettingsScreenView(),
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.35,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
               ),
-            ],
+              child: Column(
+                children: [
+                  _buildModalHeader(context),
+                  const Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: SettingsScreenView(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       );
@@ -100,11 +110,31 @@ class SettingsScreenView extends StatelessWidget {
   }
 
   Widget _buildSettingsContent(BuildContext context, SettingsState state) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [],
-      ),
-    );
+    return GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InputWidget(
+                  controller: TextEditingController(),
+                  onDescriptionChanged: (value) {},
+                  labelText: AppLocalizations.of(context).savingsAmount,
+                  hintText: AppLocalizations.of(context).savingsAmountHint,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  )),
+              const SizedBox(height: 24),
+              InputWidget(
+                  controller: TextEditingController(),
+                  onDescriptionChanged: (value) {},
+                  labelText: AppLocalizations.of(context).income,
+                  hintText: AppLocalizations.of(context).incomeHint,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  )),
+            ],
+          ),
+        ));
   }
 }
