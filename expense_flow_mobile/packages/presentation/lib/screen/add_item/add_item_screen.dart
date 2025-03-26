@@ -88,52 +88,52 @@ class _AddItemViewState extends State<AddItemView> {
               child: Column(
                 children: [
                   Expanded(
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints:
-                            const BoxConstraints(maxWidth: double.infinity),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              CategorySection(
-                                selectedCategory: state.selectedCategory,
-                                onCategorySelected: (category) {
-                                  context.read<AddItemBloc>().add(
-                                        AddItemEvent.categorySelected(category),
-                                      );
-                                },
-                              ),
-                              const SizedBox(height: 12),
-                              DescriptionSection(
-                                controller: _descriptionController,
-                                onDescriptionChanged: (value) {
-                                  context.read<AddItemBloc>().add(
-                                        AddItemEvent.descriptionChanged(value),
-                                      );
-                                },
-                              ),
-                              const SizedBox(height: 12),
-                              QuantityPriceSection(
-                                quantityController: _quantityController,
-                                priceController: _priceController,
-                                onQuantityChanged: (value) {
-                                  context.read<AddItemBloc>().add(
-                                        AddItemEvent.quantityChanged(value),
-                                      );
-                                },
-                                onPriceChanged: (value) {
-                                  context.read<AddItemBloc>().add(
-                                        AddItemEvent.priceChanged(value),
-                                      );
-                                },
-                              ),
-                            ],
-                          ),
+                    // child: Center(
+                    child: ConstrainedBox(
+                      constraints:
+                          const BoxConstraints(maxWidth: double.infinity),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            CategorySection(
+                              selectedCategory: state.selectedCategory,
+                              onCategorySelected: (category) {
+                                context.read<AddItemBloc>().add(
+                                      AddItemEvent.categorySelected(category),
+                                    );
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                            DescriptionSection(
+                              controller: _descriptionController,
+                              onDescriptionChanged: (value) {
+                                context.read<AddItemBloc>().add(
+                                      AddItemEvent.descriptionChanged(value),
+                                    );
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                            QuantityPriceSection(
+                              quantityController: _quantityController,
+                              priceController: _priceController,
+                              onQuantityChanged: (value) {
+                                context.read<AddItemBloc>().add(
+                                      AddItemEvent.quantityChanged(value),
+                                    );
+                              },
+                              onPriceChanged: (value) {
+                                context.read<AddItemBloc>().add(
+                                      AddItemEvent.priceChanged(value),
+                                    );
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ),
+                    // ),
                   ),
                   _buildAddButton(state, context),
                 ],

@@ -15,43 +15,22 @@ class CategorySection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context).category,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 4,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 0.75,
-              children: ExpenseCategory.values.map((category) {
-                final isSelected = selectedCategory == category;
-                return CategoryButton(
-                  icon:
-                      'packages/presentation/assets/icon_${category.name}.svg',
-                  label: _getCategoryLabel(context, category),
-                  isSelected: isSelected,
-                  onPressed: () => onCategorySelected(category),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
+  Widget build(BuildContext context) => GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 4,
+        mainAxisSpacing: 4,
+        crossAxisSpacing: 4,
+        childAspectRatio: 1,
+        children: ExpenseCategory.values.map((category) {
+          final isSelected = selectedCategory == category;
+          return CategoryButton(
+            icon: 'packages/presentation/assets/icon_${category.name}.svg',
+            label: _getCategoryLabel(context, category),
+            isSelected: isSelected,
+            onPressed: () => onCategorySelected(category),
+          );
+        }).toList(),
       );
 
   String _getCategoryLabel(BuildContext context, ExpenseCategory category) {

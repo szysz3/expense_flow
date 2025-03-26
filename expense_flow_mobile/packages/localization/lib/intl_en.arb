@@ -349,5 +349,30 @@
     "totalChartData": "Total",
     "@settings": {
       "description": "Total expenses"
+    },
+
+    "appBarScanReceiptsTitle": "Scan Receipt",
+    "@settings": {
+      "description": "Receipt scan screen title"
+    },
+
+    "appBarAddItemTitle": "Add Item",
+    "@settings": {
+      "description": "Add item screen title"
+    },
+
+    "appBarCategoriesTitle": "Categories",
+    "@settings": {
+      "description": "Categories screen title"
+    },
+
+    "appBarSummaryTitle": "Summary",
+    "@settings": {
+      "description": "Summary screen title"
+    },
+
+    "appBarUnprocessedReceiptsTitle": "Unprocessed Receipts",
+    "@settings": {
+      "description": "Unprocessed receipts screen title"
     }
 }
