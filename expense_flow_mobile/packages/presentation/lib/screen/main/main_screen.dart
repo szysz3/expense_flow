@@ -10,6 +10,7 @@ import '../../navigation/widget/bottom_navigation.dart';
 import '../add_item/add_item_screen.dart';
 import '../categories/categories_screen.dart';
 import '../receipt_scan/receipt_scan_screen.dart';
+import '../settings/settings_screen.dart';
 import '../summary/summary_screen.dart';
 import '../unprocessed_receipts/unprocessed_receipts_screen.dart';
 import 'bloc/camera_preview_bloc.dart';
@@ -77,7 +78,7 @@ class MainScreen extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.settings),
                   onPressed: () {
-                    // TODO: Navigate to settings screen
+                    SettingsScreen.show(context);
                   },
                   tooltip: 'Settings',
                 ),
