@@ -1,18 +1,23 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/repository/receipt/receipt_repository_impl.dart';
+import 'package:data/repository/settings_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/repository/receipt_repository.dart';
+import 'package:domain/repository/settings_repository.dart';
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
+import 'package:domain/use_case/settings/get_settings_use_case.dart';
+import 'package:domain/use_case/settings/save_settings_use_case.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import './di.config.dart';
 
@@ -27,6 +32,9 @@ Future<void> configureDependencies() async {
   await _loadEnv();
 
   getIt.init();
+
+  final sharedPreferences = await SharedPreferences.getInstance();
+  getIt.registerLazySingleton(() => sharedPreferences);
 
   final logger = Logger(printer: PrettyPrinter());
   getIt.registerLazySingleton(() => logger);
@@ -45,6 +53,13 @@ Future<void> configureDependencies() async {
     ),
   );
 
+  getIt.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(
+      sharedPreferences: getIt<SharedPreferences>(),
+      errorLogger: getIt<Logger>(),
+    ),
+  );
+
   getIt.registerLazySingleton(
     () => GetCategoriesUseCase(getIt<ReceiptRepository>()),
   );
@@ -59,6 +74,14 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton(
     () => CreateReceiptUseCase(getIt<ReceiptRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => GetSettingsUseCase(getIt<SettingsRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => SaveSettingsUseCase(getIt<SettingsRepository>()),
   );
 
   getIt.registerSingleton<LocalizationService>(

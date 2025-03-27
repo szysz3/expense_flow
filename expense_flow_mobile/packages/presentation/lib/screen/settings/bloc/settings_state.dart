@@ -1,3 +1,4 @@
+import 'package:domain/model/settings.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/error/app_error.dart';
@@ -8,6 +9,16 @@ part 'settings_state.freezed.dart';
 class SettingsState with _$SettingsState {
   const factory SettingsState({
     @Default(false) bool isLoading,
+    @Default(false) bool isSaving,
+    @Default(0.0) double savingsAmount,
+    @Default(0.0) double income,
     AppError? error,
   }) = _SettingsState;
+
+  const SettingsState._();
+
+  Settings toSettings() => Settings(
+        savingsAmount: savingsAmount,
+        income: income,
+      );
 }
