@@ -9,7 +9,7 @@ from tinydb import Query
 
 from .base_repository import BaseRepository, handle_db_errors
 from expense_flow.api.models import (
-    Receipt, Category, SearchResult, CategoryItem, CategoryWithItems,
+    DailyExpense, Receipt, Category, SearchResult, CategoryItem, CategoryWithItems,
     CategorySummary, MonthSummary, MonthSummaryResponse, CategoryResponse,
     get_category_icon, get_category_name
 )
@@ -185,6 +185,54 @@ class ReceiptRepository(BaseRepository):
             {'description': desc, 'total_price': price}
             for desc, price in grouped_items.items()
         ]
+
+    @handle_db_errors
+    def get_daily_expenses(self, year: int, month: int) -> List[DailyExpense]:
+        """
+        Get daily expenses for a specific month
+        
+        Args:
+            year: Year to filter by
+            month: Month to filter by
+            
+        Returns:
+            List of daily expenses
+        """
+        start_date = datetime(year, month, 1)
+        
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1)
+        else:
+            end_date = datetime(year, month + 1, 1)
+            
+        date_filters = self.create_date_filter('transaction_datetime', start_date, end_date)
+        query = self.build_query(date_filters)
+        receipts = self.db.search(query)
+        
+        daily_expenses = {}
+        for receipt in receipts:
+            receipt_date = datetime.fromisoformat(receipt['transaction_datetime'])
+            day = receipt_date.day
+            
+            if day not in daily_expenses:
+                daily_expenses[day] = {
+                    'total': Decimal('0'),
+                    'transaction_datetime': receipt_date
+                }
+                
+            receipt_total = Decimal(receipt['total'])
+            daily_expenses[day]['total'] += receipt_total
+        
+        result = [
+            DailyExpense(
+                day=day,
+                total=data['total'],
+                transaction_datetime=data['transaction_datetime']
+            )
+            for day, data in daily_expenses.items()
+        ]
+        
+        return sorted(result, key=lambda x: x.day)
 
     def _find_similar_description(
         self,

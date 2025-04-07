@@ -1,4 +1,5 @@
 import 'package:domain/use_case/get_categories_use_case.dart';
+import 'package:domain/use_case/get_daily_expenses_use_case.dart';
 import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,6 +28,7 @@ class CategoriesScreen extends StatelessWidget {
       create: (_) => CategoriesBloc(
             getIt<GetCategoriesUseCase>(),
             getIt<GetSavingsSettingsUseCase>(),
+            getIt<GetDailyExpensesUseCase>(),
             getIt<Logger>(),
             getIt<LocalizationService>(),
           )..add(const CategoriesEvent.init()),
@@ -120,14 +122,26 @@ class CategoriesScreenView extends StatelessWidget {
   Widget _buildDisplayContent(BuildContext context, CategoriesState state) {
     switch (state.displayType) {
       case CategoryDisplayType.savingsChart:
-        return SavingsBarChart(
-          categories: state.categories,
-          income: state.income,
-          savingsAmount: state.savingsAmount,
-        );
+        return _buildDailyExpenses(context, state);
       case CategoryDisplayType.list:
         return _buildCategoryList(context, state);
     }
+  }
+
+  Widget _buildDailyExpenses(BuildContext context, CategoriesState state) {
+    if (state.dailyExpenses.isEmpty && !state.isLoadingDailyExpenses) {
+      final now = DateTime.now();
+      context.read<CategoriesBloc>().add(
+            CategoriesEvent.fetchDailyExpenses(now.year, now.month),
+          );
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return SavingsBarChart(
+      dailyExpenses: state.dailyExpenses,
+      income: state.income,
+      savingsAmount: state.savingsAmount,
+    );
   }
 
   Widget _buildCategoryList(BuildContext context, CategoriesState state) {

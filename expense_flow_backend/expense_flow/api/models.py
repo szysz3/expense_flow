@@ -227,3 +227,14 @@ class TempReceipt(BaseModel):
 class UnprocessedReceiptsResponse(BaseModel):
     receipts: List[TempReceipt]
     total_count: int        
+
+class DailyExpense(BaseModel):
+    """Daily expense summary"""
+    day: int
+    total: Decimal
+    transaction_datetime: datetime
+    
+    class Config:
+        json_encoders = {
+            Decimal: float
+        }    

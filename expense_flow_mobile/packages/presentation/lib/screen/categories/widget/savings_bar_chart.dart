@@ -1,26 +1,26 @@
+import 'package:domain/model/daily_expense.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 
 import '../../../theme/expense_flow_colors.dart';
-import '../models/category.dart';
 
 // TODO: needs to be refactored
 class SavingsBarChart extends StatelessWidget {
-  final List<Category> categories;
+  final List<DailyExpense> dailyExpenses;
   final double income;
   final double savingsAmount;
 
   const SavingsBarChart({
     super.key,
-    required this.categories,
+    required this.dailyExpenses,
     required this.income,
     required this.savingsAmount,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (categories.isEmpty) {
+    if (dailyExpenses.isEmpty) {
       return _buildEmptyState(context);
     }
 
@@ -29,12 +29,11 @@ class SavingsBarChart extends StatelessWidget {
         DateTime(currentDate.year, currentDate.month + 1, 0).day;
     final currentDay = currentDate.day;
 
-    final totalExpenses = _calculateTotalExpenses();
-    final List<double> dailyExpenses =
-        _simulateDailyExpenses(totalExpenses, currentDay, daysInMonth);
+    final List<double> cumulativeExpenses =
+        _buildCumulativeExpenses(currentDay, daysInMonth);
 
     final maxAllowedExpenses = income - savingsAmount;
-
+    final totalExpenses = dailyExpenses.isEmpty ? 0.0 : cumulativeExpenses.last;
     final currentSavings = income - totalExpenses;
     final isSavingsOnTrack = currentSavings >= savingsAmount;
 
@@ -50,7 +49,7 @@ class SavingsBarChart extends StatelessWidget {
               children: [
                 BarChart(
                   _createBarChartData(
-                    dailyExpenses,
+                    cumulativeExpenses,
                     daysInMonth,
                     currentDay,
                     maxAllowedExpenses,
@@ -63,7 +62,7 @@ class SavingsBarChart extends StatelessWidget {
                   child: IgnorePointer(
                     child: LineChart(
                       _createLineChartData(
-                        dailyExpenses,
+                        cumulativeExpenses,
                         daysInMonth,
                         currentDay,
                         maxAllowedExpenses,
@@ -82,12 +81,32 @@ class SavingsBarChart extends StatelessWidget {
     );
   }
 
+  List<double> _buildCumulativeExpenses(int currentDay, int daysInMonth) {
+    final List<double> dailyTotals = List.filled(daysInMonth, 0);
+
+    for (final expense in dailyExpenses) {
+      final day = expense.day;
+      if (day >= 1 && day <= daysInMonth) {
+        dailyTotals[day - 1] += expense.total;
+      }
+    }
+
+    final List<double> cumulativeExpenses = List.filled(daysInMonth, 0);
+    double runningTotal = 0;
+    for (int i = 0; i < daysInMonth; i++) {
+      runningTotal += dailyTotals[i];
+      cumulativeExpenses[i] = runningTotal;
+    }
+
+    return cumulativeExpenses;
+  }
+
   Widget _buildTitle(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Text(
         'Monthly Savings Chart',
-        // Would use AppLocalizations.of(context).monthlySavingsChartTitle
+        // TODO: AppLocalizations.of(context).monthlySavingsChartTitle
         style: Theme.of(context).textTheme.headlineSmall,
       ),
     );
@@ -127,7 +146,7 @@ class SavingsBarChart extends StatelessWidget {
       maxX: currentDay - 1.0,
       lineBarsData: [
         // Trend line for expenses
-        _createTrendLine(dailyExpenses, currentDay, colorScheme),
+        _createTrendLine(dailyExpenses, currentDay),
         // Maximum allowed expenses line
         _createMaxAllowedLine(maxAllowedExpenses, currentDay),
       ],
@@ -290,7 +309,6 @@ class SavingsBarChart extends StatelessWidget {
   LineChartBarData _createTrendLine(
     List<double> dailyExpenses,
     int currentDay,
-    ColorScheme colorScheme,
   ) {
     final spots = <FlSpot>[];
 
@@ -300,7 +318,7 @@ class SavingsBarChart extends StatelessWidget {
 
     return LineChartBarData(
       spots: spots,
-      isCurved: true,
+      isCurved: false,
       color: ExpenseFlowColors.chartYellow,
       barWidth: 3,
       isStrokeCapRound: true,
@@ -374,7 +392,7 @@ class SavingsBarChart extends StatelessWidget {
             children: [
               const Text(
                 'Max Allowed Expenses',
-                // Would use AppLocalizations.of(context).maxAllowedExpenses
+                // TODO: AppLocalizations.of(context).maxAllowedExpenses
                 style: TextStyle(
                   color: Colors.white,
                 ),
@@ -393,7 +411,7 @@ class SavingsBarChart extends StatelessWidget {
             children: [
               const Text(
                 'Balance',
-                // Would use AppLocalizations.of(context).currentSavings
+                // // TODO: AppLocalizations.of(context).currentSavings
                 style: TextStyle(
                   color: Colors.white,
                 ),
@@ -412,7 +430,7 @@ class SavingsBarChart extends StatelessWidget {
             children: [
               const Text(
                 'Current Savings',
-                // Would use AppLocalizations.of(context).currentSavings
+                // TODO: AppLocalizations.of(context).currentSavings
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -461,43 +479,6 @@ class SavingsBarChart extends StatelessWidget {
         style: Theme.of(context).textTheme.bodyLarge,
       ),
     );
-  }
-
-  double _calculateTotalExpenses() {
-    return categories.fold<double>(
-        0, (sum, category) => sum + category.totalAmount);
-  }
-
-  // TODO: extend with real data from backend once we have transaction_datetime in place
-  List<double> _simulateDailyExpenses(
-      double totalExpenses, int currentDay, int daysInMonth) {
-    // Simulates cumulative daily expenses up to the current day
-    // Normally this would come from actual daily data
-    final List<double> dailyCumulative = List.filled(daysInMonth, 0);
-
-    // Simple distribution - more realistic data would come from actual spending patterns
-    double runningTotal = 0;
-    for (int i = 0; i < currentDay; i++) {
-      // On early days, spend less, then increase over time
-      // This creates a somewhat realistic curve
-      final dayFactor = (i + 1) / currentDay;
-      final adjustedFactor =
-          0.5 + (dayFactor * 0.5); // Starts at 0.5, grows to 1.0
-
-      // Add some daily spending
-      final dailyAmount = totalExpenses * adjustedFactor * 1.5 / currentDay;
-      runningTotal += dailyAmount;
-
-      // Ensure we don't exceed the total (adjust the last day if needed)
-      if (i == currentDay - 1) {
-        dailyCumulative[i] = totalExpenses;
-      } else {
-        dailyCumulative[i] =
-            runningTotal > totalExpenses ? totalExpenses : runningTotal;
-      }
-    }
-
-    return dailyCumulative;
   }
 
   double _calculateMaxY(List<double> dailyExpenses, double maxAllowedExpenses) {

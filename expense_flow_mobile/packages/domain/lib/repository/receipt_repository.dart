@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../model/category_with_items.dart';
+import '../model/daily_expense.dart';
 import '../model/failure/failures.dart';
 import '../model/month_summary.dart';
 import '../model/receipt.dart';
@@ -25,4 +26,7 @@ abstract class ReceiptRepository {
       {required ReceiptItem receiptItem});
 
   Future<Either<Failure, UnprocessedReceiptsResponse>> getUnprocessedReceipts();
+
+  Future<Either<Failure, List<DailyExpense>>> getDailyExpenses(
+      int year, int month);
 }

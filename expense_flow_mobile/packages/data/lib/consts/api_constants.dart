@@ -9,4 +9,6 @@ class ApiConstants {
   static const String monthsSummary = '$apiPrefix/months/summary';
   static const String createReceipt = '$receiptPrefix/create';
   static const String unprocessedReceipts = '$receiptPrefix/unprocessed';
+  static const String dailyExpenses =
+      '$apiPrefix/months/{year}/{month}/daily-expenses';
 }

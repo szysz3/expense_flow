@@ -13,4 +13,7 @@ class CategoriesEvent with _$CategoriesEvent {
 
   const factory CategoriesEvent.displaySavingsChart() =
       DisplaySavingsChartEvent;
+
+  const factory CategoriesEvent.fetchDailyExpenses([int? year, int? month]) =
+      FetchDailyExpensesEvent;
 }

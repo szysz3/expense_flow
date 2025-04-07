@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
+import 'package:domain/use_case/get_daily_expenses_use_case.dart';
 import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
@@ -17,12 +18,14 @@ import 'categories_state.dart';
 class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
   final GetCategoriesUseCase _getCategoriesUseCase;
   final GetSavingsSettingsUseCase _getSavingsSettingsUseCase;
+  final GetDailyExpensesUseCase _getDailyExpensesUseCase;
   final Logger _errorLogger;
   final LocalizationService _localizationService;
 
   CategoriesBloc(
     this._getCategoriesUseCase,
     this._getSavingsSettingsUseCase,
+    this._getDailyExpensesUseCase,
     this._errorLogger,
     this._localizationService,
   ) : super(const CategoriesState()) {
@@ -30,6 +33,7 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
     on<ToggleCategoryEvent>(_handleToggleCategory);
     on<DisplayListEvent>(_handleDisplayList);
     on<DisplaySavingsChartEvent>(_handleDisplaySavingsChart);
+    on<FetchDailyExpensesEvent>(_handleFetchDailyExpenses);
   }
 
   Completer<void>? _refreshCompleter;
@@ -162,5 +166,55 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
     Emitter<CategoriesState> emit,
   ) {
     emit(state.copyWith(displayType: CategoryDisplayType.savingsChart));
+  }
+
+  Future<void> _handleFetchDailyExpenses(
+    FetchDailyExpensesEvent event,
+    Emitter<CategoriesState> emit,
+  ) async {
+    try {
+      final now = DateTime.now();
+      final year = event.year ?? now.year;
+      final month = event.month ?? now.month;
+
+      emit(state.copyWith(isLoadingDailyExpenses: true));
+
+      final result = await _getDailyExpensesUseCase(
+          GetDailyExpensesParams(year: year, month: month));
+
+      result.fold(
+        (failure) {
+          _errorLogger.e('Failed to get daily expenses', error: failure);
+          emit(state.copyWith(
+            isLoadingDailyExpenses: false,
+            error: AppError.fromFailure(
+              failure,
+              onRetry: () =>
+                  add(CategoriesEvent.fetchDailyExpenses(year, month)),
+              localizationService: _localizationService,
+            ),
+          ));
+        },
+        (dailyExpenses) {
+          emit(state.copyWith(
+            dailyExpenses: dailyExpenses,
+            isLoadingDailyExpenses: false,
+            error: null,
+          ));
+        },
+      );
+    } catch (e, stackTrace) {
+      _errorLogger.e(
+        'Exception in CategoriesBloc.handleFetchDailyExpenses',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(state.copyWith(
+        isLoadingDailyExpenses: false,
+        error: AppError.fromException(e,
+            onRetry: () => add(const CategoriesEvent.fetchDailyExpenses()),
+            localizationService: _localizationService),
+      ));
+    }
   }
 }

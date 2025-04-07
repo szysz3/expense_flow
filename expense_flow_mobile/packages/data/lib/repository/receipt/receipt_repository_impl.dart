@@ -4,6 +4,7 @@ import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/utils/content_type_resolver_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/model/category_with_items.dart';
+import 'package:domain/model/daily_expense.dart';
 import 'package:domain/model/failure/failures.dart';
 import 'package:domain/model/month_summary.dart';
 import 'package:domain/model/receipt.dart';
@@ -278,6 +279,21 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
         return Receipt.fromJson(response.data[ReceiptConstants.receiptKey]);
       },
       context: 'createReceipt',
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<DailyExpense>>> getDailyExpenses(
+      int year, int month) async {
+    return _executeRequest(
+      () async {
+        final response =
+            await _dio.get(ApiEndpoints.dailyExpenses(year, month));
+        return (response.data as List)
+            .map((json) => DailyExpense.fromJson(json))
+            .toList();
+      },
+      context: 'getDailyExpenses: $year-$month',
     );
   }
 }

@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_422_UNPROCESSABLE_ENTITY
 import tempfile
 import os
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
 import logging
 from contextlib import contextmanager
@@ -18,7 +18,7 @@ from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepos
 from expense_flow.utils.retry import retry_async
 
 from .models import (
-    CategoryResponse, CreateReceiptRequest, CreateReceiptResponse, LLMType, Merchant, MerchantResponse, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
+    CategoryResponse, CreateReceiptRequest, CreateReceiptResponse, DailyExpense, LLMType, Merchant, MerchantResponse, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
     Receipt, ReceiptItem, ReceiptItemResponse, ReceiptQuery, ReceiptResponse, ReceiptStatus, SearchResult, TempReceipt, UnprocessedReceiptsResponse
 )
 from .security import verify_api_key
@@ -517,6 +517,32 @@ async def create_receipt(
             detail=str(e)
         )
     
+@app.get(
+    "/api/months/{year}/{month}/daily-expenses",
+    response_model=List[DailyExpense],
+    responses={
+        500: {"model": ErrorDetail}
+    }
+)
+async def get_daily_expenses(
+    year: int,
+    month: int,
+    api_key: str = Depends(verify_api_key),
+    repository: ReceiptRepository = Depends(get_repository)
+):
+    """Get daily expenses for a specific month"""
+    try:
+        results = repository.get_daily_expenses(year, month)
+        return results
+    except DatabaseError as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
+        )
+
 @app.on_event("startup")
 async def startup_event():
     """Ensure databases exist on startup"""
