@@ -27,8 +27,21 @@ class GetSavingsSettingsUseCase
                 setting.month == currentMonth && setting.year == currentYear);
 
         if (currentMonthSettings != null && currentMonthSettings.isNotEmpty) {
+          // Return matching settings entry
           return Right(currentMonthSettings.first);
+        } else if (settings.savingsSettings != null &&
+            settings.savingsSettings!.isNotEmpty) {
+          final sortedSettings = settings.savingsSettings!.toList()
+            ..sort((a, b) {
+              final yearComparison = b.year.compareTo(a.year);
+              if (yearComparison != 0) return yearComparison;
+              return b.month.compareTo(a.month);
+            });
+
+          // Return the most recent settings entry
+          return Right(sortedSettings.first);
         } else {
+          // Return default settings if no entries exist
           return Right(SavingsSettings(
             month: currentMonth,
             year: currentYear,
