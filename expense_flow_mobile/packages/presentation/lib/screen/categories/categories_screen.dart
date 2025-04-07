@@ -9,6 +9,8 @@ import 'package:logger/logger.dart';
 import '../../core/error/error_utils.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
+import '../summary/widget/speed_dial/speed_dial_menu.dart';
+import '../summary/widget/speed_dial/speed_dial_menu_data.dart';
 import 'bloc/categories_bloc.dart';
 import 'bloc/categories_events.dart';
 import 'bloc/categories_state.dart';
@@ -69,22 +71,50 @@ class CategoriesScreenView extends StatelessWidget {
           return _buildEmptyState(context);
         }
 
-        return RefreshIndicator(
-          onRefresh: () => context.read<CategoriesBloc>().refresh(),
-          child: ListView.builder(
-            itemCount: state.categories.length,
-            itemBuilder: (context, index) {
-              final category = state.categories[index];
-              return CategoryListItem(
-                category: category,
-                onToggle: () => context.read<CategoriesBloc>().add(
-                      CategoriesEvent.toggleCategory(category.id),
-                    ),
-              );
-            },
-          ),
-        );
+        return _buildContent(context, state);
       },
+    );
+  }
+
+  Widget _buildContent(BuildContext context, CategoriesState state) {
+    return Stack(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: 96),
+          child: RefreshIndicator(
+            onRefresh: () => context.read<CategoriesBloc>().refresh(),
+            child: ListView.builder(
+              itemCount: state.categories.length,
+              itemBuilder: (context, index) {
+                final category = state.categories[index];
+                return CategoryListItem(
+                  category: category,
+                  onToggle: () => context.read<CategoriesBloc>().add(
+                        CategoriesEvent.toggleCategory(category.id),
+                      ),
+                );
+              },
+            ),
+          ),
+        ),
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: SpeedDialMenu(
+            options: [
+              SpeedDialMenuData(
+                label: AppLocalizations.of(context).barChart,
+                svgPath: 'packages/presentation/assets/icon_bar_chart.svg',
+                onPressed: () {},
+              ),
+              SpeedDialMenuData(
+                  label: AppLocalizations.of(context).pieChart,
+                  svgPath: 'packages/presentation/assets/icon_pie_chart.svg',
+                  onPressed: () {}),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

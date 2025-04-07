@@ -8,6 +8,7 @@ import 'package:logger/logger.dart';
 import 'package:presentation/screen/summary/widget/chart/summary_bar_chart.dart';
 import 'package:presentation/screen/summary/widget/chart/summary_pie_chart.dart';
 import 'package:presentation/screen/summary/widget/speed_dial/speed_dial_menu.dart';
+import 'package:presentation/screen/summary/widget/speed_dial/speed_dial_menu_data.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
@@ -74,26 +75,42 @@ class SummaryScreenView extends StatelessWidget {
 
         return Stack(
           children: [
-            _buildContent(context, state),
+            Padding(
+              padding: EdgeInsets.only(bottom: 96),
+              child: _buildContent(context, state),
+            ),
             Positioned(
               right: 16,
               bottom: 16,
               child: SpeedDialMenu(
-                onBarChartSelected: () {
-                  context.read<SummaryBloc>().add(
-                        SummaryEvent.displayBarChart(),
-                      );
-                },
-                onPieChartSelected: () {
-                  context.read<SummaryBloc>().add(
-                        SummaryEvent.displayPieChart(),
-                      );
-                },
-                onSummarySelected: () {
-                  context.read<SummaryBloc>().add(
-                        SummaryEvent.displayList(),
-                      );
-                },
+                options: [
+                  SpeedDialMenuData(
+                    label: AppLocalizations.of(context).barChart,
+                    svgPath: 'packages/presentation/assets/icon_bar_chart.svg',
+                    onPressed: () {
+                      context.read<SummaryBloc>().add(
+                            SummaryEvent.displayBarChart(),
+                          );
+                    },
+                  ),
+                  SpeedDialMenuData(
+                      label: AppLocalizations.of(context).pieChart,
+                      svgPath:
+                          'packages/presentation/assets/icon_pie_chart.svg',
+                      onPressed: () {
+                        context.read<SummaryBloc>().add(
+                              SummaryEvent.displayPieChart(),
+                            );
+                      }),
+                  SpeedDialMenuData(
+                      label: AppLocalizations.of(context).summary,
+                      svgPath: 'packages/presentation/assets/icon_summary.svg',
+                      onPressed: () {
+                        context.read<SummaryBloc>().add(
+                              SummaryEvent.displayList(),
+                            );
+                      })
+                ],
               ),
             ),
           ],

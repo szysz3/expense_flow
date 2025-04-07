@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:presentation/screen/summary/widget/speed_dial/speed_dial_menu_data.dart';
 import 'package:presentation/screen/summary/widget/speed_dial/speed_dial_option.dart';
 
 import '../../../../core/widget/animated_square_button.dart';
 
 class SpeedDialMenu extends StatefulWidget {
-  final VoidCallback? onBarChartSelected;
-  final VoidCallback? onPieChartSelected;
-  final VoidCallback? onSummarySelected;
+  final List<SpeedDialMenuData> options;
 
   const SpeedDialMenu({
     super.key,
-    this.onBarChartSelected,
-    this.onPieChartSelected,
-    this.onSummarySelected,
+    required this.options,
   });
 
   @override
@@ -37,36 +33,14 @@ class _SpeedDialMenuState extends State<SpeedDialMenu> {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         if (_isDialOpen) ...[
-          SpeedDialOption(
-            svgPath: 'packages/presentation/assets/icon_bar_chart.svg',
-            label: AppLocalizations.of(context).barChart,
-            onPressed: () {
-              _toggleDial();
-              if (widget.onBarChartSelected != null) {
-                widget.onBarChartSelected!();
-              }
-            },
-          ),
-          SpeedDialOption(
-            svgPath: 'packages/presentation/assets/icon_pie_chart.svg',
-            label: AppLocalizations.of(context).pieChart,
-            onPressed: () {
-              _toggleDial();
-              if (widget.onPieChartSelected != null) {
-                widget.onPieChartSelected!();
-              }
-            },
-          ),
-          SpeedDialOption(
-            svgPath: 'packages/presentation/assets/icon_summary.svg',
-            label: AppLocalizations.of(context).summary,
-            onPressed: () {
-              _toggleDial();
-              if (widget.onSummarySelected != null) {
-                widget.onSummarySelected!();
-              }
-            },
-          ),
+          ...widget.options.map((option) => SpeedDialOption(
+                svgPath: option.svgPath,
+                label: option.label,
+                onPressed: () {
+                  _toggleDial();
+                  option.onPressed();
+                },
+              )),
         ],
         AnimatedSquareButton.square(
           isProcessing: false,
