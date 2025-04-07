@@ -9,8 +9,8 @@ import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
-import 'package:domain/use_case/settings/get_settings_use_case.dart';
-import 'package:domain/use_case/settings/save_settings_use_case.dart';
+import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
+import 'package:domain/use_case/settings/save_savings_settings_use_case.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
@@ -77,11 +77,11 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton(
-    () => GetSettingsUseCase(getIt<SettingsRepository>()),
+    () => GetSavingsSettingsUseCase(getIt<SettingsRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => SaveSettingsUseCase(getIt<SettingsRepository>()),
+    () => SaveSavingsSettingsUseCase(getIt<SettingsRepository>()),
   );
 
   getIt.registerSingleton<LocalizationService>(

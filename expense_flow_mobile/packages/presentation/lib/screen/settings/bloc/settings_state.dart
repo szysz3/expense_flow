@@ -1,4 +1,4 @@
-import 'package:domain/model/settings.dart';
+import 'package:domain/model/savings_settings.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/error/app_error.dart';
@@ -17,8 +17,13 @@ class SettingsState with _$SettingsState {
 
   const SettingsState._();
 
-  Settings toSettings() => Settings(
-        savingsAmount: savingsAmount,
-        income: income,
-      );
+  SavingsSettings toSavingsSettings() {
+    final now = DateTime.now();
+    return SavingsSettings(
+      month: now.month,
+      year: now.year,
+      savingsAmount: savingsAmount,
+      income: income,
+    );
+  }
 }

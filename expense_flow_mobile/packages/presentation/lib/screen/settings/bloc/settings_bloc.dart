@@ -1,6 +1,6 @@
 import 'package:domain/use_case/base/base_use_case.dart';
-import 'package:domain/use_case/settings/get_settings_use_case.dart';
-import 'package:domain/use_case/settings/save_settings_use_case.dart';
+import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
+import 'package:domain/use_case/settings/save_savings_settings_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -12,14 +12,14 @@ import 'settings_state.dart';
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final Logger _logger;
   final LocalizationService _localizationService;
-  final GetSettingsUseCase _getSettingsUseCase;
-  final SaveSettingsUseCase _saveSettingsUseCase;
+  final GetSavingsSettingsUseCase _getSavingsSettingsUseCase;
+  final SaveSavingsSettingsUseCase _saveSavingsSettingsUseCase;
 
   SettingsBloc(
     this._logger,
     this._localizationService,
-    this._getSettingsUseCase,
-    this._saveSettingsUseCase,
+    this._getSavingsSettingsUseCase,
+    this._saveSavingsSettingsUseCase,
   ) : super(const SettingsState()) {
     on<InitEvent>(_onInit);
     on<SavingsAmountChangedEvent>(_onSavingsAmountChanged);
@@ -31,11 +31,12 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(state.copyWith(isLoading: true, error: null));
 
     try {
-      final result = await _getSettingsUseCase(const NoParams());
+      final currentMonthResult =
+          await _getSavingsSettingsUseCase(const NoParams());
 
-      result.fold(
+      currentMonthResult.fold(
         (failure) {
-          _logger.e('Failed to load settings', error: failure);
+          _logger.e('Failed to load current month settings', error: failure);
           emit(state.copyWith(
             isLoading: false,
             error: AppError.fromFailure(
@@ -45,11 +46,11 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
             ),
           ));
         },
-        (settings) {
+        (savingsSettings) {
           emit(state.copyWith(
             isLoading: false,
-            savingsAmount: settings.savingsAmount,
-            income: settings.income,
+            savingsAmount: savingsSettings.savingsAmount,
+            income: savingsSettings.income,
           ));
         },
       );
@@ -82,8 +83,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(state.copyWith(isSaving: true, error: null));
 
     try {
-      final settings = state.toSettings();
-      final result = await _saveSettingsUseCase(settings);
+      final currentMonthSettings = state.toSavingsSettings();
+      final result = await _saveSavingsSettingsUseCase(currentMonthSettings);
 
       result.fold(
         (failure) {
