@@ -122,17 +122,10 @@ class SummaryScreenView extends StatelessWidget {
   Widget _buildContent(BuildContext context, SummaryState state) {
     switch (state.displayType) {
       case SummaryDisplayType.barChart:
-        return RefreshIndicator(
-          onRefresh: () => context.read<SummaryBloc>().refresh(),
-          child: SummaryBarChart(months: state.months),
-        );
+        return SummaryBarChart(months: state.months);
       case SummaryDisplayType.pieChart:
-        return RefreshIndicator(
-          onRefresh: () => context.read<SummaryBloc>().refresh(),
-          child: SummaryPieChart(months: state.months),
-        );
+        return SummaryPieChart(months: state.months);
       case SummaryDisplayType.list:
-      default:
         return RefreshIndicator(
           onRefresh: () => context.read<SummaryBloc>().refresh(),
           child: ListView.builder(
