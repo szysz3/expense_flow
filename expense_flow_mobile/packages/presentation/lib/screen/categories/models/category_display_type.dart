@@ -1,0 +1,1 @@
+enum CategoryDisplayType { list, savingsChart }

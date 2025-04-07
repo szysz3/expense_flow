@@ -1,4 +1,5 @@
 import 'package:domain/use_case/get_categories_use_case.dart';
+import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -14,7 +15,9 @@ import '../summary/widget/speed_dial/speed_dial_menu_data.dart';
 import 'bloc/categories_bloc.dart';
 import 'bloc/categories_events.dart';
 import 'bloc/categories_state.dart';
+import 'models/category_display_type.dart';
 import 'widget/category_list_item.dart';
+import 'widget/savings_bar_chart.dart';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
@@ -23,6 +26,7 @@ class CategoriesScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
       create: (_) => CategoriesBloc(
             getIt<GetCategoriesUseCase>(),
+            getIt<GetSavingsSettingsUseCase>(),
             getIt<Logger>(),
             getIt<LocalizationService>(),
           )..add(const CategoriesEvent.init()),
@@ -80,22 +84,8 @@ class CategoriesScreenView extends StatelessWidget {
     return Stack(
       children: [
         Padding(
-          padding: EdgeInsets.only(bottom: 96),
-          child: RefreshIndicator(
-            onRefresh: () => context.read<CategoriesBloc>().refresh(),
-            child: ListView.builder(
-              itemCount: state.categories.length,
-              itemBuilder: (context, index) {
-                final category = state.categories[index];
-                return CategoryListItem(
-                  category: category,
-                  onToggle: () => context.read<CategoriesBloc>().add(
-                        CategoriesEvent.toggleCategory(category.id),
-                      ),
-                );
-              },
-            ),
-          ),
+          padding: const EdgeInsets.only(bottom: 96),
+          child: _buildDisplayContent(context, state),
         ),
         Positioned(
           right: 16,
@@ -103,18 +93,58 @@ class CategoriesScreenView extends StatelessWidget {
           child: SpeedDialMenu(
             options: [
               SpeedDialMenuData(
-                label: AppLocalizations.of(context).barChart,
+                label: 'Savings Chart',
                 svgPath: 'packages/presentation/assets/icon_bar_chart.svg',
-                onPressed: () {},
+                onPressed: () {
+                  context.read<CategoriesBloc>().add(
+                        const CategoriesEvent.displaySavingsChart(),
+                      );
+                },
               ),
               SpeedDialMenuData(
-                  label: AppLocalizations.of(context).pieChart,
-                  svgPath: 'packages/presentation/assets/icon_pie_chart.svg',
-                  onPressed: () {}),
+                label: AppLocalizations.of(context).categories,
+                svgPath: 'packages/presentation/assets/icon_categories.svg',
+                onPressed: () {
+                  context.read<CategoriesBloc>().add(
+                        const CategoriesEvent.displayList(),
+                      );
+                },
+              ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDisplayContent(BuildContext context, CategoriesState state) {
+    switch (state.displayType) {
+      case CategoryDisplayType.savingsChart:
+        return SavingsBarChart(
+          categories: state.categories,
+          income: state.income,
+          savingsAmount: state.savingsAmount,
+        );
+      case CategoryDisplayType.list:
+        return _buildCategoryList(context, state);
+    }
+  }
+
+  Widget _buildCategoryList(BuildContext context, CategoriesState state) {
+    return RefreshIndicator(
+      onRefresh: () => context.read<CategoriesBloc>().refresh(),
+      child: ListView.builder(
+        itemCount: state.categories.length,
+        itemBuilder: (context, index) {
+          final category = state.categories[index];
+          return CategoryListItem(
+            category: category,
+            onToggle: () => context.read<CategoriesBloc>().add(
+                  CategoriesEvent.toggleCategory(category.id),
+                ),
+          );
+        },
+      ),
     );
   }
 
