@@ -27,7 +27,6 @@ class GetSavingsSettingsUseCase
                 setting.month == currentMonth && setting.year == currentYear);
 
         if (currentMonthSettings != null && currentMonthSettings.isNotEmpty) {
-          print('--> current month savings: ${currentMonthSettings.first}');
           return Right(currentMonthSettings.first);
         } else {
           return Right(SavingsSettings(
