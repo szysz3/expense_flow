@@ -42,10 +42,7 @@ class CategoriesScreen extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: CategoriesScreenView(),
-          ),
+          CategoriesScreenView(),
         ],
       ));
 }
@@ -83,15 +80,55 @@ class CategoriesScreenView extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context, CategoriesState state) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Stack(
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 96),
+          padding: const EdgeInsets.only(
+              left: 16.0, right: 16.0, top: 16.0, bottom: 112),
           child: _buildDisplayContent(context, state),
         ),
+        if (state.displayType == CategoryDisplayType.list)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Shadow part
+                Container(
+                  height: 6,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(50),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
+                  ),
+                ),
+                // Border part
+                Container(
+                  height: 112,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    border: Border(
+                      top: BorderSide(
+                        color: colorScheme.outline.withAlpha(50),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         Positioned(
-          right: 16,
-          bottom: 16,
+          right: 24,
+          bottom: 24,
           child: SpeedDialMenu(
             options: [
               SpeedDialMenuData(
