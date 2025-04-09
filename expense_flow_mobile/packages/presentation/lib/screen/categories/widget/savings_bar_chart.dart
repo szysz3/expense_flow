@@ -10,13 +10,16 @@ class SavingsBarChart extends StatelessWidget {
   final List<DailyExpense> dailyExpenses;
   final double income;
   final double savingsAmount;
+  final List<double> cumulativeExpenses;
+  final double totalExpenses;
 
-  const SavingsBarChart({
-    super.key,
-    required this.dailyExpenses,
-    required this.income,
-    required this.savingsAmount,
-  });
+  const SavingsBarChart(
+      {super.key,
+      required this.dailyExpenses,
+      required this.income,
+      required this.savingsAmount,
+      required this.cumulativeExpenses,
+      required this.totalExpenses});
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +32,7 @@ class SavingsBarChart extends StatelessWidget {
         DateTime(currentDate.year, currentDate.month + 1, 0).day;
     final currentDay = currentDate.day;
 
-    final List<double> cumulativeExpenses =
-        _buildCumulativeExpenses(currentDay, daysInMonth);
-
     final maxAllowedExpenses = income - savingsAmount;
-    final totalExpenses = dailyExpenses.isEmpty ? 0.0 : cumulativeExpenses.last;
     final currentSavings = income - totalExpenses;
     final isSavingsOnTrack = currentSavings >= savingsAmount;
 
@@ -79,26 +78,6 @@ class SavingsBarChart extends StatelessWidget {
             maxAllowedExpenses),
       ],
     );
-  }
-
-  List<double> _buildCumulativeExpenses(int currentDay, int daysInMonth) {
-    final List<double> dailyTotals = List.filled(daysInMonth, 0);
-
-    for (final expense in dailyExpenses) {
-      final day = expense.day;
-      if (day >= 1 && day <= daysInMonth) {
-        dailyTotals[day - 1] += expense.total;
-      }
-    }
-
-    final List<double> cumulativeExpenses = List.filled(daysInMonth, 0);
-    double runningTotal = 0;
-    for (int i = 0; i < daysInMonth; i++) {
-      runningTotal += dailyTotals[i];
-      cumulativeExpenses[i] = runningTotal;
-    }
-
-    return cumulativeExpenses;
   }
 
   Widget _buildTitle(BuildContext context) {

@@ -114,13 +114,41 @@ class CategoriesScreenView extends StatelessWidget {
                   height: 112,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.transparent,
+                    color: Colors.black.withAlpha(50),
                     border: Border(
                       top: BorderSide(
                         color: colorScheme.outline.withAlpha(50),
                         width: 1,
                       ),
                     ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(left: 32),
+                        child: const Text(
+                          'Balance:',
+                          // // TODO: AppLocalizations.of(context).currentSavings
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                          padding: EdgeInsets.only(left: 32),
+                          child: Text(
+                            ((state.income - state.savingsAmount) -
+                                    state.totalExpenses)
+                                .toStringAsFixed(2),
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          )),
+                    ],
                   ),
                 ),
               ],
@@ -157,6 +185,7 @@ class CategoriesScreenView extends StatelessWidget {
   }
 
   Widget _buildDisplayContent(BuildContext context, CategoriesState state) {
+    _fetchDailyExpenses(context, state);
     switch (state.displayType) {
       case CategoryDisplayType.savingsChart:
         return _buildDailyExpenses(context, state);
@@ -165,12 +194,17 @@ class CategoriesScreenView extends StatelessWidget {
     }
   }
 
-  Widget _buildDailyExpenses(BuildContext context, CategoriesState state) {
+  _fetchDailyExpenses(BuildContext context, CategoriesState state) {
     if (state.dailyExpenses.isEmpty && !state.isLoadingDailyExpenses) {
       final now = DateTime.now();
       context.read<CategoriesBloc>().add(
             CategoriesEvent.fetchDailyExpenses(now.year, now.month),
           );
+    }
+  }
+
+  Widget _buildDailyExpenses(BuildContext context, CategoriesState state) {
+    if (state.dailyExpenses.isEmpty && !state.isLoadingDailyExpenses) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -178,6 +212,8 @@ class CategoriesScreenView extends StatelessWidget {
       dailyExpenses: state.dailyExpenses,
       income: state.income,
       savingsAmount: state.savingsAmount,
+      cumulativeExpenses: state.cumulativeExpenses,
+      totalExpenses: state.totalExpenses,
     );
   }
 

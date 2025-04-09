@@ -16,6 +16,8 @@ class CategoriesState with _$CategoriesState {
     @Default(false) bool isLoadingDailyExpenses,
     @Default(0.0) double savingsAmount,
     @Default(0.0) double income,
+    @Default(0.0) double totalExpenses,
+    @Default([]) List<double> cumulativeExpenses,
     @Default(CategoryDisplayType.list) CategoryDisplayType displayType,
     AppError? error,
   }) = _CategoriesState;
