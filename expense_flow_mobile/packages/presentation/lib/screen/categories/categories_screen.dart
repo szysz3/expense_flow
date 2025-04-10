@@ -128,9 +128,8 @@ class CategoriesScreenView extends StatelessWidget {
                     children: [
                       Padding(
                         padding: EdgeInsets.only(left: 32),
-                        child: const Text(
-                          'Balance:',
-                          // // TODO: AppLocalizations.of(context).currentSavings
+                        child: Text(
+                          AppLocalizations.of(context).balance,
                           style: TextStyle(
                             color: Colors.white,
                           ),
@@ -160,7 +159,7 @@ class CategoriesScreenView extends StatelessWidget {
           child: SpeedDialMenu(
             options: [
               SpeedDialMenuData(
-                label: 'Savings Chart',
+                label: AppLocalizations.of(context).savingsChart,
                 svgPath: 'packages/presentation/assets/icon_bar_chart.svg',
                 onPressed: () {
                   context.read<CategoriesBloc>().add(

@@ -80,8 +80,8 @@ class SummaryScreenView extends StatelessWidget {
               child: _buildContent(context, state),
             ),
             Positioned(
-              right: 16,
-              bottom: 16,
+              right: 8,
+              bottom: 8,
               child: SpeedDialMenu(
                 options: [
                   SpeedDialMenuData(

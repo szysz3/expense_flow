@@ -84,8 +84,7 @@ class SavingsBarChart extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Text(
-        'Monthly Savings Chart',
-        // TODO: AppLocalizations.of(context).monthlySavingsChartTitle
+        AppLocalizations.of(context).monthlySavingsChart,
         style: Theme.of(context).textTheme.headlineSmall,
       ),
     );
@@ -369,9 +368,8 @@ class SavingsBarChart extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Max Allowed Expenses',
-                // TODO: AppLocalizations.of(context).maxAllowedExpenses
+              Text(
+                AppLocalizations.of(context).maxAllowedExpenses,
                 style: TextStyle(
                   color: Colors.white,
                 ),
@@ -388,9 +386,8 @@ class SavingsBarChart extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Balance',
-                // // TODO: AppLocalizations.of(context).currentSavings
+              Text(
+                AppLocalizations.of(context).balance,
                 style: TextStyle(
                   color: Colors.white,
                 ),
@@ -407,9 +404,8 @@ class SavingsBarChart extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Current Savings',
-                // TODO: AppLocalizations.of(context).currentSavings
+              Text(
+                AppLocalizations.of(context).currentSavings,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

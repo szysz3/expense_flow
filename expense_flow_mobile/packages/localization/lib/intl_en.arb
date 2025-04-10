@@ -394,5 +394,30 @@
     "incomeHint": "Enter your total monthly income",
     "@settings": {
       "description": "Income hint field"
+    },
+
+    "balance": "Balance",
+    "@settings": {
+      "description": "Balance between expenses and savings"
+    },
+
+    "savingsChart": "Savings Chart",
+    "@settings": {
+      "description": "Caption for savings chart screen menu entry"
+    },
+
+    "monthlySavingsChart": "Monthly Savings Chart",
+    "@settings": {
+      "description": "Title for savings chart screen"
+    },
+
+    "maxAllowedExpenses": "Max Allowed Expenses",
+    "@settings": {
+      "description": "Max allowed expenses label on savings chart screen"
+    },
+
+    "currentSavings": "Current Savings",
+    "@settings": {
+      "description": "Current savings label on savings chart screen"
     }
 }
