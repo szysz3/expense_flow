@@ -5,7 +5,6 @@ import 'package:localization/gen_l10n/app_localizations.dart';
 
 import '../../../theme/expense_flow_colors.dart';
 
-// TODO: needs to be refactored
 class SavingsBarChart extends StatelessWidget {
   final List<DailyExpense> dailyExpenses;
   final double income;
@@ -13,13 +12,14 @@ class SavingsBarChart extends StatelessWidget {
   final List<double> cumulativeExpenses;
   final double totalExpenses;
 
-  const SavingsBarChart(
-      {super.key,
-      required this.dailyExpenses,
-      required this.income,
-      required this.savingsAmount,
-      required this.cumulativeExpenses,
-      required this.totalExpenses});
+  const SavingsBarChart({
+    super.key,
+    required this.dailyExpenses,
+    required this.income,
+    required this.savingsAmount,
+    required this.cumulativeExpenses,
+    required this.totalExpenses,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,47 +36,65 @@ class SavingsBarChart extends StatelessWidget {
     final currentSavings = income - totalExpenses;
     final isSavingsOnTrack = currentSavings >= savingsAmount;
 
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Column(
       children: [
         _buildTitle(context),
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Stack(
-              children: [
-                BarChart(
-                  _createBarChartData(
-                    cumulativeExpenses,
-                    daysInMonth,
-                    currentDay,
-                    maxAllowedExpenses,
-                    colorScheme,
-                  ),
-                ),
-                Positioned.fill(
-                  left: 40,
-                  bottom: 30,
-                  child: IgnorePointer(
-                    child: LineChart(
-                      _createLineChartData(
-                        cumulativeExpenses,
-                        daysInMonth,
-                        currentDay,
-                        maxAllowedExpenses,
-                        colorScheme,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          child: _buildChart(
+            context,
+            currentDay,
+            daysInMonth,
+            maxAllowedExpenses,
           ),
         ),
-        _buildSummary(context, totalExpenses, currentSavings, isSavingsOnTrack,
-            maxAllowedExpenses),
+        _buildSummary(
+          context,
+          totalExpenses,
+          currentSavings,
+          isSavingsOnTrack,
+          maxAllowedExpenses,
+        ),
       ],
+    );
+  }
+
+  Widget _buildChart(
+    BuildContext context,
+    int currentDay,
+    int daysInMonth,
+    double maxAllowedExpenses,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Stack(
+        children: [
+          BarChart(
+            _createBarChartData(
+              cumulativeExpenses,
+              daysInMonth,
+              currentDay,
+              maxAllowedExpenses,
+              colorScheme,
+            ),
+          ),
+          Positioned.fill(
+            left: 40,
+            bottom: 30,
+            child: IgnorePointer(
+              child: LineChart(
+                _createLineChartData(
+                  cumulativeExpenses,
+                  currentDay,
+                  maxAllowedExpenses,
+                  colorScheme,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -90,6 +108,15 @@ class SavingsBarChart extends StatelessWidget {
     );
   }
 
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Text(
+        AppLocalizations.of(context).noDataChartTitle,
+        style: Theme.of(context).textTheme.bodyLarge,
+      ),
+    );
+  }
+
   BarChartData _createBarChartData(
     List<double> dailyExpenses,
     int daysInMonth,
@@ -97,50 +124,28 @@ class SavingsBarChart extends StatelessWidget {
     double maxAllowedExpenses,
     ColorScheme colorScheme,
   ) {
+    final maxY = _calculateMaxY(dailyExpenses, maxAllowedExpenses);
+
     return BarChartData(
       alignment: BarChartAlignment.spaceAround,
-      maxY: _calculateMaxY(dailyExpenses, maxAllowedExpenses),
-      barTouchData: _createTooltipData(dailyExpenses, colorScheme),
-      titlesData: _createTitlesData(daysInMonth, currentDay),
+      maxY: maxY,
+      barTouchData: _createBarTooltipData(dailyExpenses, colorScheme),
+      titlesData: _createAxisTitles(daysInMonth, currentDay),
       gridData: _createGridData(),
       borderData: _createBorderData(),
-      barGroups: _generateBarGroups(dailyExpenses, currentDay, colorScheme),
+      barGroups: _createBarGroups(dailyExpenses, currentDay, colorScheme),
     );
   }
 
-  LineChartData _createLineChartData(
-    List<double> dailyExpenses,
-    int daysInMonth,
-    int currentDay,
-    double maxAllowedExpenses,
-    ColorScheme colorScheme,
-  ) {
-    return LineChartData(
-      gridData: const FlGridData(show: false),
-      titlesData: const FlTitlesData(show: false),
-      borderData: FlBorderData(show: false),
-      maxY: _calculateMaxY(dailyExpenses, maxAllowedExpenses),
-      minX: 0,
-      maxX: currentDay - 1.0,
-      lineBarsData: [
-        // Trend line for expenses
-        _createTrendLine(dailyExpenses, currentDay),
-        // Maximum allowed expenses line
-        _createMaxAllowedLine(maxAllowedExpenses, currentDay),
-      ],
-      lineTouchData: const LineTouchData(enabled: false),
-    );
-  }
-
-  BarTouchData _createTooltipData(
+  BarTouchData _createBarTooltipData(
     List<double> dailyExpenses,
     ColorScheme colorScheme,
   ) {
     return BarTouchData(
       enabled: true,
       touchTooltipData: BarTouchTooltipData(
-        getTooltipColor: (touchedSpot) => Colors.black.withOpacity(0.6),
-        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+        getTooltipColor: (_) => Colors.black.withOpacity(0.6),
+        getTooltipItem: (group, _, rod, __) {
           final dayIndex = group.x;
           if (dayIndex >= dailyExpenses.length) return null;
 
@@ -167,7 +172,101 @@ class SavingsBarChart extends StatelessWidget {
     );
   }
 
-  FlTitlesData _createTitlesData(int daysInMonth, int currentDay) {
+  List<BarChartGroupData> _createBarGroups(
+    List<double> dailyExpenses,
+    int currentDay,
+    ColorScheme colorScheme,
+  ) {
+    return List.generate(currentDay, (i) {
+      final barColor = i == currentDay - 1
+          ? colorScheme.primary
+          : colorScheme.primary.withOpacity(0.7);
+
+      return BarChartGroupData(
+        x: i,
+        barRods: [
+          BarChartRodData(
+            toY: dailyExpenses[i],
+            color: barColor,
+            width: 12,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(4),
+              topRight: Radius.circular(4),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  LineChartData _createLineChartData(
+    List<double> dailyExpenses,
+    int currentDay,
+    double maxAllowedExpenses,
+    ColorScheme colorScheme,
+  ) {
+    final maxY = _calculateMaxY(dailyExpenses, maxAllowedExpenses);
+
+    return LineChartData(
+      gridData: const FlGridData(show: false),
+      titlesData: const FlTitlesData(show: false),
+      borderData: FlBorderData(show: false),
+      maxY: maxY,
+      minX: 0,
+      maxX: currentDay - 1.0,
+      lineBarsData: [
+        _createExpensesTrendLine(dailyExpenses, currentDay),
+        _createMaxAllowedLine(maxAllowedExpenses, currentDay),
+      ],
+      lineTouchData: const LineTouchData(enabled: false),
+    );
+  }
+
+  LineChartBarData _createExpensesTrendLine(
+    List<double> dailyExpenses,
+    int currentDay,
+  ) {
+    final spots = <FlSpot>[];
+    for (int i = 0; i < currentDay; i++) {
+      spots.add(FlSpot(i.toDouble(), dailyExpenses[i]));
+    }
+
+    return LineChartBarData(
+      spots: spots,
+      isCurved: false,
+      show: false,
+      color: ExpenseFlowColors.chartYellow,
+      barWidth: 3,
+      isStrokeCapRound: true,
+      dotData: const FlDotData(show: false),
+      belowBarData: BarAreaData(
+        show: false,
+        color: ExpenseFlowColors.chartYellow.withOpacity(0.15),
+      ),
+    );
+  }
+
+  LineChartBarData _createMaxAllowedLine(
+    double maxAllowedExpenses,
+    int currentDay,
+  ) {
+    final spots = List.generate(
+      currentDay,
+      (i) => FlSpot(i.toDouble(), maxAllowedExpenses),
+    );
+
+    return LineChartBarData(
+      spots: spots,
+      isCurved: false,
+      color: ExpenseFlowColors.chartRed.withOpacity(0.8),
+      barWidth: 2,
+      isStrokeCapRound: true,
+      dotData: const FlDotData(show: false),
+      dashArray: [5, 5],
+    );
+  }
+
+  FlTitlesData _createAxisTitles(int daysInMonth, int currentDay) {
     return FlTitlesData(
       show: true,
       rightTitles: const AxisTitles(
@@ -179,7 +278,7 @@ class SavingsBarChart extends StatelessWidget {
       bottomTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
-          getTitlesWidget: (value, meta) {
+          getTitlesWidget: (value, _) {
             // Show every 5th day and the current day
             if (value % 5 == 0 || value == currentDay - 1) {
               return Padding(
@@ -198,7 +297,7 @@ class SavingsBarChart extends StatelessWidget {
       leftTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
-          getTitlesWidget: (value, meta) {
+          getTitlesWidget: (value, _) {
             if (value % 500 == 0) {
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
@@ -227,9 +326,7 @@ class SavingsBarChart extends StatelessWidget {
             dashArray: [5, 5],
           );
         }
-        return FlLine(
-          color: Colors.transparent,
-        );
+        return FlLine(color: Colors.transparent);
       },
       drawVerticalLine: true,
       getDrawingVerticalLine: (value) {
@@ -240,9 +337,7 @@ class SavingsBarChart extends StatelessWidget {
             dashArray: [5, 5],
           );
         }
-        return FlLine(
-          color: Colors.transparent,
-        );
+        return FlLine(color: Colors.transparent);
       },
     );
   }
@@ -257,76 +352,6 @@ class SavingsBarChart extends StatelessWidget {
     );
   }
 
-  List<BarChartGroupData> _generateBarGroups(
-    List<double> dailyExpenses,
-    int currentDay,
-    ColorScheme colorScheme,
-  ) {
-    return List.generate(currentDay, (i) {
-      final barColor = i == currentDay - 1
-          ? colorScheme.primary
-          : colorScheme.primary.withOpacity(0.7);
-
-      return BarChartGroupData(
-        x: i,
-        barRods: [
-          BarChartRodData(
-            toY: dailyExpenses[i],
-            color: barColor,
-            width: 12,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(4),
-              topRight: Radius.circular(4),
-            ),
-          ),
-        ],
-      );
-    });
-  }
-
-  LineChartBarData _createTrendLine(
-    List<double> dailyExpenses,
-    int currentDay,
-  ) {
-    final spots = <FlSpot>[];
-
-    for (int i = 0; i < currentDay; i++) {
-      spots.add(FlSpot(i.toDouble(), dailyExpenses[i]));
-    }
-
-    return LineChartBarData(
-      spots: spots,
-      isCurved: false,
-      color: ExpenseFlowColors.chartYellow,
-      barWidth: 3,
-      isStrokeCapRound: true,
-      dotData: const FlDotData(show: false),
-      belowBarData: BarAreaData(
-        show: false,
-        color: ExpenseFlowColors.chartYellow.withOpacity(0.15),
-      ),
-    );
-  }
-
-  LineChartBarData _createMaxAllowedLine(
-      double maxAllowedExpenses, int currentDay) {
-    final spots = <FlSpot>[];
-
-    for (int i = 0; i < currentDay; i++) {
-      spots.add(FlSpot(i.toDouble(), maxAllowedExpenses));
-    }
-
-    return LineChartBarData(
-      spots: spots,
-      isCurved: false,
-      color: ExpenseFlowColors.chartRed.withOpacity(0.8),
-      barWidth: 2,
-      isStrokeCapRound: true,
-      dotData: const FlDotData(show: false),
-      dashArray: [5, 5],
-    );
-  }
-
   Widget _buildSummary(
     BuildContext context,
     double totalExpenses,
@@ -335,6 +360,7 @@ class SavingsBarChart extends StatelessWidget {
     double maxAllowedExpenses,
   ) {
     final savingsColor = isSavingsOnTrack ? Colors.green : Colors.red;
+    final localizations = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -345,90 +371,30 @@ class SavingsBarChart extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppLocalizations.of(context).totalChartData,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                totalExpenses.toStringAsFixed(2),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          _buildSummaryRow(
+            localizations.totalChartData,
+            totalExpenses.toStringAsFixed(2),
+            Theme.of(context).colorScheme.primary,
+            isBold: true,
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppLocalizations.of(context).maxAllowedExpenses,
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                maxAllowedExpenses.toStringAsFixed(2),
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-            ],
+          _buildSummaryRow(
+            localizations.maxAllowedExpenses,
+            maxAllowedExpenses.toStringAsFixed(2),
+            Colors.white,
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppLocalizations.of(context).balance,
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                (maxAllowedExpenses - totalExpenses).toStringAsFixed(2),
-                style: TextStyle(
-                  color: savingsColor,
-                ),
-              ),
-            ],
+          _buildSummaryRow(
+            localizations.balance,
+            (maxAllowedExpenses - totalExpenses).toStringAsFixed(2),
+            savingsColor,
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppLocalizations.of(context).currentSavings,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Row(
-                children: [
-                  Text(
-                    currentSavings.toStringAsFixed(2),
-                    style: TextStyle(
-                      color: savingsColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    isSavingsOnTrack ? Icons.trending_up : Icons.trending_down,
-                    color: savingsColor,
-                    size: 16,
-                  ),
-                ],
-              ),
-            ],
+          _buildSavingsRow(
+            localizations.currentSavings,
+            currentSavings.toStringAsFixed(2),
+            savingsColor,
+            isSavingsOnTrack,
           ),
           const SizedBox(height: 8),
           LinearProgressIndicator(
@@ -441,19 +407,70 @@ class SavingsBarChart extends StatelessWidget {
     );
   }
 
+  Widget _buildSummaryRow(
+    String label,
+    String value,
+    Color valueColor, {
+    bool isBold = false,
+  }) {
+    final textStyle = TextStyle(
+      color: Colors.white,
+      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+    );
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: textStyle),
+        Text(
+          value,
+          style: textStyle.copyWith(color: valueColor),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSavingsRow(
+    String label,
+    String value,
+    Color valueColor,
+    bool isSavingsOnTrack,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Row(
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                color: valueColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              isSavingsOnTrack ? Icons.trending_up : Icons.trending_down,
+              color: valueColor,
+              size: 16,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   double _calculateSavingsProgress(double currentSavings) {
     if (savingsAmount <= 0) return 1.0;
     final progress = currentSavings / savingsAmount;
     return progress.clamp(0.0, 1.0);
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Text(
-        AppLocalizations.of(context).noDataChartTitle,
-        style: Theme.of(context).textTheme.bodyLarge,
-      ),
-    );
   }
 
   double _calculateMaxY(List<double> dailyExpenses, double maxAllowedExpenses) {
