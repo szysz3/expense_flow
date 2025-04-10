@@ -34,7 +34,6 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
     on<ToggleCategoryEvent>(_handleToggleCategory);
     on<DisplayListEvent>(_handleDisplayList);
     on<DisplaySavingsChartEvent>(_handleDisplaySavingsChart);
-    on<FetchDailyExpensesEvent>(_handleFetchDailyExpenses);
   }
 
   Completer<void>? _refreshCompleter;
@@ -57,17 +56,23 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
         emit(state.copyWith(error: null));
       }
 
-      // Load savings settings
-      final savingsResult = await _getSavingsSettingsUseCase(const NoParams());
+      final now = DateTime.now();
+      final year = now.year;
+      final month = now.month;
 
-      // Load categories
-      final categoriesResult = await _getCategoriesUseCase(const NoParams());
+      final savingsSettingsFuture =
+          _getSavingsSettingsUseCase(const NoParams());
+      final categoriesFuture = _getCategoriesUseCase(const NoParams());
+      final dailyExpensesFuture = _getDailyExpensesUseCase(
+          GetDailyExpensesParams(year: year, month: month));
 
-      // Handle results
+      final savingsResult = await savingsSettingsFuture;
+      final categoriesResult = await categoriesFuture;
+      final dailyExpensesResult = await dailyExpensesFuture;
+
       savingsResult.fold(
         (failure) {
           _errorLogger.e('Failed to get savings settings', error: failure);
-          // Continue with categories data, default savings values will be used
         },
         (savingsSettings) {
           emit(state.copyWith(
@@ -77,10 +82,11 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
         },
       );
 
+      var hasError = false;
       categoriesResult.fold(
         (failure) {
           _errorLogger.e('Failed to get categories', error: failure);
-
+          hasError = true;
           emit(state.copyWith(
             isLoading: false,
             error: AppError.fromFailure(
@@ -89,7 +95,6 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
               localizationService: _localizationService,
             ),
           ));
-          _refreshCompleter?.complete();
         },
         (categories) {
           final presentationCategories = categories.map((categoryWithItems) {
@@ -113,9 +118,37 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
             isLoading: false,
             error: null,
           ));
-          _refreshCompleter?.complete();
         },
       );
+
+      if (!hasError) {
+        dailyExpensesResult.fold(
+          (failure) {
+            _errorLogger.e('Failed to get daily expenses', error: failure);
+            emit(state.copyWith(
+              isLoadingDailyExpenses: false,
+              error: AppError.fromFailure(
+                failure,
+                onRetry: () => add(const CategoriesEvent.init()),
+                localizationService: _localizationService,
+              ),
+            ));
+          },
+          (dailyExpenses) {
+            var cumulativeExpenses = _buildCumulativeExpenses(dailyExpenses);
+            emit(state.copyWith(
+              cumulativeExpenses: cumulativeExpenses,
+              totalExpenses:
+                  dailyExpenses.isEmpty ? 0.0 : cumulativeExpenses.last,
+              dailyExpenses: dailyExpenses,
+              isLoadingDailyExpenses: false,
+              error: null,
+            ));
+          },
+        );
+      }
+
+      _refreshCompleter?.complete();
     } catch (e, stackTrace) {
       _errorLogger.e(
         'Exception in CategoriesBloc.handleInit',
@@ -125,6 +158,7 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
 
       emit(state.copyWith(
         isLoading: false,
+        isLoadingDailyExpenses: false,
         error: AppError.fromException(e,
             onRetry: () => add(const CategoriesEvent.init()),
             localizationService: _localizationService),
@@ -167,60 +201,6 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
     Emitter<CategoriesState> emit,
   ) {
     emit(state.copyWith(displayType: CategoryDisplayType.savingsChart));
-  }
-
-  Future<void> _handleFetchDailyExpenses(
-    FetchDailyExpensesEvent event,
-    Emitter<CategoriesState> emit,
-  ) async {
-    try {
-      final now = DateTime.now();
-      final year = event.year ?? now.year;
-      final month = event.month ?? now.month;
-
-      emit(state.copyWith(isLoadingDailyExpenses: true));
-
-      final result = await _getDailyExpensesUseCase(
-          GetDailyExpensesParams(year: year, month: month));
-
-      result.fold(
-        (failure) {
-          _errorLogger.e('Failed to get daily expenses', error: failure);
-          emit(state.copyWith(
-            isLoadingDailyExpenses: false,
-            error: AppError.fromFailure(
-              failure,
-              onRetry: () =>
-                  add(CategoriesEvent.fetchDailyExpenses(year, month)),
-              localizationService: _localizationService,
-            ),
-          ));
-        },
-        (dailyExpenses) {
-          var cumulativeExpenses = _buildCumulativeExpenses(dailyExpenses);
-          emit(state.copyWith(
-            cumulativeExpenses: cumulativeExpenses,
-            totalExpenses:
-                dailyExpenses.isEmpty ? 0.0 : cumulativeExpenses.last,
-            dailyExpenses: dailyExpenses,
-            isLoadingDailyExpenses: false,
-            error: null,
-          ));
-        },
-      );
-    } catch (e, stackTrace) {
-      _errorLogger.e(
-        'Exception in CategoriesBloc.handleFetchDailyExpenses',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      emit(state.copyWith(
-        isLoadingDailyExpenses: false,
-        error: AppError.fromException(e,
-            onRetry: () => add(const CategoriesEvent.fetchDailyExpenses()),
-            localizationService: _localizationService),
-      ));
-    }
   }
 
   List<double> _buildCumulativeExpenses(List<DailyExpense> dailyExpenses) {

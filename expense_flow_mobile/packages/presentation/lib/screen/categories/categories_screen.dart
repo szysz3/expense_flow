@@ -184,7 +184,6 @@ class CategoriesScreenView extends StatelessWidget {
   }
 
   Widget _buildDisplayContent(BuildContext context, CategoriesState state) {
-    _fetchDailyExpenses(context, state);
     switch (state.displayType) {
       case CategoryDisplayType.savingsChart:
         return _buildDailyExpenses(context, state);
@@ -193,17 +192,8 @@ class CategoriesScreenView extends StatelessWidget {
     }
   }
 
-  _fetchDailyExpenses(BuildContext context, CategoriesState state) {
-    if (state.dailyExpenses.isEmpty && !state.isLoadingDailyExpenses) {
-      final now = DateTime.now();
-      context.read<CategoriesBloc>().add(
-            CategoriesEvent.fetchDailyExpenses(now.year, now.month),
-          );
-    }
-  }
-
   Widget _buildDailyExpenses(BuildContext context, CategoriesState state) {
-    if (state.dailyExpenses.isEmpty && !state.isLoadingDailyExpenses) {
+    if (state.dailyExpenses.isEmpty && state.isLoadingDailyExpenses) {
       return const Center(child: CircularProgressIndicator());
     }
 
