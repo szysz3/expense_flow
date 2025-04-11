@@ -363,46 +363,55 @@ class SavingsBarChart extends StatelessWidget {
         ? ExpenseFlowColors.chartMutedGreen
         : ExpenseFlowColors.chartMutedRed;
     final localizations = AppLocalizations.of(context);
+    final textTheme = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: ExpenseFlowColors.darkSurface,
-        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.withOpacity(0.4)),
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.black.withOpacity(0.4),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildSummaryRow(
             localizations.totalChartData,
             totalExpenses.toStringAsFixed(2),
             Theme.of(context).colorScheme.primary,
             isBold: true,
+            textTheme: textTheme,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           _buildSummaryRow(
             localizations.maxAllowedExpenses,
             maxAllowedExpenses.toStringAsFixed(2),
             Colors.white,
+            textTheme: textTheme,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           _buildSummaryRow(
             localizations.balance,
             (maxAllowedExpenses - totalExpenses).toStringAsFixed(2),
             savingsColor,
+            textTheme: textTheme,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           _buildSavingsRow(
             localizations.currentSavings,
             currentSavings.toStringAsFixed(2),
             savingsColor,
             isSavingsOnTrack,
+            textTheme,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           LinearProgressIndicator(
             value: _calculateSavingsProgress(currentSavings),
+            minHeight: 6,
             backgroundColor: Colors.grey.withOpacity(0.3),
             valueColor: AlwaysStoppedAnimation<Color>(savingsColor),
+            borderRadius: BorderRadius.circular(3),
           ),
         ],
       ),
@@ -414,20 +423,23 @@ class SavingsBarChart extends StatelessWidget {
     String value,
     Color valueColor, {
     bool isBold = false,
+    required TextTheme textTheme,
   }) {
-    final textStyle = TextStyle(
-      color: Colors.white,
+    final labelStyle = textTheme.bodyMedium?.copyWith(
+      color: Colors.white.withOpacity(0.9),
+      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+    );
+
+    final valueStyle = textTheme.bodyMedium?.copyWith(
+      color: valueColor,
       fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
     );
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: textStyle),
-        Text(
-          value,
-          style: textStyle.copyWith(color: valueColor),
-        ),
+        Text(label, style: labelStyle),
+        Text(value, style: valueStyle),
       ],
     );
   }
@@ -437,26 +449,25 @@ class SavingsBarChart extends StatelessWidget {
     String value,
     Color valueColor,
     bool isSavingsOnTrack,
+    TextTheme textTheme,
   ) {
+    final labelStyle = textTheme.bodyMedium?.copyWith(
+      color: Colors.white.withOpacity(0.9),
+      fontWeight: FontWeight.bold,
+    );
+
+    final valueStyle = textTheme.bodyMedium?.copyWith(
+      color: valueColor,
+      fontWeight: FontWeight.bold,
+    );
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text(label, style: labelStyle),
         Row(
           children: [
-            Text(
-              value,
-              style: TextStyle(
-                color: valueColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text(value, style: valueStyle),
             const SizedBox(width: 4),
             Icon(
               isSavingsOnTrack ? Icons.trending_up : Icons.trending_down,
