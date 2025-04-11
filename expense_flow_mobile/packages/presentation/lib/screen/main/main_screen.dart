@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 
 import '../../core/service/camera/camera_service.dart';
@@ -76,7 +77,11 @@ class MainScreen extends StatelessWidget {
               centerTitle: true,
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.settings),
+                  icon: SvgPicture.asset(
+                    'packages/presentation/assets/icon_settings.svg',
+                    width: 36,
+                    height: 36,
+                  ),
                   onPressed: () {
                     SettingsScreen.show(context);
                   },

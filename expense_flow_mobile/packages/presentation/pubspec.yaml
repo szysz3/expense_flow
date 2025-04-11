@@ -85,6 +85,7 @@ flutter:
     - assets/icon_pie_chart.svg
     - assets/icon_close.svg
     - assets/icon_menu.svg
+    - assets/icon_settings.svg
 
 
   # To add assets to your package, add an assets section, like this:
