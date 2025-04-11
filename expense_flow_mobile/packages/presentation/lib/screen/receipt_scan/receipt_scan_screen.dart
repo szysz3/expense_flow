@@ -37,7 +37,8 @@ class ReceiptScanScreen extends StatelessWidget {
             ),
           ),
           const Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.only(
+                left: 16.0, right: 16.0, bottom: 16.0, top: 8.0),
             child: ReceiptScanView(),
           ),
         ],

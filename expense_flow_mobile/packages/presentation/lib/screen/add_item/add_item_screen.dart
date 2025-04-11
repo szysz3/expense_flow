@@ -159,7 +159,7 @@ class _AddItemViewState extends State<AddItemView> {
 
   // Add button at the bottom
   Widget _buildAddButton(AddItemState state, BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.only(bottom: 8),
         child: Center(
           child: AnimatedSquareButton.square(
             isProcessing: !state.isValid || state.isSubmitting,

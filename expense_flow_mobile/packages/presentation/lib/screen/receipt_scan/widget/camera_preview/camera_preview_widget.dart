@@ -70,7 +70,7 @@ class CameraPreviewWidget extends StatelessWidget {
       );
 
   Widget _buildCameraButton() => Positioned(
-        bottom: 20,
+        bottom: 8,
         left: 0,
         right: 0,
         child: AnimatedSquareButton.square(
