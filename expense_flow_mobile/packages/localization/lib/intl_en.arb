@@ -396,9 +396,9 @@
       "description": "Income hint field"
     },
 
-    "balance": "Balance",
+    "balance": "To spend",
     "@settings": {
-      "description": "Balance between expenses and savings"
+      "description": "Balance between expenses and savings. Amount available to spend."
     },
 
     "savingsChart": "Savings Chart",

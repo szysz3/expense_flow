@@ -11,6 +11,7 @@ import 'package:logger/logger.dart';
 import '../../core/error/error_utils.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
+import '../../theme/expense_flow_colors.dart';
 import '../summary/widget/speed_dial/speed_dial_menu.dart';
 import '../summary/widget/speed_dial/speed_dial_menu_data.dart';
 import 'bloc/categories_bloc.dart';
@@ -81,6 +82,7 @@ class CategoriesScreenView extends StatelessWidget {
 
   Widget _buildContent(BuildContext context, CategoriesState state) {
     final colorScheme = Theme.of(context).colorScheme;
+    var toSpend = ((state.income - state.savingsAmount) - state.totalExpenses);
     return Stack(
       children: [
         Padding(
@@ -122,32 +124,30 @@ class CategoriesScreenView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(left: 32),
-                        child: Text(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 80),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
                           AppLocalizations.of(context).balance,
                           style: TextStyle(
                             color: Colors.white,
                           ),
                         ),
-                      ),
-                      Padding(
-                          padding: EdgeInsets.only(left: 32),
-                          child: Text(
-                            ((state.income - state.savingsAmount) -
-                                    state.totalExpenses)
-                                .toStringAsFixed(2),
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
-                          )),
-                    ],
+                        Text(
+                          toSpend.toStringAsFixed(2),
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: toSpend < 0
+                                ? ExpenseFlowColors.chartMutedRed
+                                : ExpenseFlowColors.chartMutedGreen,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

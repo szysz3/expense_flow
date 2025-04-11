@@ -359,7 +359,9 @@ class SavingsBarChart extends StatelessWidget {
     bool isSavingsOnTrack,
     double maxAllowedExpenses,
   ) {
-    final savingsColor = isSavingsOnTrack ? Colors.green : Colors.red;
+    final savingsColor = isSavingsOnTrack
+        ? ExpenseFlowColors.chartMutedGreen
+        : ExpenseFlowColors.chartMutedRed;
     final localizations = AppLocalizations.of(context);
 
     return Container(
