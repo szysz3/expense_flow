@@ -11,6 +11,7 @@ import '../../navigation/widget/bottom_navigation.dart';
 import '../../navigation/widget/drawer_menu.dart';
 import '../add_item/add_item_screen.dart';
 import '../categories/categories_screen.dart';
+import '../receipt_browse/receipt_browse_screen.dart';
 import '../receipt_scan/receipt_scan_screen.dart';
 import '../summary/summary_screen.dart';
 import 'bloc/camera_preview_bloc.dart';
@@ -60,12 +61,15 @@ class MainScreen extends StatelessWidget {
                     case 1:
                       return Text(
                           AppLocalizations.of(context).appBarAddItemTitle);
-                    case 2:
-                      return Text(
-                          AppLocalizations.of(context).appBarCategoriesTitle);
                     case 3:
                       return Text(
+                          AppLocalizations.of(context).appBarCategoriesTitle);
+                    case 2:
+                      return Text(
                           AppLocalizations.of(context).appBarSummaryTitle);
+                    case 4:
+                      return Text(AppLocalizations.of(context)
+                          .appBarBrowseReceiptsTitle);
                     default:
                       return const Text('');
                   }
@@ -99,6 +103,7 @@ class MainScreen extends StatelessWidget {
                 AddItemScreen(),
                 CategoriesScreen(),
                 SummaryScreen(),
+                ReceiptBrowseScreen(),
               ],
             ));
           },

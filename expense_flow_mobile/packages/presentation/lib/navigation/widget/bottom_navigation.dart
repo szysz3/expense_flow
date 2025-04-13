@@ -13,6 +13,7 @@ class BottomNavigation extends StatelessWidget {
   static const _iconCategories = 'icon_categories.svg';
   static const _iconOrders = 'icon_standing_orders.svg';
   static const _iconSummary = 'icon_summary.svg';
+  static const _iconBrowse = 'icon_scan.svg';
 
   List<(String, String)> _getNavigationItems(BuildContext context) {
     return [
@@ -20,6 +21,7 @@ class BottomNavigation extends StatelessWidget {
       (AppLocalizations.of(context).orders, _iconOrders),
       (AppLocalizations.of(context).categories, _iconCategories),
       (AppLocalizations.of(context).summary, _iconSummary),
+      (AppLocalizations.of(context).browse, _iconBrowse),
     ];
   }
 

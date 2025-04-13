@@ -419,5 +419,15 @@
     "currentSavings": "Current Savings",
     "@settings": {
       "description": "Current savings label on savings chart screen"
+    },
+
+    "browse": "Browse",
+    "@settings": {
+      "description": "Title for browse receipt screen navigation item"
+    },
+
+    "appBarBrowseReceiptsTitle": "Browse Receipts",
+    "@settings": {
+      "description": "Title for browse receipt screen"
     }
 }
