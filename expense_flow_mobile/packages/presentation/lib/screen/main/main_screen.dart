@@ -8,10 +8,10 @@ import '../../di/di.dart';
 import '../../navigation/bloc/navigation_bloc.dart';
 import '../../navigation/bloc/navigation_state.dart';
 import '../../navigation/widget/bottom_navigation.dart';
+import '../../navigation/widget/drawer_menu.dart';
 import '../add_item/add_item_screen.dart';
 import '../categories/categories_screen.dart';
 import '../receipt_scan/receipt_scan_screen.dart';
-import '../settings/settings_screen.dart';
 import '../summary/summary_screen.dart';
 import '../unprocessed_receipts/unprocessed_receipts_screen.dart';
 import 'bloc/camera_preview_bloc.dart';
@@ -31,6 +31,7 @@ class MainScreen extends StatelessWidget {
       ],
       child: Scaffold(
         extendBody: true,
+        drawer: const DrawerMenu(),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: Container(
@@ -74,20 +75,19 @@ class MainScreen extends StatelessWidget {
                   }
                 },
               ),
-              centerTitle: true,
-              actions: [
-                IconButton(
+              leading: Builder(
+                builder: (context) => IconButton(
                   icon: SvgPicture.asset(
-                    'packages/presentation/assets/icon_settings.svg',
-                    width: 36,
-                    height: 36,
+                    'packages/presentation/assets/icon_menu.svg',
+                    width: 24,
+                    height: 24,
                   ),
-                  onPressed: () {
-                    SettingsScreen.show(context);
-                  },
-                  tooltip: 'Settings',
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                  tooltip:
+                      MaterialLocalizations.of(context).openAppDrawerTooltip,
                 ),
-              ],
+              ),
+              centerTitle: true,
               elevation: 0,
               backgroundColor: Colors.transparent,
             ),
