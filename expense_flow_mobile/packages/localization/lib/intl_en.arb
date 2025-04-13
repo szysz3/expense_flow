@@ -429,5 +429,35 @@
     "appBarBrowseReceiptsTitle": "Browse Receipts",
     "@settings": {
       "description": "Title for browse receipt screen"
+    },
+
+    "noReceiptsFound": "Browse Receipts",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "receiptDetails": "Receipt Details",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "merchant": "Merchant",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "transactionDetails": "Transaction Details",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "transactionDate": "Date",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "items": "Items",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
     }
 }

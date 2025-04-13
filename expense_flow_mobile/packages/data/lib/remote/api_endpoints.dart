@@ -8,6 +8,7 @@ class ApiEndpoints {
   static const String monthsSummary = ApiConstants.monthsSummary;
   static const String createReceipt = ApiConstants.createReceipt;
   static const String unprocessedReceipts = ApiConstants.unprocessedReceipts;
+  static const String receipts = ApiConstants.receiptPrefix;
 
   static String dailyExpenses(int year, int month) => ApiConstants.dailyExpenses
       .replaceAll('{year}', year.toString())

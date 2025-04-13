@@ -13,6 +13,7 @@ import 'package:domain/model/receipt_query.dart';
 import 'package:domain/model/search_result.dart';
 import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:domain/repository/receipt_repository.dart';
+import 'package:domain/use_case/get_receipts_use_case.dart';
 import 'package:logger/logger.dart';
 
 import '../../consts/error_messages.dart';
@@ -294,6 +295,32 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
             .toList();
       },
       context: 'getDailyExpenses: $year-$month',
+    );
+  }
+
+  @override
+  Future<Either<Failure, ReceiptsResponse>> getReceipts(
+      int page, int pageSize) async {
+    return _executeRequest(
+      () async {
+        final response = await _dio.get(
+          ApiEndpoints.receipts,
+          queryParameters: {
+            'page': page,
+            'page_size': pageSize,
+          },
+        );
+
+        final List<Receipt> receipts = (response.data['receipts'] as List)
+            .map((json) => Receipt.fromJson(json))
+            .toList();
+
+        return ReceiptsResponse(
+          receipts: receipts,
+          totalCount: response.data['total_count'] ?? receipts.length,
+        );
+      },
+      context: 'getReceipts: page $page, size $pageSize',
     );
   }
 }

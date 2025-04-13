@@ -9,6 +9,7 @@ import '../model/receipt_item.dart';
 import '../model/receipt_query.dart';
 import '../model/search_result.dart';
 import '../model/unprocessed_receipt.dart';
+import '../use_case/get_receipts_use_case.dart';
 
 abstract class ReceiptRepository {
   Future<Either<Failure, Receipt>> analyzeReceipt(String filePath,
@@ -29,4 +30,6 @@ abstract class ReceiptRepository {
 
   Future<Either<Failure, List<DailyExpense>>> getDailyExpenses(
       int year, int month);
+
+  Future<Either<Failure, ReceiptsResponse>> getReceipts(int page, int pageSize);
 }
