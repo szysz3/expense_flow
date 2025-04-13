@@ -13,7 +13,6 @@ import '../add_item/add_item_screen.dart';
 import '../categories/categories_screen.dart';
 import '../receipt_scan/receipt_scan_screen.dart';
 import '../summary/summary_screen.dart';
-import '../unprocessed_receipts/unprocessed_receipts_screen.dart';
 import 'bloc/camera_preview_bloc.dart';
 import 'bloc/camera_preview_event.dart';
 
@@ -67,9 +66,6 @@ class MainScreen extends StatelessWidget {
                     case 3:
                       return Text(
                           AppLocalizations.of(context).appBarSummaryTitle);
-                    case 4:
-                      return Text(AppLocalizations.of(context)
-                          .appBarUnprocessedReceiptsTitle);
                     default:
                       return const Text('');
                   }
@@ -103,7 +99,6 @@ class MainScreen extends StatelessWidget {
                 AddItemScreen(),
                 CategoriesScreen(),
                 SummaryScreen(),
-                UnprocessedReceiptsScreen()
               ],
             ));
           },

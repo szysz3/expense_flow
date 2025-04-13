@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:presentation/screen/settings/settings_screen.dart';
+import 'package:presentation/screen/unprocessed_receipts/unprocessed_receipts_screen.dart';
 
 class DrawerMenu extends StatelessWidget {
   const DrawerMenu({super.key});
@@ -52,6 +53,19 @@ class DrawerMenu extends StatelessWidget {
   Widget _buildDrawerItems(BuildContext context) {
     return Column(
       children: [
+        _buildDrawerItem(
+          context: context,
+          icon: SvgPicture.asset(
+            'packages/presentation/assets/icon_unprocessed.svg',
+            width: 24,
+            height: 24,
+          ),
+          title: AppLocalizations.of(context).unprocessed,
+          onTap: () {
+            Navigator.pop(context);
+            UnprocessedReceiptsScreen.show(context);
+          },
+        ),
         _buildDrawerItem(
           context: context,
           icon: SvgPicture.asset(

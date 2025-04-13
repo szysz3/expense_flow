@@ -18,6 +18,15 @@ import 'widget/unprocessed_receipt_item.dart';
 class UnprocessedReceiptsScreen extends StatelessWidget {
   const UnprocessedReceiptsScreen({super.key});
 
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const UnprocessedReceiptsScreen(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => BlocProvider(
       create: (_) => UnprocessedReceiptsBloc(
@@ -25,61 +34,104 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
             getIt<Logger>(),
             getIt<LocalizationService>(),
           )..add(const UnprocessedReceiptsEvent.init()),
-      child: Stack(children: [
-        Positioned.fill(
-          child: SvgPicture.asset(
-            'packages/presentation/assets/background_unprocessed.svg',
-            width: double.infinity,
-            height: double.infinity,
-            fit: BoxFit.cover,
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.6,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildModalHeader(context),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _buildContent(context),
+                ),
+              ),
+            ],
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: UnprocessedReceiptsView(),
-        ),
-      ]));
-}
+      ));
 
-class UnprocessedReceiptsView extends StatelessWidget {
-  const UnprocessedReceiptsView({super.key});
+  Widget _buildModalHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildContent(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return BlocConsumer<UnprocessedReceiptsBloc, UnprocessedReceiptsState>(
       listener: (context, state) {
-        if (state.error != null && state.receipts.isNotEmpty) {
+        if (state.error != null) {
           ErrorUtils.showErrorSnackBar(context, state.error!);
         }
       },
       builder: (context, state) {
-        if (state.isLoading && state.receipts.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (state.error != null && state.receipts.isEmpty) {
-          return ErrorDisplayWidget(
-            error: state.error!,
-            isFullScreen: true,
-          );
-        }
-
-        if (state.receipts.isEmpty) {
-          return _buildEmptyState(context);
-        }
-
-        return RefreshIndicator(
-          onRefresh: () => context.read<UnprocessedReceiptsBloc>().refresh(),
-          child: ListView.separated(
-            itemCount: state.receipts.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final receipt = state.receipts[index];
-              return UnprocessedReceiptItem(receipt: receipt);
-            },
-          ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.appBarUnprocessedReceiptsTitle,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: _buildReceiptsList(context, state),
+            ),
+          ],
         );
       },
+    );
+  }
+
+  Widget _buildReceiptsList(
+      BuildContext context, UnprocessedReceiptsState state) {
+    if (state.isLoading && state.receipts.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (state.error != null && state.receipts.isEmpty) {
+      return ErrorDisplayWidget(
+        error: state.error!,
+        isFullScreen: true,
+      );
+    }
+
+    if (state.receipts.isEmpty) {
+      return _buildEmptyState(context);
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => context.read<UnprocessedReceiptsBloc>().refresh(),
+      child: ListView.separated(
+        itemCount: state.receipts.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 8),
+        itemBuilder: (context, index) {
+          final receipt = state.receipts[index];
+          return UnprocessedReceiptItem(receipt: receipt);
+        },
+      ),
     );
   }
 
