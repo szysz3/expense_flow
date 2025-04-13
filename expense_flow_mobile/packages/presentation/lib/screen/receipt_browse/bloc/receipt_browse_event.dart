@@ -9,4 +9,7 @@ class ReceiptBrowseEvent with _$ReceiptBrowseEvent {
   const factory ReceiptBrowseEvent.refresh() = RefreshEvent;
 
   const factory ReceiptBrowseEvent.loadMore() = LoadMoreEvent;
+
+  const factory ReceiptBrowseEvent.deleteReceipt(String receiptId) =
+      DeleteReceiptEvent;
 }

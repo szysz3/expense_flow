@@ -1,9 +1,16 @@
 import 'package:domain/model/receipt.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 
+import '../../../core/widget/animated_square_button.dart';
+import '../bloc/receipt_browse_bloc.dart';
+import '../bloc/receipt_browse_event.dart';
+import '../bloc/receipt_browse_state.dart';
+
+//TODO: refactor
 class ReceiptDetailScreen extends StatelessWidget {
   final Receipt receipt;
 
@@ -13,37 +20,53 @@ class ReceiptDetailScreen extends StatelessWidget {
   });
 
   static Future<void> show(BuildContext context, Receipt receipt) {
+    final receiptBrowseBloc = context.read<ReceiptBrowseBloc>();
+
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ReceiptDetailScreen(receipt: receipt),
+      builder: (modalContext) => BlocProvider.value(
+        value: receiptBrowseBloc,
+        child: ReceiptDetailScreen(receipt: receipt),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.9,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
-        ),
-        child: Column(
-          children: [
-            _buildModalHeader(context),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _buildContent(context),
-              ),
+    return BlocListener<ReceiptBrowseBloc, ReceiptBrowseState>(
+      listener: (context, state) {
+        if (state.isDeleted && state.deleteReceiptId == receipt.id) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.99,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
             ),
-          ],
+          ),
+          child: Column(
+            children: [
+              _buildModalHeader(context),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _buildContent(context),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: _buildDeleteButton(context),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -81,26 +104,28 @@ class ReceiptDetailScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Merchant Information
-        _buildInfoSection(
-          title: l10n.merchant,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                receipt.merchant.name,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              if (receipt.merchant.address.isNotEmpty)
-                Text(
-                  receipt.merchant.address,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-            ],
+        if (receipt.merchant.name.isNotEmpty ||
+            receipt.merchant.address.isNotEmpty)
+          _buildInfoSection(
+            title: l10n.merchant,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (receipt.merchant.name.isNotEmpty)
+                  Text(
+                    receipt.merchant.name,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                if (receipt.merchant.address.isNotEmpty)
+                  Text(
+                    receipt.merchant.address,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+              ],
+            ),
           ),
-        ),
 
         // Transaction Information
         _buildInfoSection(
@@ -180,6 +205,9 @@ class ReceiptDetailScreen extends StatelessWidget {
     final categoryIconPath =
         'packages/presentation/assets/icon_${item.category}.svg';
 
+    String categoryDisplayName =
+        _getCategoryDisplayName(item.category.toString());
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,9 +228,25 @@ class ReceiptDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                item.description,
-                style: Theme.of(context).textTheme.bodyLarge,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      item.description,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
+                  Text(
+                    categoryDisplayName,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.6),
+                        ),
+                  ),
+                ],
               ),
               const SizedBox(height: 4),
               Row(
@@ -224,6 +268,96 @@ class ReceiptDetailScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  String _getCategoryDisplayName(String category) {
+    final parts = category.split('_');
+    final titleCase = parts
+        .map((part) => part.isNotEmpty
+            ? '${part[0].toUpperCase()}${part.substring(1)}'
+            : '')
+        .join(' ');
+
+    return titleCase;
+  }
+
+  Widget _buildDeleteButton(BuildContext context) {
+    return BlocBuilder<ReceiptBrowseBloc, ReceiptBrowseState>(
+      builder: (context, state) {
+        final bool isProcessing =
+            state.isDeleting && state.deleteReceiptId == receipt.id;
+
+        return AnimatedSquareButton(
+          isProcessing: isProcessing,
+          onPressed: () => _confirmDelete(context),
+          width: 160.0,
+          height: 52.0,
+          iconSize: 20.0,
+          borderColor: Colors.red,
+          backgroundColor: Colors.red.withOpacity(0.3),
+          icon: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.delete,
+                color: Colors.red.shade300,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context).delete,
+                style: TextStyle(
+                  color: Colors.red.shade300,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final l10n = AppLocalizations.of(context);
+
+        return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          title: Text(l10n.deleteConfirmation),
+          content: Text(l10n.deleteReceiptConfirmMessage),
+          actions: [
+            TextButton(
+              child: Text(
+                l10n.cancel,
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                l10n.delete,
+                style: const TextStyle(color: Colors.red),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+
+                if (receipt.id != null) {
+                  context.read<ReceiptBrowseBloc>().add(
+                        ReceiptBrowseEvent.deleteReceipt(receipt.id!),
+                      );
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -459,5 +459,40 @@
     "items": "Items",
     "@settings": {
       "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "delete": "Delete",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "deleteConfirmation": "Delete Receipt",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "deleteReceiptConfirmMessage": "Are you sure you want to delete this receipt? This action cannot be undone.",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "deletingReceipt": "Receipt deleted successfully",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "deleteFailed": "Failed to delete receipt",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "cancel": "Cancel",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "receiptDeleted": "Receipt Deleted",
+    "@settings": {
+      "description": "No receipts found. Scan a receipt to get started."
     }
 }

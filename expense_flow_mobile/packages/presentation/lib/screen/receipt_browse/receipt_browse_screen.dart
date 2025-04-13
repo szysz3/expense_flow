@@ -1,4 +1,5 @@
 import 'package:domain/model/receipt.dart';
+import 'package:domain/use_case/delete_use_case.dart';
 import 'package:domain/use_case/get_receipts_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,6 +26,7 @@ class ReceiptBrowseScreen extends StatelessWidget {
             getIt<Logger>(),
             getIt<LocalizationService>(),
             getIt<GetReceiptsUseCase>(),
+            getIt<DeleteReceiptUseCase>(),
           )..add(const ReceiptBrowseEvent.init()),
       child: Stack(children: [
         Positioned.fill(
@@ -51,6 +53,15 @@ class ReceiptBrowseView extends StatelessWidget {
       listener: (context, state) {
         if (state.error != null) {
           ErrorUtils.showErrorSnackBar(context, state.error!);
+        }
+
+        if (state.isDeleted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).receiptDeleted),
+              backgroundColor: Colors.green,
+            ),
+          );
         }
       },
       builder: (context, state) {

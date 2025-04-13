@@ -591,6 +591,22 @@ class ReceiptRepository(BaseRepository):
             receipts.append(Receipt(**deserialized_result))
             
         return receipts
+    
+    @handle_db_errors
+    def delete_receipt(self, receipt_id: str) -> bool:
+        """
+        Delete a receipt by ID
+        
+        Args:
+            receipt_id: UUID of the receipt to delete
+            
+        Returns:
+            True if receipt was deleted, False if receipt was not found
+        """
+        receipt_query = Query()
+        result = self.db.remove(receipt_query.id == receipt_id) 
+
+        return len(result) > 0
 
     @handle_db_errors
     def get_receipt_count(self) -> int:

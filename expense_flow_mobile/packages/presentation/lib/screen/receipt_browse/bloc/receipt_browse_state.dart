@@ -13,6 +13,9 @@ class ReceiptBrowseState with _$ReceiptBrowseState {
     @Default(false) bool isLoadingMore,
     @Default(false) bool hasMoreReceipts,
     @Default(0) int totalCount,
+    @Default(false) bool isDeleting,
+    @Default(false) bool isDeleted,
+    @Default('') String deleteReceiptId,
     AppError? error,
   }) = _ReceiptBrowseState;
 }

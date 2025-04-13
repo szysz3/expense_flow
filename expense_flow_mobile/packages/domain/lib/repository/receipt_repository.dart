@@ -32,4 +32,6 @@ abstract class ReceiptRepository {
       int year, int month);
 
   Future<Either<Failure, ReceiptsResponse>> getReceipts(int page, int pageSize);
+
+  Future<Either<Failure, bool>> deleteReceipt(String id);
 }

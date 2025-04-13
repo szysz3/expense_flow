@@ -7,6 +7,7 @@ import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/repository/settings_repository.dart';
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:domain/use_case/create_receipt_use_case.dart';
+import 'package:domain/use_case/delete_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:domain/use_case/get_daily_expenses_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
@@ -92,6 +93,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton(
     () => GetReceiptsUseCase(getIt<ReceiptRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => DeleteReceiptUseCase(getIt<ReceiptRepository>()),
   );
 
   getIt.registerSingleton<LocalizationService>(

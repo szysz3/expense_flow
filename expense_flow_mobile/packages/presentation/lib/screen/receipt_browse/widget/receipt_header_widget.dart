@@ -2,6 +2,7 @@ import 'package:domain/model/receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+// TODO: refactor
 class ReceiptHeaderWidget extends StatelessWidget {
   final Receipt receipt;
   final VoidCallback onTap;
@@ -22,6 +23,9 @@ class ReceiptHeaderWidget extends StatelessWidget {
     final formattedDate = dateFormat.format(date);
     final formattedTime = timeFormat.format(date);
 
+    final uniqueCategories =
+        receipt.items.map((item) => item.category).toSet().toList();
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -30,7 +34,7 @@ class ReceiptHeaderWidget extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withOpacity(0.7),
+            color: theme.colorScheme.surface.withOpacity(0.4),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: theme.colorScheme.onSurface.withOpacity(0.1),
@@ -43,14 +47,7 @@ class ReceiptHeaderWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(
-                      receipt.merchant.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: _buildMerchantName(theme),
                   ),
                   Text(
                     receipt.total.toStringAsFixed(2),
@@ -88,6 +85,15 @@ class ReceiptHeaderWidget extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
+                  if (uniqueCategories.isNotEmpty) ...[
+                    Wrap(
+                      spacing: 4,
+                      children: uniqueCategories.take(3).map((category) {
+                        return _buildCategoryChip(context, category.toString());
+                      }).toList(),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   Icon(
                     Icons.chevron_right,
                     color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -100,5 +106,58 @@ class ReceiptHeaderWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildMerchantName(ThemeData theme) {
+    if (receipt.merchant.name.isEmpty) {
+      return Text(
+        'Receipt ${receipt.id?.substring(0, 8) ?? ""}',
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    return Text(
+      receipt.merchant.name,
+      style: theme.textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.bold,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildCategoryChip(BuildContext context, String category) {
+    final displayName = _formatCategoryName(category);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        displayName,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              fontSize: 10,
+            ),
+      ),
+    );
+  }
+
+  String _formatCategoryName(String category) {
+    final parts = category.split('.');
+    final categoryName = parts.last;
+
+    final words = categoryName.split('_');
+    return words
+        .map((word) => word.isNotEmpty
+            ? '${word[0].toUpperCase()}${word.substring(1)}'
+            : '')
+        .join(' ');
   }
 }

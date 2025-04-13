@@ -20,6 +20,7 @@ import '../../consts/error_messages.dart';
 import '../../consts/http_constants.dart';
 import '../../consts/receipt_constants.dart';
 import '../../remote/api_endpoints.dart';
+import '../../remote/exception/exceptions.dart';
 import '../../utils/content_type_resolver.dart';
 
 class ReceiptRepositoryImpl implements ReceiptRepository {
@@ -321,6 +322,30 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
         );
       },
       context: 'getReceipts: page $page, size $pageSize',
+    );
+  }
+
+  @override
+  Future<Either<Failure, bool>> deleteReceipt(String id) async {
+    return _executeRequest(
+      () async {
+        try {
+          final response = await _dio.delete('${ApiEndpoints.receipt}$id');
+
+          if (response.statusCode == 200 && response.data['success'] == true) {
+            return true;
+          } else {
+            throw ServerException(
+                response.data['message'] ?? 'Failed to delete receipt');
+          }
+        } on DioException catch (e) {
+          if (e.response?.statusCode == 404) {
+            throw NotFoundException();
+          }
+          rethrow;
+        }
+      },
+      context: 'deleteReceipt: $id',
     );
   }
 }

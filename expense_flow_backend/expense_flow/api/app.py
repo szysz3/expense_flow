@@ -578,6 +578,67 @@ async def get_receipts(
             }
         )
 
+
+@app.delete(
+    "/api/receipts/{receipt_id}",
+    response_model=dict,
+    responses={
+        404: {"model": ErrorDetail},
+        500: {"model": ErrorDetail}
+    }
+)
+async def delete_receipt(
+    receipt_id: str,
+    api_key: str = Depends(verify_api_key),
+    repository: ReceiptRepository = Depends(get_repository)
+):
+    """Delete a receipt by ID"""
+    try:
+        receipt = repository.get_receipt(receipt_id)
+        if not receipt:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": ErrorMessages.NOT_FOUND,
+                    "detail": f"Receipt {receipt_id} not found"
+                }
+            )
+            
+        success = repository.delete_receipt(receipt_id)
+        
+        if not success:
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "error": ErrorMessages.DATABASE_ERROR,
+                    "detail": f"Failed to delete receipt {receipt_id}"
+                }
+            )
+            
+        return {
+            "success": True,
+            "message": f"Receipt {receipt_id} deleted successfully"
+        }
+        
+    except DatabaseError as e:
+        logger.error(f"Database error while deleting receipt {receipt_id}: {str(e)}")
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error while deleting receipt {receipt_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.INTERNAL_ERROR,
+                "detail": str(e)
+            }
+        )
+
 @app.on_event("startup")
 async def startup_event():
     """Ensure databases exist on startup"""
