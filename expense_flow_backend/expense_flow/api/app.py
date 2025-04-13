@@ -2,6 +2,7 @@ from decimal import Decimal
 from fastapi import FastAPI, File, Form, Request, UploadFile, Depends, HTTPException, BackgroundTasks
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.params import Query
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_422_UNPROCESSABLE_ENTITY
 import tempfile
@@ -534,6 +535,40 @@ async def get_daily_expenses(
     try:
         results = repository.get_daily_expenses(year, month)
         return results
+    except DatabaseError as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
+        )
+
+@app.get(
+    "/api/receipts",
+    response_model=dict,
+    responses={
+        500: {"model": ErrorDetail}
+    }
+)
+async def get_receipts(
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(10, ge=1, le=100, description="Items per page"),
+    api_key: str = Depends(verify_api_key),
+    repository: ReceiptRepository = Depends(get_repository)
+):
+    """Get paginated receipts"""
+    try:
+        receipts = repository.get_receipts(page, page_size)
+        total_count = repository.get_receipt_count()
+        
+        return {
+            "receipts": receipts,
+            "total_count": total_count,
+            "page": page,
+            "page_size": page_size
+        }
+        
     except DatabaseError as e:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,

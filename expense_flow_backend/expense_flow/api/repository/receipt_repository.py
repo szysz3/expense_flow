@@ -560,3 +560,44 @@ class ReceiptRepository(BaseRepository):
             return SearchResult(**self._filter_items_by_categories(receipts, categories))
         
         return SearchResult(**self._convert_to_search_result(receipts))
+    
+    @handle_db_errors
+    def get_receipts(self, page: int, page_size: int) -> List[Receipt]:
+        """
+        Get paginated list of receipts ordered by transaction date (most recent first)
+        
+        Args:
+            page: Page number (1-based)
+            page_size: Number of receipts per page
+            
+        Returns:
+            List of Receipt objects for the requested page
+        """
+        skip = (page - 1) * page_size
+        
+        all_receipts = self.db.all()
+        
+        sorted_receipts = sorted(
+            all_receipts,
+            key=lambda r: datetime.fromisoformat(r['transaction_datetime']),
+            reverse=True
+        )
+        
+        paged_receipts = sorted_receipts[skip:skip + page_size]
+        
+        receipts = []
+        for result in paged_receipts:
+            deserialized_result = self._deserialize_receipt(result)
+            receipts.append(Receipt(**deserialized_result))
+            
+        return receipts
+
+    @handle_db_errors
+    def get_receipt_count(self) -> int:
+        """
+        Get total count of receipts
+        
+        Returns:
+            Total number of receipts
+        """
+        return len(self.db.all())
