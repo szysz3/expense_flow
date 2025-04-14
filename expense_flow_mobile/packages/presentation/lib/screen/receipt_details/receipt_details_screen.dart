@@ -1,16 +1,22 @@
 import 'package:domain/model/receipt.dart';
+import 'package:domain/use_case/delete_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/localization_service.dart';
+import 'package:logger/logger.dart';
 
+import '../../../core/error/error_utils.dart';
 import '../../../core/widget/animated_square_button.dart';
-import '../bloc/receipt_browse_bloc.dart';
-import '../bloc/receipt_browse_event.dart';
-import '../bloc/receipt_browse_state.dart';
+import '../../../di/di.dart';
+import '../receipt_browse/bloc/receipt_browse_bloc.dart';
+import '../receipt_browse/bloc/receipt_browse_event.dart';
+import 'bloc/receipt_detail_bloc.dart';
+import 'bloc/receipt_detail_event.dart';
+import 'bloc/receipt_detail_state.dart';
 
-//TODO: refactor
 class ReceiptDetailScreen extends StatelessWidget {
   final Receipt receipt;
 
@@ -20,24 +26,36 @@ class ReceiptDetailScreen extends StatelessWidget {
   });
 
   static Future<void> show(BuildContext context, Receipt receipt) {
-    final receiptBrowseBloc = context.read<ReceiptBrowseBloc>();
-
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (modalContext) => BlocProvider.value(
-        value: receiptBrowseBloc,
-        child: ReceiptDetailScreen(receipt: receipt),
+      builder: (modalContext) => BlocProvider(
+        create: (_) => ReceiptDetailBloc(
+          getIt<DeleteReceiptUseCase>(),
+          getIt<Logger>(),
+          getIt<LocalizationService>(),
+        ),
+        child: BlocProvider.value(
+          value: context.read<ReceiptBrowseBloc>(),
+          child: ReceiptDetailScreen(receipt: receipt),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ReceiptBrowseBloc, ReceiptBrowseState>(
+    return BlocListener<ReceiptDetailBloc, ReceiptDetailState>(
       listener: (context, state) {
-        if (state.isDeleted && state.deleteReceiptId == receipt.id) {
+        if (state.error != null) {
+          ErrorUtils.showErrorSnackBar(context, state.error!);
+        }
+
+        if (state.isDeleted && receipt.id != null) {
+          context.read<ReceiptBrowseBloc>().add(
+                ReceiptBrowseEvent.notifyReceiptDeleted(receipt.id!),
+              );
           Navigator.of(context).pop();
         }
       },
@@ -160,7 +178,6 @@ class ReceiptDetailScreen extends StatelessWidget {
           ),
         ),
 
-        // Items List
         _buildInfoSection(
           title: l10n.items,
           child: SizedBox(
@@ -283,13 +300,10 @@ class ReceiptDetailScreen extends StatelessWidget {
   }
 
   Widget _buildDeleteButton(BuildContext context) {
-    return BlocBuilder<ReceiptBrowseBloc, ReceiptBrowseState>(
+    return BlocBuilder<ReceiptDetailBloc, ReceiptDetailState>(
       builder: (context, state) {
-        final bool isProcessing =
-            state.isDeleting && state.deleteReceiptId == receipt.id;
-
         return AnimatedSquareButton(
-          isProcessing: isProcessing,
+          isProcessing: state.isDeleting,
           onPressed: () => _confirmDelete(context),
           width: 160.0,
           height: 52.0,
@@ -349,8 +363,8 @@ class ReceiptDetailScreen extends StatelessWidget {
                 Navigator.of(dialogContext).pop();
 
                 if (receipt.id != null) {
-                  context.read<ReceiptBrowseBloc>().add(
-                        ReceiptBrowseEvent.deleteReceipt(receipt.id!),
+                  context.read<ReceiptDetailBloc>().add(
+                        ReceiptDetailEvent.deleteReceipt(receipt.id!),
                       );
                 }
               },

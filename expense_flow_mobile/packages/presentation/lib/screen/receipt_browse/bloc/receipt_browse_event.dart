@@ -13,5 +13,8 @@ class ReceiptBrowseEvent with _$ReceiptBrowseEvent {
   const factory ReceiptBrowseEvent.deleteReceipt(String receiptId) =
       DeleteReceiptEvent;
 
+  const factory ReceiptBrowseEvent.notifyReceiptDeleted(String receiptId) =
+      NotifyReceiptDeletedEvent;
+
   const factory ReceiptBrowseEvent.resetDeletedState() = ResetDeletedStateEvent;
 }

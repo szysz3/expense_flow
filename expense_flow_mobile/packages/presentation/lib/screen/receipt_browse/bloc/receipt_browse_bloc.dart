@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:domain/model/receipt.dart';
-import 'package:domain/use_case/delete_use_case.dart';
 import 'package:domain/use_case/get_receipts_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
@@ -15,7 +14,6 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
   final Logger _logger;
   final LocalizationService _localizationService;
   final GetReceiptsUseCase _getReceiptsUseCase;
-  final DeleteReceiptUseCase _deleteReceiptUseCase;
 
   int _currentPage = 1;
   static const int _pageSize = 10;
@@ -26,13 +24,44 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
     this._logger,
     this._localizationService,
     this._getReceiptsUseCase,
-    this._deleteReceiptUseCase,
   ) : super(const ReceiptBrowseState()) {
     on<InitEvent>(_onInit);
     on<RefreshEvent>(_onRefresh);
     on<LoadMoreEvent>(_onLoadMore);
-    on<DeleteReceiptEvent>(_onDeleteReceipt);
+    on<NotifyReceiptDeletedEvent>(_onNotifyReceiptDeleted);
     on<ResetDeletedStateEvent>(_onResetDeletedState);
+  }
+
+  void _onNotifyReceiptDeleted(
+    NotifyReceiptDeletedEvent event,
+    Emitter<ReceiptBrowseState> emit,
+  ) {
+    final updatedReceipts = state.receipts
+        .where((receipt) => receipt.id != event.receiptId)
+        .toList();
+
+    emit(state.copyWith(
+      receipts: updatedReceipts,
+      totalCount: state.totalCount - 1,
+      isDeleted: true,
+      deleteReceiptId: event.receiptId,
+    ));
+
+    _resetDeletedStateTimer?.cancel();
+    _resetDeletedStateTimer = Timer(
+      const Duration(seconds: 2),
+      () => add(const ReceiptBrowseEvent.resetDeletedState()),
+    );
+  }
+
+  void _onResetDeletedState(
+    ResetDeletedStateEvent event,
+    Emitter<ReceiptBrowseState> emit,
+  ) {
+    emit(state.copyWith(
+      isDeleted: false,
+      deleteReceiptId: '',
+    ));
   }
 
   Future<void> _onInit(
@@ -166,84 +195,6 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
         ),
       ));
     }
-  }
-
-  Future<void> _onDeleteReceipt(
-    DeleteReceiptEvent event,
-    Emitter<ReceiptBrowseState> emit,
-  ) async {
-    emit(state.copyWith(
-        isDeleting: true,
-        isDeleted: false,
-        deleteReceiptId: event.receiptId,
-        error: null));
-
-    try {
-      final result = await _deleteReceiptUseCase(
-        DeleteReceiptParams(id: event.receiptId),
-      );
-
-      result.fold(
-        (failure) {
-          _logger.e(
-            'Failed to delete receipt',
-            error: failure,
-          );
-
-          emit(state.copyWith(
-            isDeleting: false,
-            error: AppError.fromFailure(
-              failure,
-              onRetry: () =>
-                  add(ReceiptBrowseEvent.deleteReceipt(event.receiptId)),
-              localizationService: _localizationService,
-            ),
-          ));
-        },
-        (success) {
-          final updatedReceipts = state.receipts
-              .where((receipt) => receipt.id != event.receiptId)
-              .toList();
-
-          emit(state.copyWith(
-            isDeleting: false,
-            isDeleted: true,
-            receipts: updatedReceipts,
-            totalCount: state.totalCount - 1,
-          ));
-
-          _resetDeletedStateTimer?.cancel();
-
-          _resetDeletedStateTimer = Timer(const Duration(seconds: 2),
-              () => add(const ReceiptBrowseEvent.resetDeletedState()));
-        },
-      );
-    } catch (e, stackTrace) {
-      _logger.e(
-        'Exception in ReceiptBrowseBloc.onDeleteReceipt',
-        error: e,
-        stackTrace: stackTrace,
-      );
-
-      emit(state.copyWith(
-        isDeleting: false,
-        error: AppError.fromException(
-          e,
-          onRetry: () => add(ReceiptBrowseEvent.deleteReceipt(event.receiptId)),
-          localizationService: _localizationService,
-        ),
-      ));
-    }
-  }
-
-  void _onResetDeletedState(
-    ResetDeletedStateEvent event,
-    Emitter<ReceiptBrowseState> emit,
-  ) {
-    emit(state.copyWith(
-      isDeleted: false,
-      deleteReceiptId: '',
-    ));
   }
 
   Future<void> refresh() async {

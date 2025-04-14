@@ -1,5 +1,4 @@
 import 'package:domain/model/receipt.dart';
-import 'package:domain/use_case/delete_use_case.dart';
 import 'package:domain/use_case/get_receipts_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,15 +6,15 @@ import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
-import 'package:presentation/screen/receipt_browse/widget/receipt_details_screen.dart';
-import 'package:presentation/screen/receipt_browse/widget/receipt_header_widget.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
+import '../receipt_details/receipt_details_screen.dart';
 import 'bloc/receipt_browse_bloc.dart';
 import 'bloc/receipt_browse_event.dart';
 import 'bloc/receipt_browse_state.dart';
+import 'widget/receipt_header_widget.dart';
 
 class ReceiptBrowseScreen extends StatelessWidget {
   const ReceiptBrowseScreen({super.key});
@@ -26,7 +25,6 @@ class ReceiptBrowseScreen extends StatelessWidget {
             getIt<Logger>(),
             getIt<LocalizationService>(),
             getIt<GetReceiptsUseCase>(),
-            getIt<DeleteReceiptUseCase>(),
           )..add(const ReceiptBrowseEvent.init()),
       child: Stack(children: [
         Positioned.fill(
