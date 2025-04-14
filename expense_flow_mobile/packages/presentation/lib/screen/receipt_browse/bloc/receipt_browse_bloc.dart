@@ -20,6 +20,7 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
   int _currentPage = 1;
   static const int _pageSize = 10;
   Completer<void>? _refreshCompleter;
+  Timer? _resetDeletedStateTimer;
 
   ReceiptBrowseBloc(
     this._logger,
@@ -31,6 +32,7 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
     on<RefreshEvent>(_onRefresh);
     on<LoadMoreEvent>(_onLoadMore);
     on<DeleteReceiptEvent>(_onDeleteReceipt);
+    on<ResetDeletedStateEvent>(_onResetDeletedState);
   }
 
   Future<void> _onInit(
@@ -210,12 +212,10 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
             totalCount: state.totalCount - 1,
           ));
 
-          Future.delayed(const Duration(seconds: 2), () {
-            emit(state.copyWith(
-              isDeleted: false,
-              deleteReceiptId: '',
-            ));
-          });
+          _resetDeletedStateTimer?.cancel();
+
+          _resetDeletedStateTimer = Timer(const Duration(seconds: 2),
+              () => add(const ReceiptBrowseEvent.resetDeletedState()));
         },
       );
     } catch (e, stackTrace) {
@@ -236,8 +236,24 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
     }
   }
 
+  void _onResetDeletedState(
+    ResetDeletedStateEvent event,
+    Emitter<ReceiptBrowseState> emit,
+  ) {
+    emit(state.copyWith(
+      isDeleted: false,
+      deleteReceiptId: '',
+    ));
+  }
+
   Future<void> refresh() async {
     add(const ReceiptBrowseEvent.refresh());
     return _refreshCompleter?.future;
+  }
+
+  @override
+  Future<void> close() {
+    _resetDeletedStateTimer?.cancel();
+    return super.close();
   }
 }
