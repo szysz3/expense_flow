@@ -7,10 +7,12 @@ import 'package:intl/intl.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
+import 'package:presentation/core/utils/string_utils.dart';
 
 import '../../../core/error/error_utils.dart';
 import '../../../core/widget/animated_square_button.dart';
 import '../../../di/di.dart';
+import '../../theme/expense_flow_colors.dart';
 import '../receipt_browse/bloc/receipt_browse_bloc.dart';
 import '../receipt_browse/bloc/receipt_browse_event.dart';
 import 'bloc/receipt_detail_bloc.dart';
@@ -59,59 +61,54 @@ class ReceiptDetailScreen extends StatelessWidget {
           Navigator.of(context).pop();
         }
       },
-      child: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.99,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
+      child: _buildModalContent(context),
+    );
+  }
+
+  Widget _buildModalContent(BuildContext context) {
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.99,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
+            _buildDragHandle(context),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _buildReceiptDetails(context),
+              ),
             ),
-          ),
-          child: Column(
-            children: [
-              _buildModalHeader(context),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: _buildContent(context),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                child: _buildDeleteButton(context),
-              ),
-            ],
-          ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: _buildDeleteButton(context),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildModalHeader(BuildContext context) {
-    return Container(
+  Widget _buildDragHandle(BuildContext context) {
+    return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 40,
-            height: 5,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(2.5),
-            ),
-          ),
-        ],
+      child: Container(
+        width: 40,
+        height: 5,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(2.5),
+        ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildReceiptDetails(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final dateFormat = DateFormat('MMMM dd, yyyy - HH:mm');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,99 +118,101 @@ class ReceiptDetailScreen extends StatelessWidget {
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 16),
-
-        if (receipt.merchant.name.isNotEmpty ||
-            receipt.merchant.address.isNotEmpty)
-          _buildInfoSection(
+        if (_hasMerchantInfo())
+          _buildSection(
             title: l10n.merchant,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (receipt.merchant.name.isNotEmpty)
-                  Text(
-                    receipt.merchant.name,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                if (receipt.merchant.address.isNotEmpty)
-                  Text(
-                    receipt.merchant.address,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-              ],
-            ),
+            child: _buildMerchantInfo(context),
           ),
-
-        // Transaction Information
-        _buildInfoSection(
+        _buildSection(
           title: l10n.transactionDetails,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text('${l10n.transactionDate}: ',
-                      style: Theme.of(context).textTheme.bodyMedium),
-                  Text(
-                    dateFormat.format(receipt.transactionDateTime),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Text('${l10n.totalChartData}: ',
-                      style: Theme.of(context).textTheme.bodyMedium),
-                  Text(
-                    receipt.total.toStringAsFixed(2),
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+          child: _buildTransactionInfo(context),
         ),
-
-        _buildInfoSection(
+        _buildSection(
           title: l10n.items,
-          child: SizedBox(
-            height: 300,
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: receipt.items.length,
-              separatorBuilder: (context, index) =>
-                  const Divider(color: Colors.white12),
-              itemBuilder: (context, index) {
-                final item = receipt.items[index];
-                return _buildItemRow(context, item);
-              },
-            ),
-          ),
+          child: _buildItemsList(context),
         ),
       ],
     );
   }
 
-  Widget _buildInfoSection({required String title, required Widget child}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+  bool _hasMerchantInfo() {
+    return receipt.merchant.name.isNotEmpty ||
+        receipt.merchant.address.isNotEmpty;
+  }
+
+  Widget _buildMerchantInfo(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (receipt.merchant.name.isNotEmpty)
           Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            receipt.merchant.name,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
-          const SizedBox(height: 8),
-          child,
-        ],
+        if (receipt.merchant.address.isNotEmpty)
+          Text(
+            receipt.merchant.address,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTransactionInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final dateFormat = DateFormat('MMMM dd, yyyy - HH:mm');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInfoRow(
+          context: context,
+          label: l10n.transactionDate,
+          value: dateFormat.format(receipt.transactionDateTime),
+        ),
+        _buildInfoRow(
+          context: context,
+          label: l10n.totalChartData,
+          value: receipt.total.toStringAsFixed(2),
+          isHighlighted: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow({
+    required BuildContext context,
+    required String label,
+    required String value,
+    bool isHighlighted = false,
+  }) {
+    return Row(
+      children: [
+        Text('$label: ', style: Theme.of(context).textTheme.bodyMedium),
+        Text(
+          value,
+          style: isHighlighted
+              ? Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  )
+              : Theme.of(context).textTheme.bodyMedium,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildItemsList(BuildContext context) {
+    return SizedBox(
+      height: 300,
+      child: ListView.separated(
+        shrinkWrap: true,
+        itemCount: receipt.items.length,
+        separatorBuilder: (_, __) => const Divider(color: Colors.white12),
+        itemBuilder: (context, index) =>
+            _buildItemRow(context, receipt.items[index]),
       ),
     );
   }
@@ -221,13 +220,13 @@ class ReceiptDetailScreen extends StatelessWidget {
   Widget _buildItemRow(BuildContext context, dynamic item) {
     final categoryIconPath =
         'packages/presentation/assets/icon_${item.category}.svg';
-
-    String categoryDisplayName =
-        _getCategoryDisplayName(item.category.toString());
+    final categoryName =
+        StringUtils.formatCategoryName(item.category.toString());
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Category icon
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -241,10 +240,13 @@ class ReceiptDetailScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
+
+        // Item details
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Item description and category
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -255,7 +257,7 @@ class ReceiptDetailScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    categoryDisplayName,
+                    categoryName,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context)
                               .colorScheme
@@ -266,6 +268,8 @@ class ReceiptDetailScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
+
+              // Quantity and price
               Row(
                 children: [
                   Text(
@@ -288,15 +292,24 @@ class ReceiptDetailScreen extends StatelessWidget {
     );
   }
 
-  String _getCategoryDisplayName(String category) {
-    final parts = category.split('_');
-    final titleCase = parts
-        .map((part) => part.isNotEmpty
-            ? '${part[0].toUpperCase()}${part.substring(1)}'
-            : '')
-        .join(' ');
-
-    return titleCase;
+  Widget _buildSection({required String title, required Widget child}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          child,
+        ],
+      ),
+    );
   }
 
   Widget _buildDeleteButton(BuildContext context) {
@@ -304,25 +317,23 @@ class ReceiptDetailScreen extends StatelessWidget {
       builder: (context, state) {
         return AnimatedSquareButton(
           isProcessing: state.isDeleting,
-          onPressed: () => _confirmDelete(context),
+          onPressed: () => _showDeleteConfirmation(context),
           width: 160.0,
           height: 52.0,
           iconSize: 20.0,
-          borderColor: Colors.red,
+          borderColor: ExpenseFlowColors.chartRed,
           backgroundColor: Colors.red.withOpacity(0.3),
           icon: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.delete,
-                color: Colors.red.shade300,
                 size: 20,
               ),
               const SizedBox(width: 8),
               Text(
                 AppLocalizations.of(context).delete,
                 style: TextStyle(
-                  color: Colors.red.shade300,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -334,44 +345,39 @@ class ReceiptDetailScreen extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context) {
+  void _showDeleteConfirmation(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     showDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
-        final l10n = AppLocalizations.of(context);
-
-        return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          title: Text(l10n.deleteConfirmation),
-          content: Text(l10n.deleteReceiptConfirmMessage),
-          actions: [
-            TextButton(
-              child: Text(
-                l10n.cancel,
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
-              ),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(l10n.deleteConfirmation),
+        content: Text(l10n.deleteReceiptConfirmMessage),
+        actions: [
+          TextButton(
+            child: Text(
+              l10n.cancel,
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
-            TextButton(
-              child: Text(
-                l10n.delete,
-                style: const TextStyle(color: Colors.red),
-              ),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-
-                if (receipt.id != null) {
-                  context.read<ReceiptDetailBloc>().add(
-                        ReceiptDetailEvent.deleteReceipt(receipt.id!),
-                      );
-                }
-              },
+            onPressed: () => Navigator.of(dialogContext).pop(),
+          ),
+          TextButton(
+            child: Text(
+              l10n.delete,
+              style: const TextStyle(color: ExpenseFlowColors.chartMutedRed),
             ),
-          ],
-        );
-      },
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              if (receipt.id != null) {
+                context.read<ReceiptDetailBloc>().add(
+                      ReceiptDetailEvent.deleteReceipt(receipt.id!),
+                    );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
+import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/error_display_widget.dart';
@@ -57,7 +58,7 @@ class ReceiptBrowseView extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context).receiptDeleted),
-              backgroundColor: Colors.green,
+              backgroundColor: ExpenseFlowColors.chartMutedGreen,
             ),
           );
         }

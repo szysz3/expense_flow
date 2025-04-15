@@ -1,11 +1,14 @@
 import 'package:domain/model/receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:presentation/core/utils/string_utils.dart';
 
-// TODO: refactor
 class ReceiptHeaderWidget extends StatelessWidget {
   final Receipt receipt;
   final VoidCallback onTap;
+
+  static final _dateFormat = DateFormat('MMM d, yyyy');
+  static final _timeFormat = DateFormat('HH:mm');
 
   const ReceiptHeaderWidget({
     super.key,
@@ -16,105 +19,119 @@ class ReceiptHeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dateFormat = DateFormat('MMM d, yyyy');
-    final timeFormat = DateFormat('HH:mm');
-
-    final date = receipt.transactionDateTime;
-    final formattedDate = dateFormat.format(date);
-    final formattedTime = timeFormat.format(date);
-
-    final uniqueCategories =
-        receipt.items.map((item) => item.category).toSet().toList();
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withOpacity(0.4),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: theme.colorScheme.onSurface.withOpacity(0.1),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _buildMerchantName(theme),
-                  ),
-                  Text(
-                    receipt.total.toStringAsFixed(2),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    formattedDate,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    formattedTime,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Text(
-                    '${receipt.items.length} items',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.5),
-                    ),
-                  ),
-                  const Spacer(),
-                  if (uniqueCategories.isNotEmpty) ...[
-                    Wrap(
-                      spacing: 4,
-                      children: uniqueCategories.take(3).map((category) {
-                        return _buildCategoryChip(context, category.toString());
-                      }).toList(),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Icon(
-                    Icons.chevron_right,
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
-                    size: 18,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+        child: _buildContainer(context, theme),
       ),
     );
   }
 
+  Widget _buildContainer(BuildContext context, ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.onSurface.withOpacity(0.1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderRow(theme),
+          const SizedBox(height: 8),
+          _buildDateTimeRow(theme),
+          const SizedBox(height: 8),
+          _buildInfoRow(context, theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderRow(ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: _buildMerchantName(theme),
+        ),
+        Text(
+          receipt.total.toStringAsFixed(2),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateTimeRow(ThemeData theme) {
+    final date = receipt.transactionDateTime;
+    final formattedDate = _dateFormat.format(date);
+    final formattedTime = _timeFormat.format(date);
+
+    final textStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: theme.colorScheme.onSurface.withOpacity(0.7),
+    );
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(formattedDate, style: textStyle),
+        Text(formattedTime, style: textStyle),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(BuildContext context, ThemeData theme) {
+    final uniqueCategories =
+        receipt.items.map((item) => item.category).toSet().toList();
+
+    return Row(
+      children: [
+        Text(
+          '${receipt.items.length} items',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withOpacity(0.5),
+          ),
+        ),
+        const Spacer(),
+        if (uniqueCategories.isNotEmpty) ...[
+          _buildCategoryChips(context, uniqueCategories),
+          const SizedBox(width: 8),
+        ],
+        Icon(
+          Icons.chevron_right,
+          color: theme.colorScheme.onSurface.withOpacity(0.5),
+          size: 18,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryChips(BuildContext context, List<dynamic> categories) {
+    return Wrap(
+      spacing: 4,
+      children: categories.take(3).map((category) {
+        return _buildCategoryChip(context, category.toString());
+      }).toList(),
+    );
+  }
+
   Widget _buildMerchantName(ThemeData theme) {
+    final textStyle = theme.textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.bold,
+    );
+
     if (receipt.merchant.name.isEmpty) {
       return Text(
         'Receipt ${receipt.id?.substring(0, 8) ?? ""}',
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-        ),
+        style: textStyle,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       );
@@ -122,42 +139,29 @@ class ReceiptHeaderWidget extends StatelessWidget {
 
     return Text(
       receipt.merchant.name,
-      style: theme.textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.bold,
-      ),
+      style: textStyle,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
   }
 
   Widget _buildCategoryChip(BuildContext context, String category) {
-    final displayName = _formatCategoryName(category);
+    final theme = Theme.of(context);
+    final displayName = StringUtils.formatCategoryName(category);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+        color: theme.colorScheme.onSurface.withOpacity(0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         displayName,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              fontSize: 10,
-            ),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurface.withOpacity(0.7),
+          fontSize: 10,
+        ),
       ),
     );
-  }
-
-  String _formatCategoryName(String category) {
-    final parts = category.split('.');
-    final categoryName = parts.last;
-
-    final words = categoryName.split('_');
-    return words
-        .map((word) => word.isNotEmpty
-            ? '${word[0].toUpperCase()}${word.substring(1)}'
-            : '')
-        .join(' ');
   }
 }
