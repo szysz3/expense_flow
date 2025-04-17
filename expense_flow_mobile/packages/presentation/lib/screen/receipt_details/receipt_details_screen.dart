@@ -69,7 +69,7 @@ class ReceiptDetailScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.99,
+        height: MediaQuery.of(context).size.height * 0.90,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -127,8 +127,15 @@ class ReceiptDetailScreen extends StatelessWidget {
           title: l10n.transactionDetails,
           child: _buildTransactionInfo(context),
         ),
-        _buildSection(
-          title: l10n.items,
+        Text(
+          l10n.items,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
           child: _buildItemsList(context),
         ),
       ],
@@ -205,15 +212,12 @@ class ReceiptDetailScreen extends StatelessWidget {
   }
 
   Widget _buildItemsList(BuildContext context) {
-    return SizedBox(
-      height: 300,
-      child: ListView.separated(
-        shrinkWrap: true,
-        itemCount: receipt.items.length,
-        separatorBuilder: (_, __) => const Divider(color: Colors.white12),
-        itemBuilder: (context, index) =>
-            _buildItemRow(context, receipt.items[index]),
-      ),
+    return ListView.separated(
+      physics: const ClampingScrollPhysics(),
+      itemCount: receipt.items.length,
+      separatorBuilder: (_, __) => const Divider(color: Colors.white12),
+      itemBuilder: (context, index) =>
+          _buildItemRow(context, receipt.items[index]),
     );
   }
 
@@ -325,12 +329,16 @@ class ReceiptDetailScreen extends StatelessWidget {
           backgroundColor: Colors.red.withOpacity(0.3),
           icon: Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
-                Icons.delete,
-                size: 20,
+              SvgPicture.asset(
+                'packages/presentation/assets/icon_delete.svg',
+                height: 32,
+                width: 32,
+                colorFilter:
+                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               Text(
                 AppLocalizations.of(context).delete,
                 style: TextStyle(

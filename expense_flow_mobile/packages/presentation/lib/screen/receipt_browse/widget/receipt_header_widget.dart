@@ -34,11 +34,9 @@ class ReceiptHeaderWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withOpacity(0.4),
+        border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.onSurface.withOpacity(0.1),
-        ),
+        color: Colors.black.withOpacity(0.4),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

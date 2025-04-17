@@ -30,7 +30,7 @@ class CategoryButton extends StatelessWidget {
                 border: Border.all(
                   color:
                       isSelected ? Colors.white : Colors.white.withOpacity(0.3),
-                  width: 2,
+                  width: 1,
                 ),
                 borderRadius: BorderRadius.circular(8),
                 color: isSelected
