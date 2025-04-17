@@ -87,8 +87,7 @@ class ReceiptHeaderWidget extends StatelessWidget {
   }
 
   Widget _buildInfoRow(BuildContext context, ThemeData theme) {
-    final uniqueCategories =
-        receipt.items.map((item) => item.category).toSet().toList();
+    final topCategories = _getMostCommonCategories(2);
 
     return Row(
       children: [
@@ -99,8 +98,8 @@ class ReceiptHeaderWidget extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        if (uniqueCategories.isNotEmpty) ...[
-          _buildCategoryChips(context, uniqueCategories),
+        if (topCategories.isNotEmpty) ...[
+          _buildCategoryChips(context, topCategories),
           const SizedBox(width: 8),
         ],
         Icon(
@@ -112,10 +111,24 @@ class ReceiptHeaderWidget extends StatelessWidget {
     );
   }
 
+  List<dynamic> _getMostCommonCategories(int count) {
+    if (receipt.items.isEmpty) return [];
+
+    final Map<dynamic, int> categoryCounts = {};
+    for (var item in receipt.items) {
+      categoryCounts[item.category] = (categoryCounts[item.category] ?? 0) + 1;
+    }
+
+    final sortedCategories = categoryCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return sortedCategories.take(count).map((e) => e.key).toList();
+  }
+
   Widget _buildCategoryChips(BuildContext context, List<dynamic> categories) {
     return Wrap(
       spacing: 4,
-      children: categories.take(3).map((category) {
+      children: categories.map((category) {
         return _buildCategoryChip(context, category.toString());
       }).toList(),
     );
