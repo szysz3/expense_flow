@@ -609,6 +609,26 @@ class ReceiptRepository(BaseRepository):
         return len(result) > 0
 
     @handle_db_errors
+    def update_receipt(self, receipt: Receipt) -> bool:
+        """
+        Update an existing receipt
+        
+        Args:
+            receipt: Receipt object with updated data
+            
+        Returns:
+            True if receipt was updated, False if receipt was not found
+        """
+        receipt_dict = receipt.dict()
+        serialized_receipt = self._serialize_receipt(receipt_dict)
+        
+        receipt_query = Query()
+        return bool(self.db.update(
+            serialized_receipt,
+            receipt_query.id == receipt.id
+        ))
+
+    @handle_db_errors
     def get_receipt_count(self) -> int:
         """
         Get total count of receipts

@@ -639,6 +639,68 @@ async def delete_receipt(
             }
         )
 
+@app.put(
+    "/api/receipts/{receipt_id}",
+    response_model=Receipt,
+    responses={
+        404: {"model": ErrorDetail},
+        500: {"model": ErrorDetail}
+    }
+)
+async def update_receipt(
+    receipt_id: str,
+    receipt: Receipt,
+    api_key: str = Depends(verify_api_key),
+    repository: ReceiptRepository = Depends(get_repository)
+):
+    """Update a receipt by ID"""
+    try:
+        existing_receipt = repository.get_receipt(receipt_id)
+        if not existing_receipt:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": ErrorMessages.NOT_FOUND,
+                    "detail": f"Receipt {receipt_id} not found"
+                }
+            )
+            
+        receipt.id = receipt_id
+        if hasattr(existing_receipt, 'added_datetime'):
+            receipt.added_datetime = existing_receipt.added_datetime
+            
+        success = repository.update_receipt(receipt)
+        
+        if not success:
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "error": ErrorMessages.DATABASE_ERROR,
+                    "detail": f"Failed to update receipt {receipt_id}"
+                }
+            )
+            
+        return receipt
+        
+    except DatabaseError as e:
+        logger.error(f"Database error while updating receipt {receipt_id}: {str(e)}")
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error while updating receipt {receipt_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.INTERNAL_ERROR,
+                "detail": str(e)
+            }
+        )
+
 @app.on_event("startup")
 async def startup_event():
     """Ensure databases exist on startup"""

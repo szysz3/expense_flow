@@ -14,6 +14,7 @@ import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:domain/use_case/get_receipts_use_case.dart';
 import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
 import 'package:domain/use_case/settings/save_savings_settings_use_case.dart';
+import 'package:domain/use_case/update_receipts_use_case.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
@@ -101,6 +102,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerSingleton<LocalizationService>(
     LocalizationService.fromLocaleName("en"),
+  );
+
+  getIt.registerLazySingleton(
+    () => UpdateReceiptUseCase(getIt<ReceiptRepository>()),
   );
 }
 

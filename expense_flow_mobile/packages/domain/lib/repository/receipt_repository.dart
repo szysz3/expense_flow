@@ -34,4 +34,6 @@ abstract class ReceiptRepository {
   Future<Either<Failure, ReceiptsResponse>> getReceipts(int page, int pageSize);
 
   Future<Either<Failure, bool>> deleteReceipt(String id);
+
+  Future<Either<Failure, Receipt>> updateReceipt(Receipt receipt);
 }

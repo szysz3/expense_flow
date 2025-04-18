@@ -494,5 +494,30 @@
     "receiptDeleted": "Receipt Deleted",
     "@settings": {
       "description": "No receipts found. Scan a receipt to get started."
+    },
+
+    "receiptUpdated": "Receipt updated successfully",
+    "@settings": {
+      "description": "Receipt updated successfully caption"
+    },
+
+    "editItem": "Edit Item",
+    "@settings": {
+      "description": "Edit item caption"
+    },
+
+    "save": "Save",
+    "@settings": {
+      "description": "Save caption"
+    },
+
+    "merchantName": "Merchant Name",
+    "@settings": {
+      "description": "Merchant name caption"
+    },
+
+    "merchantAddress": "Merchant Address",
+    "@settings": {
+      "description": "Merchant address caption"
     }
 }

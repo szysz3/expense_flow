@@ -112,6 +112,31 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, Receipt>> updateReceipt(Receipt receipt) async {
+    try {
+      final connectivityCheck = await _checkConnectivity();
+      if (connectivityCheck.isLeft()) {
+        return Left(connectivityCheck.fold(
+            (l) => l, (r) => ServerFailure('Unknown error')));
+      }
+
+      final response = await _dio.put(
+        '${ApiEndpoints.receipt}${receipt.id}',
+        data: receipt.toJson(),
+      );
+
+      return Right(Receipt.fromJson(response.data));
+    } on DioException catch (e, stackTrace) {
+      _errorLogger.e('API error during receipt update',
+          error: e, stackTrace: stackTrace);
+      return Left(_handleDioError(e));
+    } catch (e) {
+      _errorLogger.e('Exception during receipt update', error: e);
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
   Future<FormData> _createAnalyzeFormData(
     String filePath,
     String contentType,
