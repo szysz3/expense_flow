@@ -74,17 +74,22 @@ class ReceiptDetailScreen extends StatelessWidget {
           color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        child: Column(
+        child: Stack(
           children: [
-            _buildDragHandle(context),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _buildReceiptDetails(context),
-              ),
+            Column(
+              children: [
+                _buildDragHandle(context),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _buildReceiptDetails(context),
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
+            Positioned(
+              top: 16,
+              right: 16,
               child: _buildDeleteButton(context),
             ),
           ],
@@ -322,31 +327,16 @@ class ReceiptDetailScreen extends StatelessWidget {
         return AnimatedSquareButton(
           isProcessing: state.isDeleting,
           onPressed: () => _showDeleteConfirmation(context),
-          width: 160.0,
-          height: 52.0,
-          iconSize: 20.0,
+          width: 36.0,
+          height: 36.0,
+          iconSize: 18.0,
           borderColor: ExpenseFlowColors.chartRed,
           backgroundColor: Colors.red.withOpacity(0.3),
-          icon: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                'packages/presentation/assets/icon_delete.svg',
-                height: 32,
-                width: 32,
-                colorFilter:
-                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                AppLocalizations.of(context).delete,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ],
+          icon: SvgPicture.asset(
+            'packages/presentation/assets/icon_delete.svg',
+            height: 18,
+            width: 18,
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
           ),
         );
       },

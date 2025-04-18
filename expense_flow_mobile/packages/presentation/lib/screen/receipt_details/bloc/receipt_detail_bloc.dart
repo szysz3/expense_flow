@@ -52,6 +52,7 @@ class ReceiptDetailBloc extends Bloc<ReceiptDetailEvent, ReceiptDetailState> {
           emit(state.copyWith(
             isDeleting: false,
             isDeleted: true,
+            error: null,
           ));
         },
       );

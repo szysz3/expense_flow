@@ -97,11 +97,11 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
         },
         (receiptResponse) {
           emit(state.copyWith(
-            isLoading: false,
-            receipts: receiptResponse.receipts,
-            hasMoreReceipts: receiptResponse.totalCount > _pageSize,
-            totalCount: receiptResponse.totalCount,
-          ));
+              isLoading: false,
+              receipts: receiptResponse.receipts,
+              hasMoreReceipts: receiptResponse.totalCount > _pageSize,
+              totalCount: receiptResponse.totalCount,
+              error: null));
           _refreshCompleter?.complete();
         },
       );
@@ -173,6 +173,7 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
 
           emit(state.copyWith(
             isLoadingMore: false,
+            error: null,
             receipts: updatedReceipts,
             hasMoreReceipts:
                 updatedReceipts.length < receiptResponse.totalCount,
