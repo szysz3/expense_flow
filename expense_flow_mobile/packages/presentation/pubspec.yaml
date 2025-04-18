@@ -87,6 +87,7 @@ flutter:
     - assets/icon_menu.svg
     - assets/icon_settings.svg
     - assets/icon_delete.svg
+    - assets/icon_browse.svg
 
 
   # To add assets to your package, add an assets section, like this:

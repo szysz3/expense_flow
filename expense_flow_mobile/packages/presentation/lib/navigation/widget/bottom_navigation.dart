@@ -13,7 +13,7 @@ class BottomNavigation extends StatelessWidget {
   static const _iconCategories = 'icon_categories.svg';
   static const _iconOrders = 'icon_standing_orders.svg';
   static const _iconSummary = 'icon_summary.svg';
-  static const _iconBrowse = 'icon_scan.svg';
+  static const _iconBrowse = 'icon_browse.svg';
 
   List<(String, String)> _getNavigationItems(BuildContext context) {
     return [

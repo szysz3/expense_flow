@@ -1,0 +1,38 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Glitch effect layers -->
+    <path d="M25,15 L75,15 L75,85 L25,85 Z" fill="none" opacity="0.4" stroke="#ff00ff"
+        stroke-width="8" />
+    <path d="M27,17 L77,17 L77,87 L27,87 Z" fill="none" opacity="0.6" stroke="#00ffff"
+        stroke-width="6" />
+
+    <!-- Main receipt outline -->
+    <path d="M30,20 L70,20 L70,80 L30,80 Z" fill="none" stroke="#ffffff" stroke-width="3" />
+
+    <!-- Receipt edge (zigzag bottom) -->
+    <path d="M30,80 L35,77 L40,80 L45,77 L50,80 L55,77 L60,80 L65,77 L70,80" fill="none"
+        stroke="#ffffff" stroke-width="3" />
+
+    <!-- Receipt lines -->
+    <line stroke="#ffffff" stroke-width="2" x1="35" x2="65" y1="30" y2="30" />
+    <line stroke="#ffffff" stroke-width="2" x1="35" x2="65" y1="40" y2="40" />
+    <line stroke="#ffffff" stroke-width="2" x1="35" x2="65" y1="50" y2="50" />
+    <line stroke="#ffffff" stroke-width="2" x1="35" x2="65" y1="60" y2="60" />
+
+    <!-- Scanning line (cyberpunk effect) -->
+    <line opacity="0.8" stroke="#00ff99" stroke-width="1.5" x1="30" x2="70" y1="45" y2="45" />
+
+    <!-- Circuit-like details -->
+    <circle cx="30" cy="20" fill="#00ff99" r="3" />
+    <circle cx="70" cy="80" fill="#00ff99" r="3" />
+
+    <!-- Connection lines -->
+    <line stroke="#00ff99" stroke-width="2" x1="20" x2="30" y1="20" y2="20" />
+    <line stroke="#00ff99" stroke-width="2" x1="70" x2="80" y1="80" y2="80" />
+
+    <!-- Digital corner element -->
+    <rect fill="none" height="7" stroke="#00ff99" stroke-width="1" width="15" x="55" y="20" />
+    <line stroke="#00ff99" stroke-width="1" x1="58" x2="58" y1="20" y2="27" />
+    <line stroke="#00ff99" stroke-width="1" x1="61" x2="61" y1="20" y2="27" />
+    <line stroke="#00ff99" stroke-width="1" x1="64" x2="64" y1="20" y2="27" />
+    <line stroke="#00ff99" stroke-width="1" x1="67" x2="67" y1="20" y2="27" />
+</svg>
