@@ -334,11 +334,11 @@ class ReceiptDetailsContent extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: 4),
         if (isEditable)
           Icon(
             Icons.edit,
             size: 16,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
           ),
       ],
     );
