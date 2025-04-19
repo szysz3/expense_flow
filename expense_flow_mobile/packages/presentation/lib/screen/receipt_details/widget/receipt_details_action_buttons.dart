@@ -94,12 +94,10 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
           isProcessing: state.isSaving,
           onPressed: () {
             if (isEditMode) {
-              // Save changes
               context.read<ReceiptEditBloc>().add(
                     const ReceiptEditEvent.saveChanges(),
                   );
             } else {
-              // Enter edit mode
               context.read<ReceiptEditBloc>().add(
                     const ReceiptEditEvent.toggleEditMode(),
                   );

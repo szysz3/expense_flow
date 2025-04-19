@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:presentation/core/utils/category_utils.dart';
 
+import '../../../core/utils/currency_text_formatter.dart';
+
 class ReceiptDetailsEditDialog extends StatefulWidget {
   final ReceiptItem item;
   final Function(ReceiptItem) onSave;
@@ -48,6 +50,7 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
@@ -94,6 +97,7 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
               ),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [CurrencyTextFormatter(locale: locale)],
             ),
             const SizedBox(height: 16),
             TextField(
@@ -113,6 +117,7 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
               ),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [CurrencyTextFormatter(locale: locale)],
             ),
             const SizedBox(height: 16),
             _buildCategoryDropdown(context),
