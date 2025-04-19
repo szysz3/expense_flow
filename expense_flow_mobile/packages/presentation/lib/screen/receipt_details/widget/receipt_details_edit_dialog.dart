@@ -1,0 +1,156 @@
+import 'package:domain/model/receipt_item.dart';
+import 'package:flutter/material.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:presentation/core/utils/string_utils.dart';
+
+class ReceiptDetailsEditDialog extends StatefulWidget {
+  final ReceiptItem item;
+  final Function(ReceiptItem) onSave;
+
+  const ReceiptDetailsEditDialog({
+    super.key,
+    required this.item,
+    required this.onSave,
+  });
+
+  @override
+  State<ReceiptDetailsEditDialog> createState() =>
+      _ReceiptDetailsEditDialogState();
+}
+
+class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
+  late final TextEditingController _descController;
+  late final TextEditingController _quantityController;
+  late final TextEditingController _priceController;
+  String? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _descController = TextEditingController(text: widget.item.description);
+    _quantityController =
+        TextEditingController(text: widget.item.quantity.toString());
+    _priceController =
+        TextEditingController(text: widget.item.totalPrice.toString());
+    _selectedCategory = widget.item.category;
+  }
+
+  @override
+  void dispose() {
+    _descController.dispose();
+    _quantityController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return AlertDialog(
+      title: Text(l10n.editItem),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _descController,
+              decoration: InputDecoration(
+                labelText: l10n.description,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _quantityController,
+              decoration: InputDecoration(
+                labelText: l10n.quantity,
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _priceController,
+              decoration: InputDecoration(
+                labelText: l10n.totalPrice,
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 8),
+            _buildCategoryDropdown(context),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        TextButton(
+          onPressed: _saveItem,
+          child: Text(l10n.save),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryDropdown(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return DropdownButtonFormField<String>(
+      value: _selectedCategory,
+      decoration: InputDecoration(
+        labelText: l10n.category,
+      ),
+      items: _getAvailableCategories()
+          .map((category) => DropdownMenuItem<String>(
+                value: category,
+                child: Text(StringUtils.formatCategoryName(category)),
+              ))
+          .toList(),
+      onChanged: (value) {
+        if (value != null) {
+          setState(() {
+            _selectedCategory = value;
+          });
+        }
+      },
+    );
+  }
+
+  List<String> _getAvailableCategories() {
+    return [
+      'groceries',
+      'alcoholic_beverages',
+      'personal_care',
+      'household',
+      'clothing',
+      'entertainment',
+      'transportation',
+      'pet',
+      'other',
+      'standing_orders',
+    ];
+  }
+
+  void _saveItem() {
+    final description = _descController.text;
+    final quantity =
+        double.tryParse(_quantityController.text) ?? widget.item.quantity;
+    final price =
+        double.tryParse(_priceController.text) ?? widget.item.totalPrice;
+
+    if (description.isNotEmpty && price > 0) {
+      final updatedItem = ReceiptItem(
+        description: description,
+        quantity: quantity,
+        totalPrice: price,
+        category: _selectedCategory,
+      );
+
+      widget.onSave(updatedItem);
+      Navigator.of(context).pop();
+    }
+  }
+}
