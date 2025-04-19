@@ -1,7 +1,8 @@
+import 'package:domain/model/category.dart';
 import 'package:domain/model/receipt_item.dart';
 import 'package:flutter/material.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
-import 'package:presentation/core/utils/string_utils.dart';
+import 'package:presentation/core/utils/category_utils.dart';
 
 class ReceiptDetailsEditDialog extends StatefulWidget {
   final ReceiptItem item;
@@ -22,7 +23,7 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
   late final TextEditingController _descController;
   late final TextEditingController _quantityController;
   late final TextEditingController _priceController;
-  String? _selectedCategory;
+  late String _selectedCategory;
 
   @override
   void initState() {
@@ -32,7 +33,7 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
         TextEditingController(text: widget.item.quantity.toString());
     _priceController =
         TextEditingController(text: widget.item.totalPrice.toString());
-    _selectedCategory = widget.item.category;
+    _selectedCategory = Category.ensureValid(widget.item.category);
   }
 
   @override
@@ -103,10 +104,10 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
       decoration: InputDecoration(
         labelText: l10n.category,
       ),
-      items: _getAvailableCategories()
-          .map((category) => DropdownMenuItem<String>(
-                value: category,
-                child: Text(StringUtils.formatCategoryName(category)),
+      items: CategoryUtils.getAllCategoriesForDropdown(context)
+          .map((entry) => DropdownMenuItem<String>(
+                value: entry.key,
+                child: Text(entry.value),
               ))
           .toList(),
       onChanged: (value) {
@@ -117,21 +118,6 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
         }
       },
     );
-  }
-
-  List<String> _getAvailableCategories() {
-    return [
-      'groceries',
-      'alcoholic_beverages',
-      'personal_care',
-      'household',
-      'clothing',
-      'entertainment',
-      'transportation',
-      'pet',
-      'other',
-      'standing_orders',
-    ];
   }
 
   void _saveItem() {

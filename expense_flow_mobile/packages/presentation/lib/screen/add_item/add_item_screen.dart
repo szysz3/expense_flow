@@ -88,7 +88,6 @@ class _AddItemViewState extends State<AddItemView> {
               child: Column(
                 children: [
                   Expanded(
-                    // child: Center(
                     child: ConstrainedBox(
                       constraints:
                           const BoxConstraints(maxWidth: double.infinity),
@@ -137,7 +136,6 @@ class _AddItemViewState extends State<AddItemView> {
                         ),
                       ),
                     ),
-                    // ),
                   ),
                   _buildAddButton(state, context),
                 ],

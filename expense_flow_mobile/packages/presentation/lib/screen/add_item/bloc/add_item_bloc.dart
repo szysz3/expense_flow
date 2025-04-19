@@ -112,7 +112,7 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
         description: state.description,
         quantity: state.quantity,
         totalPrice: state.totalPrice,
-        category: state.selectedCategory.name,
+        category: state.selectedCategory,
       );
 
       final result = await _createReceiptUseCase(params);
@@ -140,7 +140,7 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
           ));
 
           Future.delayed(const Duration(seconds: 2), () {
-            add(Reset());
+            add(const AddItemEvent.reset());
           });
         },
       );

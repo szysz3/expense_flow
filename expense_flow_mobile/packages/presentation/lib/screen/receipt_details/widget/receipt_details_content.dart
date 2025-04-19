@@ -6,8 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
-import 'package:presentation/core/utils/string_utils.dart';
 
+import '../../../core/utils/category_utils.dart';
 import '../bloc/receipt_edit_bloc.dart';
 import '../bloc/receipt_edit_event.dart';
 import 'receipt_details_edit_dialog.dart';
@@ -248,10 +248,8 @@ class ReceiptDetailsContent extends StatelessWidget {
 
   Widget _buildItemRow(BuildContext context, ReceiptItem item, bool isEditMode,
       int index, Receipt currentReceipt) {
-    final categoryIconPath =
-        'packages/presentation/assets/icon_${item.category}.svg';
-    final categoryName =
-        StringUtils.formatCategoryName(item.category.toString());
+    final categoryIconPath = CategoryUtils.getIconPath(item.category);
+    final categoryName = CategoryUtils.getDisplayName(item.category, context);
 
     if (isEditMode) {
       return InkWell(
