@@ -8,11 +8,12 @@ import 'package:intl/intl.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 
 import '../../../core/utils/category_utils.dart';
+import '../../../core/utils/currency_text_formatter.dart';
 import '../bloc/receipt_edit_bloc.dart';
 import '../bloc/receipt_edit_event.dart';
 import 'receipt_details_edit_dialog.dart';
 
-class ReceiptDetailsContent extends StatelessWidget {
+class ReceiptDetailsContent extends StatefulWidget {
   final Receipt receipt;
   final bool isEditMode;
 
@@ -21,6 +22,47 @@ class ReceiptDetailsContent extends StatelessWidget {
     required this.receipt,
     required this.isEditMode,
   });
+
+  @override
+  State<ReceiptDetailsContent> createState() => _ReceiptDetailsContentState();
+}
+
+class _ReceiptDetailsContentState extends State<ReceiptDetailsContent> {
+  late TextEditingController _merchantNameController;
+  late TextEditingController _merchantAddressController;
+  late TextEditingController _totalController;
+
+  @override
+  void initState() {
+    super.initState();
+    _initControllers();
+  }
+
+  @override
+  void didUpdateWidget(covariant ReceiptDetailsContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.receipt != widget.receipt ||
+        oldWidget.isEditMode != widget.isEditMode) {
+      _initControllers();
+    }
+  }
+
+  void _initControllers() {
+    _merchantNameController =
+        TextEditingController(text: widget.receipt.merchant.name);
+    _merchantAddressController =
+        TextEditingController(text: widget.receipt.merchant.address);
+    _totalController =
+        TextEditingController(text: widget.receipt.total.toStringAsFixed(2));
+  }
+
+  @override
+  void dispose() {
+    _merchantNameController.dispose();
+    _merchantAddressController.dispose();
+    _totalController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,16 +77,18 @@ class ReceiptDetailsContent extends StatelessWidget {
           style: theme.textTheme.headlineMedium,
         ),
         const SizedBox(height: 24),
-        if (_hasMerchantInfo(receipt))
+        if (_hasMerchantInfo(widget.receipt))
           _buildSection(
             context: context,
             title: l10n.merchant,
-            child: _buildMerchantInfo(context, receipt, isEditMode),
+            child:
+                _buildMerchantInfo(context, widget.receipt, widget.isEditMode),
           ),
         _buildSection(
           context: context,
           title: l10n.transactionDetails,
-          child: _buildTransactionInfo(context, receipt, isEditMode),
+          child:
+              _buildTransactionInfo(context, widget.receipt, widget.isEditMode),
         ),
         Text(
           l10n.items,
@@ -56,7 +100,7 @@ class ReceiptDetailsContent extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Expanded(
-          child: _buildItemsList(context, receipt, isEditMode),
+          child: _buildItemsList(context, widget.receipt, widget.isEditMode),
         ),
       ],
     );
@@ -75,6 +119,7 @@ class ReceiptDetailsContent extends StatelessWidget {
       return Column(
         children: [
           TextField(
+            controller: _merchantNameController,
             decoration: InputDecoration(
               labelText: AppLocalizations.of(context).merchantName,
               enabledBorder: UnderlineInputBorder(
@@ -88,7 +133,6 @@ class ReceiptDetailsContent extends StatelessWidget {
                 ),
               ),
             ),
-            controller: TextEditingController(text: receipt.merchant.name),
             onChanged: (value) {
               context.read<ReceiptEditBloc>().add(
                     ReceiptEditEvent.updateMerchant(
@@ -102,6 +146,7 @@ class ReceiptDetailsContent extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           TextField(
+            controller: _merchantAddressController,
             decoration: InputDecoration(
               labelText: AppLocalizations.of(context).merchantAddress,
               enabledBorder: UnderlineInputBorder(
@@ -115,7 +160,6 @@ class ReceiptDetailsContent extends StatelessWidget {
                 ),
               ),
             ),
-            controller: TextEditingController(text: receipt.merchant.address),
             maxLines: 1,
             onChanged: (value) {
               context.read<ReceiptEditBloc>().add(
@@ -166,6 +210,7 @@ class ReceiptDetailsContent extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final dateFormat = DateFormat('MMMM dd, yyyy - HH:mm');
     final theme = Theme.of(context);
+    final locale = Localizations.localeOf(context).toString();
 
     if (isEditMode) {
       return Column(
@@ -195,6 +240,7 @@ class ReceiptDetailsContent extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           TextField(
+            controller: _totalController,
             decoration: InputDecoration(
               labelText: l10n.totalChartData,
               enabledBorder: UnderlineInputBorder(
@@ -208,17 +254,24 @@ class ReceiptDetailsContent extends StatelessWidget {
                 ),
               ),
             ),
-            controller:
-                TextEditingController(text: receipt.total.toStringAsFixed(2)),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            onChanged: (value) {
-              final total =
-                  value.isEmpty ? 0.0 : double.tryParse(value) ?? receipt.total;
-              context.read<ReceiptEditBloc>().add(
-                    ReceiptEditEvent.updateTotal(total),
-                  );
+            inputFormatters: [CurrencyTextFormatter(locale: locale)],
+            onChanged: (value) {},
+            onSubmitted: (value) {
+              if (value.isNotEmpty) {
+                final parsedValue = double.tryParse(value.replaceAll(',', '.'));
+                if (parsedValue != null) {
+                  context.read<ReceiptEditBloc>().add(
+                        ReceiptEditEvent.updateTotal(parsedValue),
+                      );
+                }
+              } else {
+                context.read<ReceiptEditBloc>().add(
+                      ReceiptEditEvent.updateTotal(0.0),
+                    );
+              }
             },
-          ),
+          )
         ],
       );
     } else {

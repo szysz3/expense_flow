@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
+
+import '../../../core/utils/currency_text_formatter.dart';
 
 class QuantityPriceSection extends StatelessWidget {
   final TextEditingController quantityController;
@@ -28,18 +28,7 @@ class QuantityPriceSection extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: TextField(
-                controller: quantityController,
-                onChanged: onQuantityChanged,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context).quantity,
-                  hintText: AppLocalizations.of(context).enterQuantity,
-                  border: InputBorder.none,
-                ),
-              ),
+              child: _buildQuantityField(context),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -49,56 +38,59 @@ class QuantityPriceSection extends StatelessWidget {
         ),
       );
 
-  Widget _buildPriceField(BuildContext context) => TextField(
-        controller: priceController,
-        onChanged: (value) {
-          final locale = Localizations.localeOf(context);
-          final format = NumberFormat.decimalPattern(locale.toString());
-          final decimalSeparator = format.symbols.DECIMAL_SEP;
-          String normalizedValue = value;
-          if (decimalSeparator != '.') {
-            normalizedValue = value.replaceAll(decimalSeparator, '.');
-          }
+  Widget _buildQuantityField(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
 
+    return TextField(
+      controller: quantityController,
+      onChanged: (value) {
+        if (value.isNotEmpty) {
+          final normalizedValue =
+              CurrencyTextFormatter.normalizeNumberString(value, locale);
+          onQuantityChanged(normalizedValue);
+        } else {
+          onQuantityChanged(value);
+        }
+      },
+      keyboardType: const TextInputType.numberWithOptions(
+        decimal: true,
+      ),
+      inputFormatters: [
+        CurrencyTextFormatter(locale: locale),
+      ],
+      decoration: InputDecoration(
+        labelText: AppLocalizations.of(context).quantity,
+        hintText: AppLocalizations.of(context).enterQuantity,
+        border: InputBorder.none,
+      ),
+    );
+  }
+
+  Widget _buildPriceField(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
+
+    return TextField(
+      controller: priceController,
+      onChanged: (value) {
+        if (value.isNotEmpty) {
+          final normalizedValue =
+              CurrencyTextFormatter.normalizeNumberString(value, locale);
           onPriceChanged(normalizedValue);
-        },
-        keyboardType: const TextInputType.numberWithOptions(
-          decimal: true,
-        ),
-        decoration: InputDecoration(
-          labelText: AppLocalizations.of(context).totalPrice,
-          hintText: AppLocalizations.of(context).enterPrice,
-          border: InputBorder.none,
-        ),
-        inputFormatters: [
-          TextInputFormatter.withFunction((oldValue, newValue) {
-            final locale = Localizations.localeOf(context);
-            final format = NumberFormat.decimalPattern(locale.toString());
-            final decimalSeparator = format.symbols.DECIMAL_SEP;
-            final regExp = RegExp('[0-9.,]');
-
-            String filtered = newValue.text
-                .split('')
-                .where((char) => regExp.hasMatch(char))
-                .join();
-
-            if (filtered.contains('.') || filtered.contains(',')) {
-              filtered = filtered
-                  .replaceAll(',', decimalSeparator)
-                  .replaceAll('.', decimalSeparator);
-
-              final parts = filtered.split(decimalSeparator);
-              if (parts.length > 2) {
-                filtered =
-                    parts[0] + decimalSeparator + parts.sublist(1).join('');
-              }
-            }
-
-            return newValue.copyWith(
-              text: filtered,
-              selection: TextSelection.collapsed(offset: filtered.length),
-            );
-          }),
-        ],
-      );
+        } else {
+          onPriceChanged(value);
+        }
+      },
+      keyboardType: const TextInputType.numberWithOptions(
+        decimal: true,
+      ),
+      inputFormatters: [
+        CurrencyTextFormatter(locale: locale),
+      ],
+      decoration: InputDecoration(
+        labelText: AppLocalizations.of(context).totalPrice,
+        hintText: AppLocalizations.of(context).enterPrice,
+        border: InputBorder.none,
+      ),
+    );
+  }
 }
