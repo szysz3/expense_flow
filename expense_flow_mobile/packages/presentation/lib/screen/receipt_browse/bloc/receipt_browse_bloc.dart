@@ -93,7 +93,6 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
               localizationService: _localizationService,
             ),
           ));
-          _refreshCompleter?.complete();
         },
         (receiptResponse) {
           emit(state.copyWith(
@@ -102,7 +101,6 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
               hasMoreReceipts: receiptResponse.totalCount > _pageSize,
               totalCount: receiptResponse.totalCount,
               error: null));
-          _refreshCompleter?.complete();
         },
       );
     } catch (e, stackTrace) {
@@ -120,7 +118,18 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
           localizationService: _localizationService,
         ),
       ));
-      _refreshCompleter?.complete();
+    } finally {
+      _safeComplete(_refreshCompleter);
+    }
+  }
+
+  void _safeComplete(Completer<void>? completer) {
+    if (completer == null) return;
+
+    try {
+      completer.complete();
+    } catch (e) {
+      // Completer was already completed, ignore the error
     }
   }
 
