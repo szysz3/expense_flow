@@ -26,7 +26,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
     return BlocBuilder<ReceiptEditBloc, ReceiptEditState>(
       builder: (context, editState) {
         return Positioned(
-          top: 16,
+          top: 8,
           right: 16,
           child: Row(
             children: [
@@ -34,7 +34,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
                 _buildCancelButton(context)
               else
                 _buildDeleteButton(context),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               _buildEditButton(context, editState),
             ],
           ),
@@ -129,18 +129,19 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
 
   void _showDeleteConfirmation(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: theme.colorScheme.surface,
         title: Text(l10n.deleteConfirmation),
         content: Text(l10n.deleteReceiptConfirmMessage),
         actions: [
           TextButton(
             child: Text(
               l10n.cancel,
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              style: TextStyle(color: theme.colorScheme.primary),
             ),
             onPressed: () => Navigator.of(dialogContext).pop(),
           ),

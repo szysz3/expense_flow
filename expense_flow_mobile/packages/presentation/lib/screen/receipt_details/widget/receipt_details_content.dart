@@ -25,32 +25,36 @@ class ReceiptDetailsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           l10n.receiptDetails,
-          style: Theme.of(context).textTheme.headlineMedium,
+          style: theme.textTheme.headlineMedium,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         if (_hasMerchantInfo(receipt))
           _buildSection(
+            context: context,
             title: l10n.merchant,
             child: _buildMerchantInfo(context, receipt, isEditMode),
           ),
         _buildSection(
+          context: context,
           title: l10n.transactionDetails,
           child: _buildTransactionInfo(context, receipt, isEditMode),
         ),
         Text(
           l10n.items,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onSurface.withOpacity(0.9),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Expanded(
           child: _buildItemsList(context, receipt, isEditMode),
         ),
@@ -65,12 +69,24 @@ class ReceiptDetailsContent extends StatelessWidget {
 
   Widget _buildMerchantInfo(
       BuildContext context, Receipt receipt, bool isEditMode) {
+    final theme = Theme.of(context);
+
     if (isEditMode) {
       return Column(
         children: [
           TextField(
             decoration: InputDecoration(
               labelText: AppLocalizations.of(context).merchantName,
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                ),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary.withOpacity(0.7),
+                ),
+              ),
             ),
             controller: TextEditingController(text: receipt.merchant.name),
             onChanged: (value) {
@@ -84,13 +100,23 @@ class ReceiptDetailsContent extends StatelessWidget {
                   );
             },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           TextField(
             decoration: InputDecoration(
               labelText: AppLocalizations.of(context).merchantAddress,
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                ),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary.withOpacity(0.7),
+                ),
+              ),
             ),
             controller: TextEditingController(text: receipt.merchant.address),
-            maxLines: 2,
+            maxLines: 1,
             onChanged: (value) {
               context.read<ReceiptEditBloc>().add(
                     ReceiptEditEvent.updateMerchant(
@@ -105,22 +131,32 @@ class ReceiptDetailsContent extends StatelessWidget {
         ],
       );
     } else {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (receipt.merchant.name.isNotEmpty)
-            Text(
-              receipt.merchant.name,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          if (receipt.merchant.address.isNotEmpty)
-            Text(
-              receipt.merchant.address,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-        ],
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (receipt.merchant.name.isNotEmpty)
+              Text(
+                receipt.merchant.name,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            if (receipt.merchant.name.isNotEmpty &&
+                receipt.merchant.address.isNotEmpty)
+              const SizedBox(height: 4),
+            if (receipt.merchant.address.isNotEmpty)
+              Text(
+                receipt.merchant.address,
+                style: theme.textTheme.bodyMedium,
+              ),
+          ],
+        ),
       );
     }
   }
@@ -129,6 +165,7 @@ class ReceiptDetailsContent extends StatelessWidget {
       BuildContext context, Receipt receipt, bool isEditMode) {
     final l10n = AppLocalizations.of(context);
     final dateFormat = DateFormat('MMMM dd, yyyy - HH:mm');
+    final theme = Theme.of(context);
 
     if (isEditMode) {
       return Column(
@@ -139,21 +176,44 @@ class ReceiptDetailsContent extends StatelessWidget {
             child: InputDecorator(
               decoration: InputDecoration(
                 labelText: l10n.transactionDate,
-                suffixIcon: const Icon(Icons.calendar_today),
+                suffixIcon: Icon(
+                  Icons.calendar_today,
+                  size: 20,
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  ),
+                ),
               ),
-              child: Text(dateFormat.format(receipt.transactionDateTime)),
+              child: Text(
+                dateFormat.format(receipt.transactionDateTime),
+                style: theme.textTheme.bodyMedium,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           TextField(
             decoration: InputDecoration(
               labelText: l10n.totalChartData,
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                ),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary.withOpacity(0.7),
+                ),
+              ),
             ),
             controller:
                 TextEditingController(text: receipt.total.toStringAsFixed(2)),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: (value) {
-              final total = double.tryParse(value) ?? receipt.total;
+              final total =
+                  value.isEmpty ? 0.0 : double.tryParse(value) ?? receipt.total;
               context.read<ReceiptEditBloc>().add(
                     ReceiptEditEvent.updateTotal(total),
                   );
@@ -162,21 +222,29 @@ class ReceiptDetailsContent extends StatelessWidget {
         ],
       );
     } else {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildInfoRow(
-            context: context,
-            label: l10n.transactionDate,
-            value: dateFormat.format(receipt.transactionDateTime),
-          ),
-          _buildInfoRow(
-            context: context,
-            label: l10n.totalChartData,
-            value: receipt.total.toStringAsFixed(2),
-            isHighlighted: true,
-          ),
-        ],
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInfoRow(
+              context: context,
+              label: l10n.transactionDate,
+              value: dateFormat.format(receipt.transactionDateTime),
+            ),
+            const SizedBox(height: 8),
+            _buildInfoRow(
+              context: context,
+              label: l10n.totalChartData,
+              value: receipt.total.toStringAsFixed(2),
+              isHighlighted: true,
+            ),
+          ],
+        ),
       );
     }
   }
@@ -219,17 +287,24 @@ class ReceiptDetailsContent extends StatelessWidget {
     required String value,
     bool isHighlighted = false,
   }) {
+    final theme = Theme.of(context);
+
     return Row(
       children: [
-        Text('$label: ', style: Theme.of(context).textTheme.bodyMedium),
+        Text(
+          '$label: ',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
         Text(
           value,
           style: isHighlighted
-              ? Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  )
-              : Theme.of(context).textTheme.bodyMedium,
+              ? theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                )
+              : theme.textTheme.bodyMedium,
         ),
       ],
     );
@@ -237,12 +312,23 @@ class ReceiptDetailsContent extends StatelessWidget {
 
   Widget _buildItemsList(
       BuildContext context, Receipt receipt, bool isEditMode) {
-    return ListView.separated(
-      physics: const ClampingScrollPhysics(),
-      itemCount: receipt.items.length,
-      separatorBuilder: (_, __) => const Divider(color: Colors.white12),
-      itemBuilder: (context, index) => _buildItemRow(
-          context, receipt.items[index], isEditMode, index, receipt),
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListView.separated(
+        physics: const ClampingScrollPhysics(),
+        itemCount: receipt.items.length,
+        separatorBuilder: (_, __) => Divider(
+          color: theme.colorScheme.onSurface.withOpacity(0.1),
+          height: 1,
+        ),
+        itemBuilder: (context, index) => _buildItemRow(
+            context, receipt.items[index], isEditMode, index, receipt),
+      ),
     );
   }
 
@@ -250,12 +336,13 @@ class ReceiptDetailsContent extends StatelessWidget {
       int index, Receipt currentReceipt) {
     final categoryIconPath = CategoryUtils.getIconPath(item.category);
     final categoryName = CategoryUtils.getDisplayName(item.category, context);
+    final theme = Theme.of(context);
 
     if (isEditMode) {
       return InkWell(
         onTap: () => _showEditItemDialog(context, item, index, currentReceipt),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
           child: _buildItemRowContent(
               context, item, categoryIconPath, categoryName,
               isEditable: true),
@@ -263,7 +350,7 @@ class ReceiptDetailsContent extends StatelessWidget {
       );
     } else {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
         child:
             _buildItemRowContent(context, item, categoryIconPath, categoryName),
       );
@@ -273,6 +360,8 @@ class ReceiptDetailsContent extends StatelessWidget {
   Widget _buildItemRowContent(BuildContext context, ReceiptItem item,
       String categoryIconPath, String categoryName,
       {bool isEditable = false}) {
+    final theme = Theme.of(context);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -280,7 +369,7 @@ class ReceiptDetailsContent extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: theme.colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(8),
           ),
           child: SvgPicture.asset(
@@ -301,17 +390,14 @@ class ReceiptDetailsContent extends StatelessWidget {
                   Expanded(
                     child: Text(
                       item.description,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: theme.textTheme.bodyLarge,
                     ),
                   ),
                   Text(
                     categoryName,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.6),
-                        ),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
                   ),
                 ],
               ),
@@ -319,15 +405,17 @@ class ReceiptDetailsContent extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    '${item.quantity.toStringAsFixed(2)} × ',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    '${item.quantity.toStringAsFixed(item.quantity.truncateToDouble() == item.quantity ? 0 : 2)} × ',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     item.totalPrice.toStringAsFixed(2),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -339,6 +427,7 @@ class ReceiptDetailsContent extends StatelessWidget {
           Icon(
             Icons.edit,
             size: 16,
+            color: theme.colorScheme.onSurface.withOpacity(0.6),
           ),
       ],
     );
@@ -362,7 +451,12 @@ class ReceiptDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildSection({required String title, required Widget child}) {
+  Widget _buildSection(
+      {required BuildContext context,
+      required String title,
+      required Widget child}) {
+    final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
       child: Column(
@@ -370,12 +464,13 @@ class ReceiptDetailsContent extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onSurface.withOpacity(0.9),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           child,
         ],
       ),

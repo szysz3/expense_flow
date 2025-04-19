@@ -29,10 +29,12 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
   void initState() {
     super.initState();
     _descController = TextEditingController(text: widget.item.description);
-    _quantityController =
-        TextEditingController(text: widget.item.quantity.toString());
-    _priceController =
-        TextEditingController(text: widget.item.totalPrice.toString());
+    _quantityController = TextEditingController(
+      text: widget.item.quantity.toString(),
+    );
+    _priceController = TextEditingController(
+      text: widget.item.totalPrice.toString(),
+    );
     _selectedCategory = Category.ensureValid(widget.item.category);
   }
 
@@ -47,9 +49,13 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text(l10n.editItem),
+      title: Text(
+        l10n.editItem,
+        style: theme.textTheme.titleLarge,
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -58,27 +64,57 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
               controller: _descController,
               decoration: InputDecoration(
                 labelText: l10n.description,
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  ),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary.withOpacity(0.7),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             TextField(
               controller: _quantityController,
               decoration: InputDecoration(
                 labelText: l10n.quantity,
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  ),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary.withOpacity(0.7),
+                  ),
+                ),
               ),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             TextField(
               controller: _priceController,
               decoration: InputDecoration(
                 labelText: l10n.totalPrice,
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  ),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary.withOpacity(0.7),
+                  ),
+                ),
               ),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             _buildCategoryDropdown(context),
           ],
         ),
@@ -98,12 +134,24 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
 
   Widget _buildCategoryDropdown(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     return DropdownButtonFormField<String>(
       value: _selectedCategory,
       decoration: InputDecoration(
         labelText: l10n.category,
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: theme.colorScheme.onSurface.withOpacity(0.3),
+          ),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: theme.colorScheme.primary.withOpacity(0.7),
+          ),
+        ),
       ),
+      dropdownColor: theme.colorScheme.surface,
       items: CategoryUtils.getAllCategoriesForDropdown(context)
           .map((entry) => DropdownMenuItem<String>(
                 value: entry.key,
@@ -122,10 +170,12 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
 
   void _saveItem() {
     final description = _descController.text;
-    final quantity =
-        double.tryParse(_quantityController.text) ?? widget.item.quantity;
-    final price =
-        double.tryParse(_priceController.text) ?? widget.item.totalPrice;
+    final quantity = _quantityController.text.isEmpty
+        ? widget.item.quantity
+        : double.tryParse(_quantityController.text) ?? widget.item.quantity;
+    final price = _priceController.text.isEmpty
+        ? widget.item.totalPrice
+        : double.tryParse(_priceController.text) ?? widget.item.totalPrice;
 
     if (description.isNotEmpty && price > 0) {
       final updatedItem = ReceiptItem(
