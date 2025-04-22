@@ -35,7 +35,7 @@ class AutoCompleteService:
             
             suggestions = []
             for item in similar_items:
-                if item.score > 0.4:  
+                if item.score > 0.55:  
                     suggestions.append({
                         "description": item.payload.get("description", ""),
                         "category": item.payload.get("category", ""),
