@@ -1,4 +1,5 @@
 from decimal import Decimal
+import logging
 from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime
 from collections import defaultdict
@@ -6,6 +7,8 @@ from dateutil.relativedelta import relativedelta
 import re
 import uuid
 from tinydb import Query
+
+from expense_flow.config import get_config
 
 from .base_repository import BaseRepository, handle_db_errors
 from expense_flow.api.models import (
@@ -104,6 +107,20 @@ class ReceiptRepository(BaseRepository):
         serialized_receipt = self._serialize_receipt(receipt_dict)
         
         self.db.insert(serialized_receipt)
+        
+        # Sync with vector store
+        try:
+            config = get_config()
+            if hasattr(config, 'vector_db_path') and config.vector_db_path:
+                from expense_flow.services.vector_store import VectorStoreService
+                from expense_flow.services.sync import DatabaseSyncService
+                
+                vector_store = VectorStoreService(config)
+                sync_service = DatabaseSyncService(vector_store, self)
+                sync_service.sync_receipt_items(Receipt(**receipt_dict))
+        except Exception as e:
+            logging.warning(f"Vector store sync failed: {str(e)}")
+        
         return receipt_dict['id']
 
     @handle_db_errors
@@ -604,9 +621,23 @@ class ReceiptRepository(BaseRepository):
             True if receipt was deleted, False if receipt was not found
         """
         receipt_query = Query()
-        result = self.db.remove(receipt_query.id == receipt_id) 
-
-        return len(result) > 0
+        result = self.db.remove(receipt_query.id == receipt_id)
+        
+        if len(result) > 0:
+            try:
+                config = get_config()
+                if hasattr(config, 'vector_db_path') and config.vector_db_path:
+                    from expense_flow.services.vector_store import VectorStoreService
+                    from expense_flow.services.sync import DatabaseSyncService
+                    
+                    vector_store = VectorStoreService(config)
+                    sync_service = DatabaseSyncService(vector_store, self)
+                    sync_service.remove_receipt_items(receipt_id)
+            except Exception as e:
+                logging.warning(f"Vector store sync failed during deletion: {str(e)}")
+                
+            return True
+        return False
 
     @handle_db_errors
     def update_receipt(self, receipt: Receipt) -> bool:
@@ -623,10 +654,44 @@ class ReceiptRepository(BaseRepository):
         serialized_receipt = self._serialize_receipt(receipt_dict)
         
         receipt_query = Query()
-        return bool(self.db.update(
+        result = self.db.update(
             serialized_receipt,
             receipt_query.id == receipt.id
-        ))
+        )
+        
+        if result:
+            try:
+                config = get_config()
+                if hasattr(config, 'vector_db_path') and config.vector_db_path:
+                    from expense_flow.services.vector_store import VectorStoreService
+                    from expense_flow.services.sync import DatabaseSyncService
+                    
+                    vector_store = VectorStoreService(config)
+                    sync_service = DatabaseSyncService(vector_store, self)
+                    
+                    sync_service.remove_receipt_items(receipt.id)
+                    sync_service.sync_receipt_items(Receipt(**receipt_dict))
+            except Exception as e:
+                logging.warning(f"Vector store sync failed during update: {str(e)}")
+        
+        return bool(result)
+
+    @handle_db_errors
+    def get_all_receipts(self) -> List[Receipt]:
+        """
+        Get all receipts from database (for internal vector store sync)
+        
+        Returns:
+            List of Receipt objects
+        """
+        all_receipts = self.db.all()
+        receipts = []
+        
+        for result in all_receipts:
+            deserialized_result = self._deserialize_receipt(result)
+            receipts.append(Receipt(**deserialized_result))
+            
+        return receipts
 
     @handle_db_errors
     def get_receipt_count(self) -> int:

@@ -35,6 +35,10 @@ class Config:
     ollama_fallback_model: str = 'hf.co/unsloth/phi-4-GGUF:Q5_K_M'
     chatgpt_key: str = ''
     
+    # Vector database settings
+    vector_db_path: Path = field(default_factory=lambda: Path(".data/vector_db"))
+    embedding_model: str = "all-MiniLM-L6-v2"
+
     @classmethod
     def from_env(cls, env_file: Optional[str] = None) -> 'Config':
         """
@@ -74,6 +78,10 @@ class Config:
             'API_API_KEY': ('api_key', str),
             'API_MAX_RETRIES': ('max_retries', int),
             'API_RETRY_DELAY': ('retry_delay', float),
+
+            # Vector DB section
+            'VECTOR_DB_PATH': ('vector_db_path', str),
+            'VECTOR_DB_EMBEDDING_MODEL': ('embedding_model', str),
         }
         
         for env_var, (attr_name, type_func) in mappings.items():

@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_422_UNPROCESSABLE_ENTITY
 import tempfile
 import os
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 import logging
 from contextlib import contextmanager
@@ -16,6 +16,7 @@ from expense_flow.config import get_config
 from expense_flow.api.repository.base_repository import DatabaseError
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
+from expense_flow.services.vector_store import VectorStoreService
 from expense_flow.utils.retry import retry_async
 
 from .models import (
@@ -82,6 +83,20 @@ def get_analyzer(llm_type: LLMType):
     if not analyzer_class:
         raise ValueError(f"Invalid LLM type: {llm_type}")
     return analyzer_class(config)
+
+def get_vector_store_service():
+    """
+    Get vector store service instance
+    
+    Returns:
+        VectorStoreService instance
+    """
+    config = get_config()
+    try:
+        from expense_flow.services.vector_store import VectorStoreService
+        return VectorStoreService(config)
+    except ImportError:
+        return None
 
 @contextmanager
 def temp_file_handler(suffix: str):
@@ -700,6 +715,43 @@ async def update_receipt(
                 "detail": str(e)
             }
         )
+
+@app.get(
+    "/api/autocomplete",
+    response_model=List[Dict[str, Any]],
+    responses={
+        400: {"model": ErrorDetail},
+        500: {"model": ErrorDetail}
+    }
+)
+async def get_autocomplete_suggestions(
+    text: str,
+    limit: int = Query(5, ge=1, le=10, description="Maximum number of suggestions"),
+    api_key: str = Depends(verify_api_key),
+    vector_store_service: VectorStoreService = Depends(get_vector_store_service),
+):
+    """
+    Get auto-complete suggestions for item description
+    
+    Args:
+        text: Partial text to match
+        limit: Maximum number of suggestions
+        
+    Returns:
+        List of suggestions
+    """
+    if not text:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Missing 'text' query parameter"}
+        )
+    
+    from expense_flow.services.autocomplete import AutoCompleteService
+    
+    autocomplete_service = AutoCompleteService(vector_store_service)
+    suggestions = autocomplete_service.get_suggestions(text, limit)
+    
+    return suggestions
 
 @app.on_event("startup")
 async def startup_event():
