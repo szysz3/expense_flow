@@ -726,7 +726,7 @@ async def update_receipt(
 )
 async def get_autocomplete_suggestions(
     text: str,
-    limit: int = Query(5, ge=1, le=10, description="Maximum number of suggestions"),
+    limit: int = Query(8, ge=1, le=10, description="Maximum number of suggestions"),
     api_key: str = Depends(verify_api_key),
     vector_store_service: VectorStoreService = Depends(get_vector_store_service),
 ):
