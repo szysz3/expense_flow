@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 
+import '../model/autocomplete_suggestion.dart';
 import '../model/category_with_items.dart';
 import '../model/daily_expense.dart';
 import '../model/failure/failures.dart';
@@ -36,4 +37,7 @@ abstract class ReceiptRepository {
   Future<Either<Failure, bool>> deleteReceipt(String id);
 
   Future<Either<Failure, Receipt>> updateReceipt(Receipt receipt);
+
+  Future<Either<Failure, List<AutocompleteSuggestion>>>
+      getAutocompleteSuggestions(String text, {int limit = 8});
 }

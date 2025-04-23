@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/utils/content_type_resolver_impl.dart';
 import 'package:dio/dio.dart';
+import 'package:domain/model/autocomplete_suggestion.dart';
 import 'package:domain/model/category_with_items.dart';
 import 'package:domain/model/daily_expense.dart';
 import 'package:domain/model/failure/failures.dart';
@@ -371,6 +372,27 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
         }
       },
       context: 'deleteReceipt: $id',
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<AutocompleteSuggestion>>>
+      getAutocompleteSuggestions(String text, {int limit = 8}) async {
+    return _executeRequest(
+      () async {
+        final response = await _dio.get(
+          ApiEndpoints.autocomplete,
+          queryParameters: {
+            'text': text,
+            'limit': limit,
+          },
+        );
+
+        return (response.data as List)
+            .map((json) => AutocompleteSuggestion.fromJson(json))
+            .toList();
+      },
+      context: 'getAutocompleteSuggestions for: $text',
     );
   }
 }

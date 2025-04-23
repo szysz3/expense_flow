@@ -14,6 +14,8 @@ class AddItemState with _$AddItemState {
     @Default(Category.defaultCategory) String selectedCategory,
     @Default(false) bool isSubmitting,
     @Default(false) bool isSuccess,
+    @Default([]) List<String> suggestions,
+    @Default(false) bool isLoadingSuggestions,
     AppError? error,
   }) = _AddItemState;
 

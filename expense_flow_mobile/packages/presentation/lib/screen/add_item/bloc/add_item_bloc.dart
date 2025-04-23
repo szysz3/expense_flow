@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:domain/model/receipt_item.dart';
 import 'package:domain/use_case/create_receipt_use_case.dart';
+import 'package:domain/use_case/get_autocomplete_suggestions_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -12,11 +13,16 @@ import 'add_item_state.dart';
 
 class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
   final CreateReceiptUseCase _createReceiptUseCase;
+  final GetAutocompleteSuggestionsUseCase _getAutocompleteSuggestionsUseCase;
   final Logger _errorLogger;
   final LocalizationService _localizationService;
 
+  Timer? _debounceTimer;
+  static const Duration _debounceDuration = Duration(milliseconds: 1000);
+
   AddItemBloc(
     this._createReceiptUseCase,
+    this._getAutocompleteSuggestionsUseCase,
     this._errorLogger,
     this._localizationService,
   ) : super(const AddItemState()) {
@@ -27,6 +33,8 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     on<Submitted>(_handleSubmitted);
     on<Reset>(_handleReset);
     on<ClearError>(_handleClearError);
+    on<FetchSuggestionsEvent>(_handleFetchSuggestions);
+    on<ClearSuggestionsEvent>(_handleClearSuggestions);
   }
 
   void _handleDescriptionChanged(
@@ -34,6 +42,66 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     Emitter<AddItemState> emit,
   ) {
     emit(state.copyWith(description: event.description));
+
+    if (event.description.isEmpty) {
+      add(const AddItemEvent.clearSuggestions());
+      return;
+    }
+
+    _debounceTimer?.cancel();
+
+    if (event.description.length >= 2) {
+      _debounceTimer = Timer(_debounceDuration, () {
+        add(AddItemEvent.fetchSuggestions(event.description));
+      });
+    }
+  }
+
+  Future<void> _handleFetchSuggestions(
+    FetchSuggestionsEvent event,
+    Emitter<AddItemState> emit,
+  ) async {
+    if (event.text.trim().length < 2) {
+      return;
+    }
+
+    emit(state.copyWith(isLoadingSuggestions: true));
+
+    try {
+      final result = await _getAutocompleteSuggestionsUseCase(
+        GetAutocompleteSuggestionsParams(text: event.text),
+      );
+
+      result.fold(
+        (failure) {
+          _errorLogger.e('Failed to get suggestions', error: failure);
+          emit(state.copyWith(
+            isLoadingSuggestions: false,
+            suggestions: [],
+          ));
+        },
+        (suggestions) {
+          emit(state.copyWith(
+            isLoadingSuggestions: false,
+            suggestions: suggestions.map((s) => s.description).toList(),
+          ));
+        },
+      );
+    } catch (e, stackTrace) {
+      _errorLogger.e('Error fetching suggestions',
+          error: e, stackTrace: stackTrace);
+      emit(state.copyWith(
+        isLoadingSuggestions: false,
+        suggestions: [],
+      ));
+    }
+  }
+
+  void _handleClearSuggestions(
+    ClearSuggestionsEvent event,
+    Emitter<AddItemState> emit,
+  ) {
+    emit(state.copyWith(suggestions: []));
   }
 
   void _handleQuantityChanged(
@@ -157,5 +225,11 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
             localizationService: _localizationService),
       ));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _debounceTimer?.cancel();
+    return super.close();
   }
 }

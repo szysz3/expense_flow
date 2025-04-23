@@ -11,4 +11,5 @@ class ApiConstants {
   static const String unprocessedReceipts = '$receiptPrefix/unprocessed';
   static const String dailyExpenses =
       '$apiPrefix/months/{year}/{month}/daily-expenses';
+  static const String autocomplete = '$apiPrefix/autocomplete';
 }

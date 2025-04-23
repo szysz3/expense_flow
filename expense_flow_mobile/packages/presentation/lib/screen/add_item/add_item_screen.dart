@@ -1,4 +1,5 @@
 import 'package:domain/use_case/create_receipt_use_case.dart';
+import 'package:domain/use_case/get_autocomplete_suggestions_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -23,6 +24,7 @@ class AddItemScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
       create: (_) => AddItemBloc(
             getIt<CreateReceiptUseCase>(),
+            getIt<GetAutocompleteSuggestionsUseCase>(),
             getIt<Logger>(),
             getIt<LocalizationService>(),
           ),
@@ -116,6 +118,21 @@ class _AddItemViewState extends State<AddItemView> {
                                   AppLocalizations.of(context).description,
                               hintText: AppLocalizations.of(context)
                                   .enterItemDescription,
+                              suggestions: state.suggestions,
+                              onSuggestionSelected: (suggestion) {
+                                _descriptionController.text = suggestion;
+                                _descriptionController.selection =
+                                    TextSelection.fromPosition(
+                                  TextPosition(offset: suggestion.length),
+                                );
+                                context.read<AddItemBloc>().add(
+                                      AddItemEvent.descriptionChanged(
+                                          suggestion),
+                                    );
+                                context.read<AddItemBloc>().add(
+                                      const AddItemEvent.clearSuggestions(),
+                                    );
+                              },
                             ),
                             const SizedBox(height: 24),
                             QuantityPriceSection(

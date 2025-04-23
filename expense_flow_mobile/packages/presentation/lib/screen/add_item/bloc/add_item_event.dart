@@ -19,4 +19,9 @@ class AddItemEvent with _$AddItemEvent {
   const factory AddItemEvent.reset() = Reset;
 
   const factory AddItemEvent.clearError() = ClearError;
+
+  const factory AddItemEvent.fetchSuggestions(String text) =
+      FetchSuggestionsEvent;
+
+  const factory AddItemEvent.clearSuggestions() = ClearSuggestionsEvent;
 }
