@@ -30,10 +30,12 @@ class DescriptionAutocompleteWidget extends StatefulWidget {
 class _CustomAutocompleteInputState
     extends State<DescriptionAutocompleteWidget> {
   final layerLink = LayerLink();
-  OverlayEntry? _overlayEntry;
   final FocusNode _focusNode = FocusNode();
+
+  OverlayEntry? _overlayEntry;
   bool _isFocused = false;
   List<String> _currentSuggestions = [];
+  bool _ignoreNextTextChange = false;
 
   @override
   void initState() {
@@ -170,11 +172,13 @@ class _CustomAutocompleteInputState
   }
 
   void _selectSuggestion(String suggestion) {
+    _ignoreNextTextChange = true;
+
     widget.controller.text = suggestion;
     widget.controller.selection = TextSelection.fromPosition(
       TextPosition(offset: suggestion.length),
     );
-    widget.onTextChanged(suggestion);
+
     if (widget.onSuggestionSelected != null) {
       widget.onSuggestionSelected!(suggestion);
     }
@@ -207,6 +211,11 @@ class _CustomAutocompleteInputState
           controller: widget.controller,
           focusNode: _focusNode,
           onChanged: (value) {
+            if (_ignoreNextTextChange) {
+              _ignoreNextTextChange = false;
+              return;
+            }
+
             widget.onTextChanged(value);
 
             if (value.isEmpty && _overlayEntry != null) {

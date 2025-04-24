@@ -124,6 +124,11 @@ class _AddItemViewState extends State<AddItemView> {
                                 context.read<AddItemBloc>().add(
                                       const AddItemEvent.clearSuggestions(),
                                     );
+
+                                context.read<AddItemBloc>().add(
+                                      AddItemEvent.descriptionChanged(
+                                          suggestion),
+                                    );
                               },
                             ),
                             const SizedBox(height: 24),
@@ -150,7 +155,6 @@ class _AddItemViewState extends State<AddItemView> {
                 ],
               ),
             ),
-            // Loading or success overlay
             if (state.isSubmitting || state.isSuccess)
               Container(
                 color: Colors.black54,

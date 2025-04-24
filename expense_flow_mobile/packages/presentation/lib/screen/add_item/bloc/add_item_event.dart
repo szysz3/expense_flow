@@ -4,8 +4,10 @@ part 'add_item_event.freezed.dart';
 
 @freezed
 class AddItemEvent with _$AddItemEvent {
-  const factory AddItemEvent.descriptionChanged(String description) =
-      DescriptionChanged;
+  const factory AddItemEvent.descriptionChanged(
+    String description, {
+    @Default(false) bool suppressSuggestions,
+  }) = DescriptionChanged;
 
   const factory AddItemEvent.quantityChanged(String quantity) = QuantityChanged;
 

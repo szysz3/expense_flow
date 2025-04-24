@@ -20,6 +20,8 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
   Timer? _debounceTimer;
   static const Duration _debounceDuration = Duration(milliseconds: 1000);
 
+  bool _suggestionsJustCleared = false;
+
   AddItemBloc(
     this._createReceiptUseCase,
     this._getAutocompleteSuggestionsUseCase,
@@ -45,6 +47,11 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
 
     if (event.description.isEmpty) {
       add(const AddItemEvent.clearSuggestions());
+      return;
+    }
+
+    if (_suggestionsJustCleared) {
+      _suggestionsJustCleared = false;
       return;
     }
 
@@ -101,6 +108,8 @@ class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
     ClearSuggestionsEvent event,
     Emitter<AddItemState> emit,
   ) {
+    _suggestionsJustCleared = true;
+    _debounceTimer?.cancel();
     emit(state.copyWith(suggestions: []));
   }
 
