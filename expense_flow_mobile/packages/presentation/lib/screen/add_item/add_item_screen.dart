@@ -5,10 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:localization/localization.dart';
 import 'package:logger/logger.dart';
+import 'package:presentation/screen/add_item/widget/description_autocomplete_widget.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
-import '../../core/widget/input_widget.dart';
 import '../../core/widget/loading_indicator_widget.dart';
 import '../../di/di.dart';
 import 'bloc/add_item_bloc.dart';
@@ -107,9 +107,9 @@ class _AddItemViewState extends State<AddItemView> {
                               },
                             ),
                             const SizedBox(height: 24),
-                            InputWidget(
+                            DescriptionAutocompleteWidget(
                               controller: _descriptionController,
-                              onDescriptionChanged: (value) {
+                              onTextChanged: (value) {
                                 context.read<AddItemBloc>().add(
                                       AddItemEvent.descriptionChanged(value),
                                     );
@@ -119,16 +119,8 @@ class _AddItemViewState extends State<AddItemView> {
                               hintText: AppLocalizations.of(context)
                                   .enterItemDescription,
                               suggestions: state.suggestions,
+                              isLoadingSuggestions: state.isLoadingSuggestions,
                               onSuggestionSelected: (suggestion) {
-                                _descriptionController.text = suggestion;
-                                _descriptionController.selection =
-                                    TextSelection.fromPosition(
-                                  TextPosition(offset: suggestion.length),
-                                );
-                                context.read<AddItemBloc>().add(
-                                      AddItemEvent.descriptionChanged(
-                                          suggestion),
-                                    );
                                 context.read<AddItemBloc>().add(
                                       const AddItemEvent.clearSuggestions(),
                                     );
