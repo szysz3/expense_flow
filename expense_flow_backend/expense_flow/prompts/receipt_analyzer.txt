@@ -1,7 +1,10 @@
 Task: Extend receipt JSON with item categories
 
-Input: JSON with receipt items.
-Output: Same structure and values with added "category" field for each item. Json schema for output:
+Input: JSON with receipt items and context data in similar_items field.
+Output: 
+- JSON with the same structure and values with added "category" field for each item in items list. 
+- 'similar_items' list SHOULD NOT be a part of output JSON. 
+- Exact JSON schema for output:
 
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -126,5 +129,20 @@ Validation Requirements:
 IMPORTANT:
 - Output ONLY the extended JSON
 - No additional text allowed
+- 'similar_items' list not allowed in response JSON
+- Include all of the other fields from input JSON
 - Only JSON in response
 - Maintain exact JSON structure with added categories
+- Keep exact JSON schema for output
+
+Additional Context:
+1. Review the 'similar_items' list containing examples of previously categorized similar items
+2. Each similar item includes:
+- The item description
+- The assigned category
+- A similarity score (higher is better)
+3. Use these examples as guidance for categorization, prioritizing highly similar items
+4. If no similar items are found or similarity is low, rely on the general categorization rules
+5. When high similarity matches (>0.8) are present, strongly consider using the same category
+6. When moderate similarity matches (0.5-0.8) are present, use them as guidance but also apply standard categorization rules
+7. When only low similarity matches (<0.5) or no matches are present, rely primarily on the standard categorization rules

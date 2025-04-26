@@ -30,5 +30,3 @@ EXPOSE 8000
 COPY docker-entrypoint.sh /app/
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-
-# CMD ["sh", "-c", "./run.sh serve --host 0.0.0.0 --port 8000"]

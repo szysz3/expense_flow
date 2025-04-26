@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 import re
 import unicodedata
-from expense_flow.services.vector_store import VectorStoreService
+from expense_flow.services.vector_store_service import VectorStoreService
 import logging
 
 logger = logging.getLogger("expense_flow")

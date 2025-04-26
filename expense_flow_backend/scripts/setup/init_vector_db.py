@@ -12,8 +12,8 @@ sys.path.insert(0, PROJECT_ROOT)
 
 from expense_flow.config import get_config
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
-from expense_flow.services.vector_store import VectorStoreService
-from expense_flow.services.sync import DatabaseSyncService
+from expense_flow.services.vector_store_service import VectorStoreService
+from expense_flow.services.database_sync_service import DatabaseSyncService
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

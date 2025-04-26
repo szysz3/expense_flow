@@ -112,8 +112,8 @@ class ReceiptRepository(BaseRepository):
         try:
             config = get_config()
             if hasattr(config, 'vector_db_path') and config.vector_db_path:
-                from expense_flow.services.vector_store import VectorStoreService
-                from expense_flow.services.sync import DatabaseSyncService
+                from expense_flow.services.vector_store_service import VectorStoreService
+                from expense_flow.services.database_sync_service import DatabaseSyncService
                 
                 vector_store = VectorStoreService(config)
                 sync_service = DatabaseSyncService(vector_store, self)
@@ -627,8 +627,8 @@ class ReceiptRepository(BaseRepository):
             try:
                 config = get_config()
                 if hasattr(config, 'vector_db_path') and config.vector_db_path:
-                    from expense_flow.services.vector_store import VectorStoreService
-                    from expense_flow.services.sync import DatabaseSyncService
+                    from expense_flow.services.vector_store_service import VectorStoreService
+                    from expense_flow.services.database_sync_service import DatabaseSyncService
                     
                     vector_store = VectorStoreService(config)
                     sync_service = DatabaseSyncService(vector_store, self)
@@ -663,8 +663,8 @@ class ReceiptRepository(BaseRepository):
             try:
                 config = get_config()
                 if hasattr(config, 'vector_db_path') and config.vector_db_path:
-                    from expense_flow.services.vector_store import VectorStoreService
-                    from expense_flow.services.sync import DatabaseSyncService
+                    from expense_flow.services.vector_store_service import VectorStoreService
+                    from expense_flow.services.database_sync_service import DatabaseSyncService
                     
                     vector_store = VectorStoreService(config)
                     sync_service = DatabaseSyncService(vector_store, self)

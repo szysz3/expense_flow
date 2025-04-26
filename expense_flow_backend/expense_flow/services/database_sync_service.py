@@ -1,6 +1,6 @@
 from typing import List
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
-from expense_flow.services.vector_store import VectorStoreService
+from expense_flow.services.vector_store_service import VectorStoreService
 from expense_flow.api.models import Receipt
 import logging
 

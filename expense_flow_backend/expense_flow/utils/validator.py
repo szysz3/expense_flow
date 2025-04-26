@@ -27,6 +27,8 @@ class ResponseValidator:
 
     def _validate_structure(self, original_data: Dict[Any, Any], result: Dict[Any, Any]) -> bool:
         for key in original_data.keys():
+            if key == "similar_items":
+                continue
             if key not in result:
                 self.console.print(f"[red]❌ Missing key '{key}' in result[/]")
                 return False

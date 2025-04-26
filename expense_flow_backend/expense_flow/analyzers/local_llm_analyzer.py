@@ -1,8 +1,11 @@
 from typing import Dict, Any
+
+from expense_flow.services.rag_service import RAGService
+from expense_flow.services.vector_store_service import VectorStoreService
 from .base_analyzer import BaseAnalyzer
-from expense_flow.config import Config
+from expense_flow.config import Config, get_config
 from expense_flow.utils.validator import ResponseValidator
-from .llm_service import LLMService
+from ..services.llm_service import LLMService
 from .llm_providers import OllamaProvider
 
 class LocalLLMAnalyzer(BaseAnalyzer):
@@ -36,28 +39,52 @@ class LocalLLMAnalyzer(BaseAnalyzer):
                 OllamaProvider(host=config.ollama_host, model=config.ollama_fallback_model)
             )
 
+    async def analyze_with_rag(self, receipt_data: Dict[Any, Any], rag_service: RAGService) -> Dict[Any, Any]:
+        """
+        Analyze receipt data using RAG-enhanced prompting
+        
+        Args:
+            receipt_data: Receipt data to analyze
+            rag_service: RAG service instance
+            
+        Returns:
+            Analysis result
+        """
+        prompt = self.load_prompt("receipt_analyzer")
+        self.display_input_data(receipt_data)
+        
+        result = await self.service.analyze_with_rag(
+            providers=self.providers,
+            prompt=prompt,
+            rag_service=rag_service,
+            data=receipt_data
+        )
+        
+        self.display_output_data(result)
+        return result
+
     async def analyze(self, receipt_data: Dict[Any, Any]) -> Dict[Any, Any]:
         """
-        Analyze receipt data with fallback to different models if needed
+        Analyze receipt data using RAG-enhanced prompting
         
         Args:
             receipt_data: Receipt data to analyze
             
         Returns:
             Analysis result
-            
-        Raises:
-            ValueError: If all models fail
         """
-        if not self.providers:
-            raise ValueError("No Ollama models configured")
-            
+    
         prompt = self.load_prompt("receipt_analyzer")
         self.display_input_data(receipt_data)
         
-        result = await self.service.analyze_with_fallback(
+        config = get_config()
+        vector_store = VectorStoreService(config)
+        rag_service = RAGService(vector_store)
+        
+        result = await self.service.analyze_with_rag(
             providers=self.providers,
             prompt=prompt,
+            rag_service=rag_service,
             data=receipt_data
         )
         

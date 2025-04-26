@@ -1,12 +1,13 @@
 #!/bin/bash
 
 LLM_TYPE="local"
+USE_RAG="false"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 RUN_SCRIPT="$SCRIPT_DIR/run.sh"
 
 usage() {
-    echo -e "\033[33mUsage: $0 <path_to_json_directory> [--llm-type local|chatgpt]\033[0m"
-    echo -e "Example: $0 /path/to/jsons --llm-type local"
+    echo -e "\033[33mUsage: $0 <path_to_json_directory> [--llm-type local|chatgpt] [--use-rag]\033[0m"
+    echo -e "Example: $0 /path/to/jsons --llm-type local --use-rag"
     exit 1
 }
 
@@ -39,6 +40,10 @@ while [ "$#" -gt 0 ]; do
                 exit 1
             fi
             ;;
+        --use-rag)
+            USE_RAG="true"
+            shift
+            ;;
         *)
             usage
             ;;
@@ -67,7 +72,12 @@ while IFS= read -r json_file; do
     
     file_start_time=$(date +%s)
     
-    "$RUN_SCRIPT" analyze "$json_file" --llm-type "$LLM_TYPE"
+    RAG_OPTION=""
+    if [ "$USE_RAG" = "true" ]; then
+        RAG_OPTION="--use-rag"
+    fi
+    
+    "$RUN_SCRIPT" analyze "$json_file" --llm-type "$LLM_TYPE" $RAG_OPTION
     exit_code=$?
     
     file_end_time=$(date +%s)

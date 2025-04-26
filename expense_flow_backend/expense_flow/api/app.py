@@ -16,7 +16,7 @@ from expense_flow.config import get_config
 from expense_flow.api.repository.base_repository import DatabaseError
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
-from expense_flow.services.vector_store import VectorStoreService
+from expense_flow.services.vector_store_service import VectorStoreService
 from expense_flow.utils.retry import retry_async
 
 from .models import (
@@ -93,7 +93,7 @@ def get_vector_store_service():
     """
     config = get_config()
     try:
-        from expense_flow.services.vector_store import VectorStoreService
+        from expense_flow.services.vector_store_service import VectorStoreService
         return VectorStoreService(config)
     except ImportError:
         return None
@@ -746,7 +746,7 @@ async def get_autocomplete_suggestions(
             detail={"error": "Missing 'text' query parameter"}
         )
     
-    from expense_flow.services.autocomplete import AutoCompleteService
+    from expense_flow.services.autocomplete_service import AutoCompleteService
     
     autocomplete_service = AutoCompleteService(vector_store_service)
     suggestions = autocomplete_service.get_suggestions(text, limit)

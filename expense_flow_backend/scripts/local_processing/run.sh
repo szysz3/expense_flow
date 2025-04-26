@@ -3,7 +3,7 @@
 usage() {
     echo -e "\033[33mUsage: $0 [command] [options]\033[0m"
     echo -e "\033[33mCommands:\033[0m"
-    echo -e "  analyze path/to/receipt.{jpg,png,pdf,json} [--llm-type local|chatgpt]"
+    echo -e "  analyze path/to/receipt.{jpg,png,pdf,json} [--llm-type local|chatgpt] [--use-rag]"
     echo -e "  serve [--host HOST] [--port PORT]"
     exit 1
 }
@@ -49,11 +49,21 @@ deactivate_venv() {
 analyze_receipt() {
     RECEIPT_PATH="$1"
     LLM_TYPE="$2"
+    USE_RAG="$3"
 
     check_file "$RECEIPT_PATH"
     
     echo -e "\033[32mStarting receipt analysis using $LLM_TYPE LLM...\033[0m"
-    python -m expense_flow.main "$RECEIPT_PATH" --llm-type "$LLM_TYPE"
+    
+    RAG_FLAG=""
+    if [ "$USE_RAG" = "true" ]; then
+        echo -e "\033[32mInitializing test vector database...\033[0m"
+        python -m scripts.setup.init_test_vector_db
+        
+        RAG_FLAG="--use-rag"
+    fi
+    
+    python -m expense_flow.main "$RECEIPT_PATH" --llm-type "$LLM_TYPE" $RAG_FLAG
     SCRIPT_STATUS=$?
 
     if [ $SCRIPT_STATUS -ne 0 ]; then
@@ -110,6 +120,7 @@ case "$COMMAND" in
     analyze)
         RECEIPT_PATH="$1"
         LLM_TYPE="local"
+        USE_RAG="false"
         shift
 
         while [ "$#" -gt 0 ]; do
@@ -123,13 +134,17 @@ case "$COMMAND" in
                         exit 1
                     fi
                     ;;
+                --use-rag)
+                    USE_RAG="true"
+                    shift
+                    ;;
                 *)
                     usage
                     ;;
             esac
         done
 
-        analyze_receipt "$RECEIPT_PATH" "$LLM_TYPE"
+        analyze_receipt "$RECEIPT_PATH" "$LLM_TYPE" "$USE_RAG"
         ;;
     serve)
         serve_api "$@"

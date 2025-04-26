@@ -1,7 +1,7 @@
 from openai import OpenAI
 from ollama import Client
 from expense_flow.config import Config
-from .llm_service import LLMProvider
+from ..services.llm_service import LLMProvider
 
 class ChatGPTProvider(LLMProvider):
     """ChatGPT provider using OpenAI API"""
@@ -70,11 +70,11 @@ class OllamaProvider(LLMProvider):
             
         Returns:
             Ollama response
-        """
+        """        
         response = self._client.generate(
             model=self.model,
             prompt=f"{prompt}\n\nInput:\n{content}",
-            options={"num_ctx": 8192}
+            options={"num_ctx": 128000}
         )
         return response['response']
     

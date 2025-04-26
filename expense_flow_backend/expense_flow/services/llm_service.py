@@ -3,7 +3,11 @@ from typing import Dict, Any, List
 import json
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
+from rich.panel import Panel
+from rich.syntax import Syntax
+from rich.markdown import Markdown
 
+from expense_flow.services.rag_service import RAGService
 from expense_flow.utils.validator import ResponseValidator
 from expense_flow.utils.retry import retry_async, ProcessingError
 
@@ -77,6 +81,13 @@ class LLMService:
                 console=self.console,
                 transient=True
             ) as progress:
+                formatted_prompt = Markdown(f"{prompt}\n\nInput:\n{json.dumps(data, indent=2)}")
+                self.console.print(Panel(
+                    formatted_prompt,
+                    title="Prompt",
+                    border_style="blue"
+                ))
+            
                 task = progress.add_task(
                     f"[cyan]Analyzing with {provider.name}..."
                 )
@@ -152,6 +163,42 @@ class LLMService:
                 
         raise ValueError("No providers succeeded in analyzing the data")
         
+    async def analyze_with_rag(
+        self, 
+        providers: List[LLMProvider], 
+        prompt: str,
+        rag_service: RAGService, 
+        data: Dict[Any, Any],
+        max_retries: int = 5,
+        retry_delay: float = 1.0
+    ) -> Dict[Any, Any]:
+        """
+        Analyze data with RAG enhancement
+        
+        Args:
+            provider: LLM provider
+            prompt: Base system prompt
+            rag_service: RAG service for retrieving similar items
+            data: Data to analyze
+            max_retries: Maximum number of retry attempts
+            retry_delay: Delay between retries in seconds
+            
+        Returns:
+            Analysis result
+        """
+        # Get similar items for each item in the receipt
+        enhanced_data = data.copy()
+        enhanced_data["similar_items"] = {}
+        
+        for idx, item in enumerate(data.get("items", [])):
+            description = item.get("description", "")
+            if description:
+                examples = rag_service.get_examples_for_item(description, limit=3)
+                enhanced_data["similar_items"][idx] = examples
+    
+        # Analyze with the enhanced prompt and data
+        return await self.analyze_with_fallback(providers, prompt, enhanced_data)
+
     def _parse_json(self, response: str) -> Dict[Any, Any]:
         """
         Parse JSON from response
