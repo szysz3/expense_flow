@@ -6,9 +6,8 @@ from typing import Dict, List, Any, Optional
 from sentence_transformers import SentenceTransformer
 import os
 import uuid
-import unicodedata
-import re
 import logging
+from expense_flow.services.text_processing_service import TextProcessingService
 
 logger = logging.getLogger("expense_flow")
 
@@ -16,30 +15,32 @@ class VectorStoreService:
     """Service for managing vector embeddings and similarity search"""
     
     def __init__(self, config: Config):
-        """Initialize vector store service"""
+        """
+        Initialize vector store service
+        
+        Args:
+            config: Application configuration
+        """
         self.config = config
         
-        # Ensure vector database directory exists
         os.makedirs(os.path.dirname(str(config.vector_db_path)), exist_ok=True)
         
-        # Initialize embedding model
         self.embedding_model = SentenceTransformer(config.embedding_model)
         self.vector_size = self.embedding_model.get_sentence_embedding_dimension()
         
-        # Initialize Qdrant client
         self.client = QdrantClient(
             path=str(config.vector_db_path),
             prefer_grpc=False
         )
         
-        # Initialize collections if they don't exist
+        self.text_processor = TextProcessingService()
+        
         self._init_collections()
         
     def _init_collections(self):
         """Initialize vector collections if they don't exist"""
         collections = [c.name for c in self.client.get_collections().collections]
         
-        # Collection for items
         if "items" not in collections:
             self.client.create_collection(
                 collection_name="items",
@@ -59,22 +60,18 @@ class VectorStoreService:
         Returns:
             Normalized text
         """
-        if not text:
-            return ""
-            
-        # Convert to lowercase
-        text = text.lower()
-        
-        # Remove diacritics (accents)
-        text = ''.join(c for c in unicodedata.normalize('NFD', text)
-                      if unicodedata.category(c) != 'Mn')
-        
-        text = re.sub(r'\s+', ' ', text).strip()
-        
-        return text
+        return self.text_processor.normalize_text(text)
     
     def generate_embedding(self, text: str) -> np.ndarray:
-        """Generate embedding for text"""
+        """
+        Generate embedding for text
+        
+        Args:
+            text: Text to generate embedding for
+            
+        Returns:
+            Embedding vector as numpy array
+        """
         return self.embedding_model.encode(text)
     
     def add_item_embedding(self, item_data: Dict[str, Any]):
@@ -112,7 +109,7 @@ class VectorStoreService:
             limit: Maximum number of results
             
         Returns:
-            List of similar items
+            List of similar items with payload and score
         """
         embedding = self.generate_embedding(description)
         
@@ -124,7 +121,12 @@ class VectorStoreService:
         )
         
     def delete_items_by_receipt_id(self, receipt_id: str):
-        """Delete all items associated with a receipt"""
+        """
+        Delete all items associated with a receipt
+        
+        Args:
+            receipt_id: ID of the receipt
+        """
         self.client.delete(
             collection_name="items",
             points_selector=models.FilterSelector(

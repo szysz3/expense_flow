@@ -22,7 +22,6 @@ class DatabaseSyncService:
     
     def populate_vector_store(self):
         """Populate vector store from TinyDB data"""
-        # Get all receipts
         receipts = self.repository.get_all_receipts()
         
         total_items = 0
