@@ -74,7 +74,7 @@ class OllamaProvider(LLMProvider):
         response = self._client.generate(
             model=self.model,
             prompt=f"{prompt}\n\nInput:\n{content}",
-            options={"num_ctx": 12000}
+            options={"num_ctx": 16000}
         )
         return response['response']
     

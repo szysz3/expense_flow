@@ -1,4 +1,3 @@
-# expense_flow/services/rag_service.py
 from typing import List, Dict, Any
 import logging
 from expense_flow.services.similarity_service import SimilarityService
@@ -71,7 +70,7 @@ class RAGService:
             
         return examples
     
-    def get_examples_for_item(self, item_description: str, limit: int = 3) -> str:
+    def get_examples_for_item(self, item_description: str, limit: int = 2) -> str:
         """
         Get formatted examples for an item description
         

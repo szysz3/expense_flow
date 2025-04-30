@@ -169,8 +169,6 @@ class LLMService:
         prompt: str,
         rag_service: RAGService, 
         data: Dict[Any, Any],
-        max_retries: int = 5,
-        retry_delay: float = 1.0
     ) -> Dict[Any, Any]:
         """
         Analyze data with RAG enhancement
@@ -193,7 +191,7 @@ class LLMService:
         for idx, item in enumerate(data.get("items", [])):
             description = item.get("description", "")
             if description:
-                examples = rag_service.get_examples_for_item(description, limit=3)
+                examples = rag_service.get_examples_for_item(description, limit=2)
                 enhanced_data["similar_items"][idx] = examples
     
         # Analyze with the enhanced prompt and data
