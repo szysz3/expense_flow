@@ -88,22 +88,24 @@ Categories:
 - other
 
 Category Definitions and Examples:
-1. groceries: food, fruits, vegetables, non-alcoholic beverages, soft drinks, ingredients, spices, meat, fish, dairy, bread, coffee, tea
+1. groceries: food, fruits, vegetables, non-alcoholic beverages, soft drinks, ingredients, spices, meat, fish, dairy, bread, coffee, tea, snacks, condiments, cooking oils
 2. alcoholic_beverages: beer, wine, whisky, vodka, gin and other alcoholic drinks
-3. personal_care: hygiene products, cosmetics, medications, medical items, soap, deodorant
-4. household: cleaning supplies, decorative items, home decor, tools, maintenance items, shopping bags, storage containers, plants
-5. clothing: apparel, shoes, accessories, bags for wearing
-6. entertainment: books, electronics, games, toys (non-pet), magazines
-7. transportation: gas, parking tickets, car supplies
-8. pet: pet food, pet supplies, pet toys
-9. other: items not fitting above categories or with empty descriptions
+3. personal_care: hygiene products, cosmetics, medications, medical items, soap, deodorant, shampoo, toothpaste, tissues
+4. household: cleaning supplies, decorative items, home decor, tools, maintenance items, shopping bags, storage containers, plants, batteries, light bulbs, kitchen utensils
+5. clothing: apparel, shoes, accessories, bags for wearing, socks, underwear, hats, belts
+6. entertainment: books, electronics, games, toys (non-pet), magazines, newspapers, tickets, hobby supplies
+7. transportation: gas, parking tickets, car supplies, vehicle parts, bus/train tickets, car cleaning products
+8. pet: pet food, pet supplies, pet toys, pet grooming products, pet accessories
+9. other: items not fitting above categories or with empty descriptions, fees, services
 
-Category Decision Process:
-1. Is item a discount (OPUST, rabat)? → Use same category as original item
-2. Is item a carrying/storage solution (reklamówka, torba)? → household
-3. Is item food/drink? → If contains alcohol → alcoholic_beverages, else → groceries
-4. Is description empty or unclear? → other
-5. Does item clearly match another category? → Use that category.
+Priority Category Decision Process:
+1. CHECK SIMILAR ITEMS FIRST: Use similar items with high scores (>0.8) as primary reference
+2. DISCOUNTS: Is item a discount (OPUST, rabat)? → Use same category as original item
+3. BAGS: Is item a carrying/storage solution (reklamówka, torba)? → household
+4. ALCOHOL: Is item food/drink containing alcohol? → alcoholic_beverages
+5. FOOD: Is item non-alcoholic food/drink? → groceries
+6. EMPTY: Is description empty or unclear? → other
+7. MATCHING: Does item clearly match another specific category? → Use that category
 
 Rules:
 1. Analyze each item description to determine correct category
@@ -146,3 +148,20 @@ Additional Context:
 5. When high similarity matches (>0.8) are present, strongly consider using the same category
 6. When moderate similarity matches (0.5-0.8) are present, use them as guidance but also apply standard categorization rules
 7. When only low similarity matches (<0.5) or no matches are present, rely primarily on the standard categorization rules
+
+Polish-Specific Item Examples:
+- MLEKO, CHLEB, MASŁO, SER, WODA, KAWA, HERBATA → groceries
+- PIWO, WINO, WÓDKA → alcoholic_beverages
+- SZAMPON, MYDŁO, PASTA DO ZĘBÓW → personal_care
+- REKLAMÓWKA, BATERIE, ŻARÓWKA → household
+- KOSZULKA, SPODNIE, SKARPETKI → clothing
+- GAZETA, KSIĄŻKA, CZASOPISMO → entertainment
+- BENZYNA, BILET AUTOBUSOWY → transportation
+- KARMA DLA PSA, ŻWIREK DLA KOTA → pet
+
+Edge Case Guidance:
+1. Items with unclear or multiple purposes → use primary intended purpose
+2. Multi-component sets (gift sets) → categorize by primary/most valuable component
+3. Digital vs. physical items → categorize by nature of item (e.g., digital movie → entertainment)
+4. Food containers → categorize by contents (beverage in bottle → groceries) not container
+5. "OPUST"/"RABAT" items → must have same category as the original item they discount
