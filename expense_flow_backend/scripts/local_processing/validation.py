@@ -3,8 +3,8 @@ import json
 import argparse
 import os
 import logging
+import re
 from colorama import init, Fore, Style
-
 init()
 
 class Stats:
@@ -13,16 +13,17 @@ class Stats:
         self.total_mismatches = 0
         self.files_processed = 0
         self.files_with_errors = 0
-
+        self.items_skipped = 0
+        
     def print_summary(self):
         total = self.total_matches + self.total_mismatches
         success_rate = (self.total_matches / total * 100) if total > 0 else 0
-        
         print(f"\n{Fore.CYAN}═══ Overall Summary ═══{Style.RESET_ALL}")
         print(f"{Fore.GREEN}✓ Matching categories:{Style.RESET_ALL} {self.total_matches}")
         print(f"{Fore.RED}✗ Mismatched categories:{Style.RESET_ALL} {self.total_mismatches}")
         print(f"{Fore.BLUE}◆ Files processed:{Style.RESET_ALL} {self.files_processed}")
         print(f"{Fore.RED}✗ Files with errors:{Style.RESET_ALL} {self.files_with_errors}")
+        print(f"{Fore.YELLOW}⚠ Items skipped (discounts):{Style.RESET_ALL} {self.items_skipped}")
         print(f"{Fore.CYAN}⚡ Success rate:{Style.RESET_ALL} {success_rate:.1f}%\n")
 
 def setup_logging(verbose):
@@ -34,33 +35,45 @@ def load_json(path):
     with open(path, 'r') as f:
         return json.load(f)
 
+def is_discount_item(description):
+    # Case-insensitive check for discount-related terms
+    discount_terms = ['rabat', 'opust']
+    return any(term.lower() in description.lower() for term in discount_terms)
+
 def compare_categories(source_path, result_path, stats):
     # Load both files
     source_data = load_json(source_path)
     result_data = load_json(result_path)
     
     # Create lookup dictionary for result items
-    result_items = {item['description']: item.get('category') 
-                   for item in result_data['items']}
+    result_items = {item['description']: item.get('category')
+                    for item in result_data['items']}
     
     # Compare each source item
     for item in source_data['items']:
         desc = item['description']
         source_category = item.get('category')
-        result_category = result_items.get(desc)
         
+        # Skip discount items
+        if is_discount_item(desc):
+            logging.info(f"Skipping discount item: {desc[:50]}...")
+            stats.items_skipped += 1
+            continue
+            
         if desc not in result_items:
             logging.warning(f"Item not found in result file: {desc[:50]}...")
             continue
             
+        result_category = result_items.get(desc)
+        
         # Log comparison results
         logging.info(f"Checking: {desc[:70]}...")
         if source_category == result_category:
             stats.total_matches += 1
-            logging.info(f"  ✓ Match: {source_category}")
+            logging.info(f" ✓ Match: {source_category}")
         else:
             stats.total_mismatches += 1
-            logging.warning(f"  ✗ Mismatch - Source: {source_category}, Result: {result_category}")
+            logging.warning(f" ✗ Mismatch - Source: {source_category}, Result: {result_category}")
 
 def main():
     # Parse command line arguments
@@ -99,7 +112,7 @@ def main():
         except Exception as e:
             logging.error(f"Error processing {source_file}: {str(e)}")
             stats.files_with_errors += 1
-
+    
     # Print final summary
     stats.print_summary()
 
