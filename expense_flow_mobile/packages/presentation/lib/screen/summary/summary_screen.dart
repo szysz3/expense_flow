@@ -14,6 +14,7 @@ import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
+import '../../theme/expense_flow_colors.dart';
 import 'bloc/summary_bloc.dart';
 import 'bloc/summary_events.dart';
 import 'bloc/summary_state.dart';
@@ -39,10 +40,7 @@ class SummaryScreen extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: SummaryScreenView(),
-        ),
+        const SummaryScreenView(),
       ]));
 }
 
@@ -76,12 +74,74 @@ class SummaryScreenView extends StatelessWidget {
         return Stack(
           children: [
             Padding(
-              padding: EdgeInsets.only(bottom: 96),
+              padding: const EdgeInsets.only(
+                  left: 16.0, right: 16.0, top: 16.0, bottom: 112),
               child: _buildContent(context, state),
             ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    height: 6,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(50),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: 112,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(50),
+                      border: Border(
+                        top: BorderSide(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outline
+                              .withAlpha(50),
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 80),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Savings",
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            "1250.75",
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: ExpenseFlowColors.chartMutedGreen,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Positioned(
-              right: 8,
-              bottom: 8,
+              right: 24,
+              bottom: 24,
               child: SpeedDialMenu(
                 options: [
                   SpeedDialMenuData(
@@ -89,7 +149,7 @@ class SummaryScreenView extends StatelessWidget {
                     svgPath: 'packages/presentation/assets/icon_bar_chart.svg',
                     onPressed: () {
                       context.read<SummaryBloc>().add(
-                            SummaryEvent.displayBarChart(),
+                            const SummaryEvent.displayBarChart(),
                           );
                     },
                   ),
@@ -99,7 +159,7 @@ class SummaryScreenView extends StatelessWidget {
                           'packages/presentation/assets/icon_pie_chart.svg',
                       onPressed: () {
                         context.read<SummaryBloc>().add(
-                              SummaryEvent.displayPieChart(),
+                              const SummaryEvent.displayPieChart(),
                             );
                       }),
                   SpeedDialMenuData(
@@ -107,7 +167,7 @@ class SummaryScreenView extends StatelessWidget {
                       svgPath: 'packages/presentation/assets/icon_summary.svg',
                       onPressed: () {
                         context.read<SummaryBloc>().add(
-                              SummaryEvent.displayList(),
+                              const SummaryEvent.displayList(),
                             );
                       })
                 ],
