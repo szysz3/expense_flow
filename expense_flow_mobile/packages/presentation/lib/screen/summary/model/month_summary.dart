@@ -27,5 +27,9 @@ class MonthSummary with _$MonthSummary {
     }
   }
 
+  double? calculateSavings() {
+    return 1235.0;
+  }
+
   bool get isIncrease => totalAmount > previousMonthAmount;
 }

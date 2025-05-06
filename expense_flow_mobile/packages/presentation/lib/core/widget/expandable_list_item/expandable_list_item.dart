@@ -15,6 +15,8 @@ class ExpandableListItem<T extends ExpandableHeaderData,
   final Widget Function(I item)? itemTrailing;
   final EdgeInsets headerPadding;
   final EdgeInsets itemPadding;
+  final List<Widget> Function(T data)? headerColumns;
+  final Widget Function(I item)? itemContent;
 
   const ExpandableListItem({
     super.key,
@@ -24,6 +26,8 @@ class ExpandableListItem<T extends ExpandableHeaderData,
     this.headerTrailing,
     this.itemLeading,
     this.itemTrailing,
+    this.headerColumns,
+    this.itemContent,
     this.headerPadding = const EdgeInsets.only(left: 16),
     this.itemPadding = const EdgeInsets.fromLTRB(32, 0, 16, 0),
   });
@@ -95,46 +99,120 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
       child: Container(
         height: 60,
         padding: widget.headerPadding,
-        child: Row(
+        child: widget.headerData.useVerticalLayout
+            ? _buildVerticalHeader()
+            : _buildHorizontalHeader(),
+      ),
+    );
+  }
+
+  Widget _buildHorizontalHeader() {
+    final List<Widget> baseColumns = [
+      if (widget.headerData.iconPath != null) ...[
+        SvgPicture.asset(
+          widget.headerData.iconPath!,
+          width: 32,
+          height: 32,
+        ),
+        const SizedBox(width: 16),
+      ],
+      Expanded(
+        child: Text(
+          widget.headerData.title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ];
+
+    final List<Widget> customColumns = widget.headerColumns != null
+        ? widget.headerColumns!(widget.headerData)
+        : [];
+
+    final List<Widget> finalColumns = [
+      if (widget.headerTrailing != null)
+        widget.headerTrailing!(widget.headerData),
+      const SizedBox(width: 8),
+      RotationTransition(
+        turns: _rotationAnimation,
+        child: SvgPicture.asset(
+          'packages/presentation/assets/icon_right_chevron.svg',
+          width: 24,
+          height: 24,
+        ),
+      ),
+    ];
+
+    return Row(
+      children: [...baseColumns, ...customColumns, ...finalColumns],
+    );
+  }
+
+  Widget _buildVerticalHeader() {
+    final List<Widget> baseColumns = [
+      if (widget.headerData.iconPath != null) ...[
+        SvgPicture.asset(
+          widget.headerData.iconPath!,
+          width: 32,
+          height: 32,
+        ),
+        const SizedBox(width: 16),
+      ],
+      Expanded(
+        flex: 3,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (widget.headerData.iconPath != null) ...[
-              SvgPicture.asset(
-                widget.headerData.iconPath!,
-                width: 32,
-                height: 32,
-              ),
-              const SizedBox(width: 16),
-            ],
-            Expanded(
-              child: Text(
-                widget.headerData.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            if (widget.headerTrailing != null)
-              widget.headerTrailing!(widget.headerData),
             Text(
-              widget.headerData.totalAmount.toStringAsFixed(2),
+              widget.headerData.monthName ?? widget.headerData.title,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(width: 8),
-            RotationTransition(
-              turns: _rotationAnimation,
-              child: SvgPicture.asset(
-                'packages/presentation/assets/icon_right_chevron.svg',
-                width: 24,
-                height: 24,
+            if (widget.headerData.yearName != null)
+              Text(
+                widget.headerData.yearName!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
           ],
         ),
       ),
+    ];
+
+    final List<Widget> customColumns = widget.headerColumns != null
+        ? widget.headerColumns!(widget.headerData)
+        : [];
+
+    final List<Widget> finalColumns = [
+      const SizedBox(width: 8),
+      if (widget.headerTrailing != null)
+        Opacity(
+          opacity: 0.7,
+          child: widget.headerTrailing!(widget.headerData),
+        ),
+      const SizedBox(width: 8),
+      const SizedBox(width: 8),
+      RotationTransition(
+        turns: _rotationAnimation,
+        child: SvgPicture.asset(
+          'packages/presentation/assets/icon_right_chevron.svg',
+          width: 24,
+          height: 24,
+        ),
+      ),
+    ];
+
+    return Row(
+      children: [...baseColumns, ...customColumns, ...finalColumns],
     );
   }
 
@@ -152,6 +230,10 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
   }
 
   Widget _buildItemRow(I item) {
+    if (widget.itemContent != null) {
+      return widget.itemContent!(item);
+    }
+
     final textColor = Theme.of(context).colorScheme.onSurface.withAlpha(150);
     return Container(
       height: 50,

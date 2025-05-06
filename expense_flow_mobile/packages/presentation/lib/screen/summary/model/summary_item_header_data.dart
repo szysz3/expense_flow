@@ -17,4 +17,22 @@ class SummaryItemHeaderData implements ExpandableHeaderData {
 
   @override
   double get totalAmount => month.totalAmount;
+
+  @override
+  String? get monthName {
+    final parts = month.month.split(" ");
+    return parts.isNotEmpty ? parts[0] : month.month;
+  }
+
+  @override
+  String? get yearName {
+    final parts = month.month.split(" ");
+    return parts.length > 1 ? parts[1] : null;
+  }
+
+  @override
+  double? get savingsAmount => 123.0;
+
+  @override
+  bool get useVerticalLayout => true;
 }

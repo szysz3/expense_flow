@@ -17,4 +17,16 @@ class CategoryItemHeaderData implements ExpandableHeaderData {
 
   @override
   double get totalAmount => category.totalAmount;
+
+  @override
+  String? get monthName => null;
+
+  @override
+  double? get savingsAmount => null;
+
+  @override
+  bool get useVerticalLayout => false;
+
+  @override
+  String? get yearName => null;
 }
