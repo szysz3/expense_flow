@@ -134,7 +134,6 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
     final List<Widget> finalColumns = [
       if (widget.headerTrailing != null)
         widget.headerTrailing!(widget.headerData),
-      const SizedBox(width: 8),
       RotationTransition(
         turns: _rotationAnimation,
         child: SvgPicture.asset(
@@ -193,14 +192,8 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
         : [];
 
     final List<Widget> finalColumns = [
-      const SizedBox(width: 8),
       if (widget.headerTrailing != null)
-        Opacity(
-          opacity: 0.7,
-          child: widget.headerTrailing!(widget.headerData),
-        ),
-      const SizedBox(width: 8),
-      const SizedBox(width: 8),
+        widget.headerTrailing!(widget.headerData),
       RotationTransition(
         turns: _rotationAnimation,
         child: SvgPicture.asset(

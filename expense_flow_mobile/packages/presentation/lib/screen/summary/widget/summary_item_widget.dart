@@ -37,39 +37,38 @@ class SummaryItemWidget extends StatelessWidget {
 
   Widget _buildTotalColumn(MonthSummary month) {
     return Expanded(
-      flex: 3,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          const Text(
-            "Total",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.normal,
+        flex: 2,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            const Text(
+              "Total",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            month.totalAmount.toStringAsFixed(2),
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+            Text(
+              month.totalAmount.toStringAsFixed(2),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
+          ],
+        ));
   }
 
   Widget _buildSavingsColumn(MonthSummary month) {
-    final double? savings = month.calculateSavings();
+    final double savings = month.calculateSavings();
     final savingsColor = month.savingsOnTrack
         ? ExpenseFlowColors.chartMutedGreen
         : ExpenseFlowColors.chartMutedRed;
 
-    if (savings == null || savings == 0) {
+    if (savings == 0) {
       return const SizedBox.shrink();
     }
 
