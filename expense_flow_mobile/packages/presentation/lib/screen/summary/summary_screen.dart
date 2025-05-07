@@ -1,4 +1,5 @@
 import 'package:domain/use_case/get_months_summary_use_case.dart';
+import 'package:domain/use_case/settings/get_month_savings_settings_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -28,6 +29,7 @@ class SummaryScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
       create: (_) => SummaryBloc(
             getIt<GetMonthsSummaryUseCase>(),
+            getIt<GetMonthSavingsSettingsUseCase>(),
             getIt<Logger>(),
             getIt<LocalizationService>(),
           )..add(const SummaryEvent.init()),

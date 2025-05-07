@@ -78,7 +78,7 @@ class SummaryBarChart extends StatelessWidget {
         getTooltipColor: (touchedSpot) => Colors.black.withOpacity(0.4),
         getTooltipItem: (group, groupIndex, rod, rodIndex) {
           return BarTooltipItem(
-            '${displayMonths[groupIndex].month}\n',
+            '${displayMonths[groupIndex].monthNumber}\n',
             const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -119,7 +119,8 @@ class SummaryBarChart extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Text(
-                _shortenMonthName(displayMonths[value.toInt()].month),
+                _shortenMonthName(
+                    displayMonths[value.toInt()].monthNumber.toString()),
                 style: const TextStyle(fontSize: 10),
               ),
             );

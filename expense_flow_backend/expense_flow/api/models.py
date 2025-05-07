@@ -139,7 +139,8 @@ class CategorySummary(BaseModel):
 
 class MonthSummary(BaseModel):
     id: str
-    month: str
+    monthNumber: int
+    year: int
     previousMonthTotal: float
     categories: List[CategorySummary]
 

@@ -9,7 +9,8 @@ part 'month_summary.g.dart';
 class MonthSummary with _$MonthSummary {
   const factory MonthSummary({
     required String id,
-    required String month,
+    required int monthNumber,
+    required int year,
     required double previousMonthTotal,
     required List<CategorySummary> categories,
   }) = _MonthSummary;

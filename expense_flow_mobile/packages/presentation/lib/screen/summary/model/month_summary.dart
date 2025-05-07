@@ -8,9 +8,12 @@ part 'month_summary.freezed.dart';
 class MonthSummary with _$MonthSummary {
   const factory MonthSummary({
     required String id,
-    required String month,
+    required int monthNumber,
+    required int year,
     required List<CategorySummary> categories,
     required double previousMonthAmount,
+    @Default(0.0) double income,
+    @Default(0.0) double expectedSavingsAmount,
     @Default(false) bool isExpanded,
   }) = _MonthSummary;
 
@@ -28,8 +31,11 @@ class MonthSummary with _$MonthSummary {
   }
 
   double? calculateSavings() {
-    return 1235.0;
+    return income > 0 ? income - totalAmount : null;
   }
 
   bool get isIncrease => totalAmount > previousMonthAmount;
+
+  bool get savingsOnTrack =>
+      expectedSavingsAmount <= (calculateSavings() ?? 0.0);
 }

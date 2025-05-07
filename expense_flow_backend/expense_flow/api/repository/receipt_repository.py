@@ -461,7 +461,8 @@ class ReceiptRepository(BaseRepository):
             
             summaries.append(MonthSummary(
                 id=str(len(sorted_months) - i),
-                month=current_month.strftime('%B %Y'),
+                monthNumber=current_month.month,
+                year=current_month.year,
                 previousMonthTotal=float(prev_month_total),
                 categories=category_summaries
             ))
