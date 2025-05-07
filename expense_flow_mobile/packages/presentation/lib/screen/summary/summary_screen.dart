@@ -73,184 +73,194 @@ class SummaryScreenView extends StatelessWidget {
           return _buildEmptyState(context);
         }
 
-        return Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(
-                  left: 16.0, right: 16.0, top: 16.0, bottom: 112),
-              child: _buildContent(context, state),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: 6,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(50),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                          offset: const Offset(0, -2),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    height: 112,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(50),
-                      border: Border(
-                        top: BorderSide(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .outline
-                              .withAlpha(50),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 80),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Savings",
-                            style: const TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            state.totalSavings.toStringAsFixed(2),
-                            style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                                color: ExpenseFlowColors.chartMutedPurple),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Positioned(
-              right: 24,
-              bottom: 24,
-              child: SpeedDialMenu(
-                options: [
-                  SpeedDialMenuData(
-                    label: AppLocalizations.of(context).barChart,
-                    svgPath: 'packages/presentation/assets/icon_bar_chart.svg',
-                    onPressed: () {
-                      context.read<SummaryBloc>().add(
-                            const SummaryEvent.displayBarChart(),
-                          );
-                    },
-                  ),
-                  SpeedDialMenuData(
-                      label: AppLocalizations.of(context).pieChart,
-                      svgPath:
-                          'packages/presentation/assets/icon_pie_chart.svg',
-                      onPressed: () {
-                        context.read<SummaryBloc>().add(
-                              const SummaryEvent.displayPieChart(),
-                            );
-                      }),
-                  SpeedDialMenuData(
-                      label: AppLocalizations.of(context).summary,
-                      svgPath: 'packages/presentation/assets/icon_summary.svg',
-                      onPressed: () {
-                        context.read<SummaryBloc>().add(
-                              const SummaryEvent.displayList(),
-                            );
-                      })
-                ],
-              ),
-            ),
-          ],
-        );
+        return _buildMainContent(context, state);
       },
     );
   }
 
-  Widget _buildContent(BuildContext context, SummaryState state) {
-    switch (state.displayType) {
-      case SummaryDisplayType.barChart:
-        return SummaryBarChart(months: state.months);
-      case SummaryDisplayType.pieChart:
-        return SummaryPieChart(months: state.months);
-      case SummaryDisplayType.list:
-        return RefreshIndicator(
-          onRefresh: () => context.read<SummaryBloc>().refresh(),
-          child: ListView.builder(
-            itemCount: state.months.length,
-            itemBuilder: (context, index) {
-              final month = state.months[index];
-              return SummaryItemWidget(
-                month: month,
-                onToggle: () => context.read<SummaryBloc>().add(
-                      SummaryEvent.toggleMonth(month.id),
-                    ),
-              );
-            },
-          ),
-        );
-    }
+  Widget _buildMainContent(BuildContext context, SummaryState state) {
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+              left: 16.0, right: 16.0, top: 16.0, bottom: 112),
+          child: _buildContent(context, state),
+        ),
+        if (state.displayType == SummaryDisplayType.list)
+          _buildBottomSavingsPanel(context, state),
+        _buildSpeedDialMenu(context),
+      ],
+    );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
+  Widget _buildBottomSavingsPanel(BuildContext context, SummaryState state) {
+    return Align(
+      alignment: Alignment.bottomCenter,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          SvgPicture.asset(
-            'packages/presentation/assets/icon_summary.svg',
-            width: 64,
-            height: 64,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context).noMonthlyData,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context).addExpensesToSeeMonthly,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          Container(
+            height: 6,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(50),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                  offset: const Offset(0, -2),
                 ),
+              ],
+            ),
           ),
-          const SizedBox(height: 24),
-          AnimatedSquareButton(
-            isProcessing: false,
-            onPressed: () {
-              context.read<SummaryBloc>().add(const SummaryEvent.init());
-            },
-            width: 100.0,
-            height: 52.0,
-            iconSize: 20.0,
-            borderColor: Colors.white,
-            backgroundColor: Colors.black,
-            icon: Text(
-              AppLocalizations.of(context).refresh,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+          Container(
+            height: 112,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.black.withAlpha(50),
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withAlpha(50),
+                  width: 1,
+                ),
               ),
             ),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 80),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Savings",
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    state.totalSavings.toStringAsFixed(2),
+                    style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: ExpenseFlowColors.chartMutedPurple),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpeedDialMenu(BuildContext context) {
+    return Positioned(
+      right: 24,
+      bottom: 24,
+      child: SpeedDialMenu(
+        options: [
+          SpeedDialMenuData(
+            label: AppLocalizations.of(context).barChart,
+            svgPath: 'packages/presentation/assets/icon_bar_chart.svg',
+            onPressed: () {
+              context.read<SummaryBloc>().add(
+                    const SummaryEvent.displayBarChart(),
+                  );
+            },
+          ),
+          SpeedDialMenuData(
+            label: AppLocalizations.of(context).pieChart,
+            svgPath: 'packages/presentation/assets/icon_pie_chart.svg',
+            onPressed: () {
+              context.read<SummaryBloc>().add(
+                    const SummaryEvent.displayPieChart(),
+                  );
+            },
+          ),
+          SpeedDialMenuData(
+            label: AppLocalizations.of(context).summary,
+            svgPath: 'packages/presentation/assets/icon_summary.svg',
+            onPressed: () {
+              context.read<SummaryBloc>().add(
+                    const SummaryEvent.displayList(),
+                  );
+            },
           )
         ],
       ),
     );
   }
+}
+
+Widget _buildContent(BuildContext context, SummaryState state) {
+  switch (state.displayType) {
+    case SummaryDisplayType.barChart:
+      return SummaryBarChart(months: state.months);
+    case SummaryDisplayType.pieChart:
+      return SummaryPieChart(months: state.months);
+    case SummaryDisplayType.list:
+      return RefreshIndicator(
+        onRefresh: () => context.read<SummaryBloc>().refresh(),
+        child: ListView.builder(
+          itemCount: state.months.length,
+          itemBuilder: (context, index) {
+            final month = state.months[index];
+            return SummaryItemWidget(
+              month: month,
+              onToggle: () => context.read<SummaryBloc>().add(
+                    SummaryEvent.toggleMonth(month.id),
+                  ),
+            );
+          },
+        ),
+      );
+  }
+}
+
+Widget _buildEmptyState(BuildContext context) {
+  return Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SvgPicture.asset(
+          'packages/presentation/assets/icon_summary.svg',
+          width: 64,
+          height: 64,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          AppLocalizations.of(context).noMonthlyData,
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          AppLocalizations.of(context).addExpensesToSeeMonthly,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              ),
+        ),
+        const SizedBox(height: 24),
+        AnimatedSquareButton(
+          isProcessing: false,
+          onPressed: () {
+            context.read<SummaryBloc>().add(const SummaryEvent.init());
+          },
+          width: 100.0,
+          height: 52.0,
+          iconSize: 20.0,
+          borderColor: Colors.white,
+          backgroundColor: Colors.black,
+          icon: Text(
+            AppLocalizations.of(context).refresh,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        )
+      ],
+    ),
+  );
 }
