@@ -10,12 +10,12 @@ import 'package:presentation/screen/summary/widget/chart/summary_bar_chart.dart'
 import 'package:presentation/screen/summary/widget/chart/summary_pie_chart.dart';
 import 'package:presentation/screen/summary/widget/speed_dial/speed_dial_menu.dart';
 import 'package:presentation/screen/summary/widget/speed_dial/speed_dial_menu_data.dart';
+import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
-import '../../theme/expense_flow_colors.dart';
 import 'bloc/summary_bloc.dart';
 import 'bloc/summary_events.dart';
 import 'bloc/summary_state.dart';
@@ -127,12 +127,11 @@ class SummaryScreenView extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            "1250.75",
+                            state.totalSavings.toStringAsFixed(2),
                             style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: ExpenseFlowColors.chartMutedGreen,
-                            ),
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: ExpenseFlowColors.chartMutedPurple),
                           ),
                         ],
                       ),

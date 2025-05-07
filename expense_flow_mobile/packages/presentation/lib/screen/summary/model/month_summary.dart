@@ -30,12 +30,11 @@ class MonthSummary with _$MonthSummary {
     }
   }
 
-  double? calculateSavings() {
-    return income > 0 ? income - totalAmount : null;
+  double calculateSavings() {
+    return income > 0 ? income - totalAmount : 0.0;
   }
 
   bool get isIncrease => totalAmount > previousMonthAmount;
 
-  bool get savingsOnTrack =>
-      expectedSavingsAmount <= (calculateSavings() ?? 0.0);
+  bool get savingsOnTrack => expectedSavingsAmount <= calculateSavings();
 }

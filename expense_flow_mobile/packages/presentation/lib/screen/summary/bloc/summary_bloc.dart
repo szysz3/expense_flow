@@ -138,9 +138,15 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
             expectedSavingsAmount: expectedSavingsAmount);
       }).toList();
 
+      final totalSavings = presentationMonths.fold<double>(
+        0.0,
+        (sum, month) => sum + month.calculateSavings(),
+      );
+
       emit(state.copyWith(
         months: presentationMonths,
         isLoading: false,
+        totalSavings: totalSavings,
         error: null,
       ));
       _refreshCompleter?.complete();

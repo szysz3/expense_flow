@@ -12,6 +12,7 @@ class SummaryState with _$SummaryState {
     @Default([]) List<MonthSummary> months,
     @Default(false) bool isLoading,
     @Default(SummaryDisplayType.list) SummaryDisplayType displayType,
+    @Default(0.0) double totalSavings,
     AppError? error,
   }) = _SummaryState;
 }
