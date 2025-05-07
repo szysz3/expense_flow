@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:presentation/theme/expense_flow_colors.dart';
 
+import '../../../core/utils/currency_text_formatter.dart';
 import '../../../core/widget/expandable_list_item/expandable_list_item.dart';
 import '../model/category_summary.dart';
 import '../model/month_summary.dart';
@@ -21,9 +22,9 @@ class SummaryItemWidget extends StatelessWidget {
       headerData: SummaryItemHeaderData(month),
       items: month.categories.map((c) => SummaryItemData(c)).toList(),
       onToggle: onToggle,
-      headerTrailing: (data) => _buildTotalColumn(month),
+      headerTrailing: (data) => _buildTotalColumn(context, month),
       headerColumns: (data) => [
-        _buildSavingsColumn(month),
+        _buildSavingsColumn(context, month),
         _buildChangeIndicator(month),
       ],
       itemLeading: (item) => SvgPicture.asset(
@@ -35,7 +36,10 @@ class SummaryItemWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTotalColumn(MonthSummary month) {
+  Widget _buildTotalColumn(BuildContext context, MonthSummary month) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     return Expanded(
         flex: 2,
         child: Column(
@@ -51,7 +55,7 @@ class SummaryItemWidget extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              month.totalAmount.toStringAsFixed(2),
+              currencyFormatter.formatCurrency(month.totalAmount),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -62,7 +66,10 @@ class SummaryItemWidget extends StatelessWidget {
         ));
   }
 
-  Widget _buildSavingsColumn(MonthSummary month) {
+  Widget _buildSavingsColumn(BuildContext context, MonthSummary month) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     final double savings = month.calculateSavings();
     final savingsColor = month.savingsOnTrack
         ? ExpenseFlowColors.chartMutedGreen
@@ -87,7 +94,7 @@ class SummaryItemWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           Text(
-            savings.toStringAsFixed(2),
+            currencyFormatter.formatCurrency(savings),
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,

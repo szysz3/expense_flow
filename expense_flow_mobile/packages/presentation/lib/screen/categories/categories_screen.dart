@@ -9,6 +9,7 @@ import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
+import '../../core/utils/currency_text_formatter.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
 import '../../theme/expense_flow_colors.dart';
@@ -81,6 +82,9 @@ class CategoriesScreenView extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context, CategoriesState state) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     final colorScheme = Theme.of(context).colorScheme;
     var toSpend = ((state.income - state.savingsAmount) - state.totalExpenses);
     return Stack(
@@ -137,7 +141,7 @@ class CategoriesScreenView extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          toSpend.toStringAsFixed(2),
+                          currencyFormatter.formatCurrency(toSpend),
                           style: TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.bold,

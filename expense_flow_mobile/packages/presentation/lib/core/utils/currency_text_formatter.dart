@@ -42,4 +42,15 @@ class CurrencyTextFormatter extends TextInputFormatter {
     }
     return value;
   }
+
+  String formatCurrency(double amount,
+      {String? symbol, int decimalDigits = 2}) {
+    final formatter = NumberFormat.currency(
+      locale: locale,
+      symbol: '',
+      decimalDigits: decimalDigits,
+    );
+
+    return formatter.format(amount);
+  }
 }

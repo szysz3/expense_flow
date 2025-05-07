@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
+import 'package:presentation/core/utils/currency_text_formatter.dart';
 import 'package:presentation/screen/summary/widget/chart/summary_bar_chart.dart';
 import 'package:presentation/screen/summary/widget/chart/summary_pie_chart.dart';
 import 'package:presentation/screen/summary/widget/speed_dial/speed_dial_menu.dart';
@@ -94,6 +95,9 @@ class SummaryScreenView extends StatelessWidget {
   }
 
   Widget _buildBottomSavingsPanel(BuildContext context, SummaryState state) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Column(
@@ -138,7 +142,7 @@ class SummaryScreenView extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    state.totalSavings.toStringAsFixed(2),
+                    currencyFormatter.formatCurrency(state.totalSavings),
                     style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
