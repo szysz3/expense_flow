@@ -9,6 +9,7 @@ class MonthSummary with _$MonthSummary {
   const factory MonthSummary({
     required String id,
     required int monthNumber,
+    required String monthName,
     required int year,
     required List<CategorySummary> categories,
     required double previousMonthAmount,

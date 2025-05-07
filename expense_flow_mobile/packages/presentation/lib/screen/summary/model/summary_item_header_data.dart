@@ -7,7 +7,7 @@ class SummaryItemHeaderData implements ExpandableHeaderData {
   SummaryItemHeaderData(this.month);
 
   @override
-  String get title => month.monthNumber.toString();
+  String get title => month.monthName;
 
   @override
   String? get iconPath => null;
@@ -20,7 +20,7 @@ class SummaryItemHeaderData implements ExpandableHeaderData {
 
   @override
   String? get monthName {
-    return month.monthNumber.toString();
+    return month.monthName;
   }
 
   @override

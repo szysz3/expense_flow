@@ -120,7 +120,7 @@ class SummaryPieChart extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                months[i].monthNumber.toString(),
+                months[i].monthName,
                 style: const TextStyle(color: Colors.white),
               ),
               const Spacer(),

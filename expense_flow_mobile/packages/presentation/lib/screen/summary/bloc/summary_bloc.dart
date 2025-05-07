@@ -5,6 +5,7 @@ import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:domain/use_case/settings/get_month_savings_settings_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
@@ -38,6 +39,12 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
   Future<void> refresh() async {
     add(const SummaryEvent.init());
     return _refreshCompleter?.future;
+  }
+
+  String _getMonthName(int monthNumber) {
+    if (monthNumber < 1 || monthNumber > 12) return 'Unknown';
+    final dateTime = DateTime(DateTime.now().year, monthNumber);
+    return DateFormat('MMMM').format(dateTime);
   }
 
   Future<void> _handleInit(
@@ -110,6 +117,7 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
       final presentationMonths = domainMonths.map((dynamic month) {
         final monthNumber = month.monthNumber as int;
         final year = month.year as int;
+        final monthName = _getMonthName(monthNumber);
 
         double income = 0.0;
         double expectedSavingsAmount = 0.0;
@@ -122,6 +130,7 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
         return MonthSummary(
             id: month.id as String,
             monthNumber: monthNumber,
+            monthName: monthName,
             year: year,
             previousMonthAmount: month.previousMonthTotal as double,
             categories: (month.categories as List<dynamic>)
