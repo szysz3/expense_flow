@@ -1,8 +1,10 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:data/repository/chat_repository_impl.dart';
 import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/repository/receipt/receipt_repository_impl.dart';
 import 'package:data/repository/settings_repository_impl.dart';
 import 'package:dio/dio.dart';
+import 'package:domain/repository/chat_repository.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/repository/settings_repository.dart';
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
@@ -11,8 +13,10 @@ import 'package:domain/use_case/delete_use_case.dart';
 import 'package:domain/use_case/get_autocomplete_suggestions_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:domain/use_case/get_daily_expenses_use_case.dart';
+import 'package:domain/use_case/get_messages_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:domain/use_case/get_receipts_use_case.dart';
+import 'package:domain/use_case/send_message_use_case.dart';
 import 'package:domain/use_case/settings/get_month_savings_settings_use_case.dart';
 import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
 import 'package:domain/use_case/settings/save_savings_settings_use_case.dart';
@@ -66,6 +70,14 @@ Future<void> configureDependencies() async {
     ),
   );
 
+  getIt.registerLazySingleton<ChatRepository>(
+    () => ChatRepositoryImpl(
+      dio: _getDio(),
+      errorLogger: getIt<Logger>(),
+      connectivity: getIt<Connectivity>(),
+    ),
+  );
+
   getIt.registerLazySingleton(
     () => GetCategoriesUseCase(getIt<ReceiptRepository>()),
   );
@@ -116,6 +128,14 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton(
     () => GetAutocompleteSuggestionsUseCase(getIt<ReceiptRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => GetMessagesUseCase(getIt<ChatRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => SendMessageUseCase(getIt<ChatRepository>()),
   );
 }
 
