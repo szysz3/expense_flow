@@ -26,7 +26,7 @@ class ChatMessageItem extends StatelessWidget {
             isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isCurrentUser) _buildAvatar(),
+          if (!isCurrentUser) _buildAvatar(context),
           const SizedBox(width: 8),
           Flexible(
             child: Container(
@@ -57,18 +57,19 @@ class ChatMessageItem extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          if (isCurrentUser) _buildAvatar(),
+          if (isCurrentUser) _buildAvatar(context),
         ],
       ),
     );
   }
 
-  Widget _buildAvatar() {
+  Widget _buildAvatar(BuildContext context) {
+    final theme = Theme.of(context);
     return CircleAvatar(
       radius: 16,
       backgroundColor: isCurrentUser
-          ? Colors.blueAccent.withOpacity(0.5)
-          : Colors.greenAccent.withOpacity(0.5),
+          ? theme.colorScheme.primary.withOpacity(0.5)
+          : theme.colorScheme.secondary.withOpacity(0.5),
       child: Text(
         isCurrentUser ? 'U' : 'A',
         style: const TextStyle(
