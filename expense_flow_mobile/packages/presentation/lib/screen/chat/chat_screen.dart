@@ -139,10 +139,6 @@ class _ChatScreenViewState extends State<ChatScreenView> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Chat',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
             const SizedBox(height: 16),
             Expanded(
               child: _buildMessageList(context, state),
