@@ -45,7 +45,7 @@ class ChatScreen extends StatelessWidget {
           child: Container(
             height: MediaQuery.of(context).size.height * 0.9,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),

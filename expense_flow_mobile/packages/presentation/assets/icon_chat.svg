@@ -1,0 +1,23 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Glitch effect layers for speech bubble -->
+    <path d="M25,30 L75,30 L75,60 L55,60 L50,70 L45,60 L25,60 Z" fill="none" opacity="0.4"
+        stroke="#ff00ff" stroke-width="8" />
+    <path d="M27,32 L73,32 L73,58 L54,58 L50,66 L46,58 L27,58 Z" fill="none" opacity="0.6"
+        stroke="#00ffff" stroke-width="6" />
+
+    <!-- Main speech bubble shape -->
+    <path d="M30,35 L70,35 L70,55 L52,55 L50,62 L48,55 L30,55 Z" fill="none" stroke="#ffffff"
+        stroke-width="4" />
+
+    <!-- Chat lines -->
+    <line stroke="#ffffff" stroke-width="2" x1="38" x2="62" y1="43" y2="43" />
+    <line stroke="#ffffff" stroke-width="2" x1="38" x2="55" y1="48" y2="48" />
+
+    <!-- Circuit connections -->
+    <line stroke="#00ff99" stroke-width="2" x1="20" x2="30" y1="45" y2="45" />
+    <line stroke="#00ff99" stroke-width="2" x1="50" x2="50" y1="62" y2="75" />
+
+    <!-- Connection points -->
+    <circle cx="30" cy="45" fill="#00ff99" r="3" />
+    <circle cx="50" cy="62" fill="#00ff99" r="3" />
+</svg>
