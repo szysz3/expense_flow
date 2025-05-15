@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_annotation_target
 import 'package:domain/model/raw_receipt_data.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 

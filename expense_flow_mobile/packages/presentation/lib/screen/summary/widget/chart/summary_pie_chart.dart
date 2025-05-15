@@ -125,7 +125,7 @@ class SummaryPieChart extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '${_calculateMonthTotal(months[i]).toStringAsFixed(2)}',
+                _calculateMonthTotal(months[i]).toStringAsFixed(2),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -157,7 +157,7 @@ class SummaryPieChart extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              '${totalExpenses.toStringAsFixed(2)}',
+              totalExpenses.toStringAsFixed(2),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: ExpenseFlowColors.darkPrimary,
