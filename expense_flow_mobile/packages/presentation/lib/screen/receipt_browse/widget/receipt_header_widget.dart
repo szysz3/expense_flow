@@ -1,6 +1,7 @@
 import 'package:domain/model/receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:presentation/core/utils/string_utils.dart';
 
 class ReceiptHeaderWidget extends StatelessWidget {
@@ -41,7 +42,7 @@ class ReceiptHeaderWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeaderRow(theme),
+          _buildHeaderRow(theme, context),
           const SizedBox(height: 8),
           _buildDateTimeRow(theme),
           const SizedBox(height: 8),
@@ -51,12 +52,12 @@ class ReceiptHeaderWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderRow(ThemeData theme) {
+  Widget _buildHeaderRow(ThemeData theme, BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: _buildMerchantName(theme),
+          child: _buildMerchantName(theme, context),
         ),
         Text(
           receipt.total.toStringAsFixed(2),
@@ -134,14 +135,16 @@ class ReceiptHeaderWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMerchantName(ThemeData theme) {
+  Widget _buildMerchantName(ThemeData theme, BuildContext context) {
+    String idText = receipt.id?.substring(0, 8) ?? "";
+    String label = AppLocalizations.of(context).receiptIdLabel(idText);
     final textStyle = theme.textTheme.titleMedium?.copyWith(
       fontWeight: FontWeight.bold,
     );
 
     if (receipt.merchant.name.isEmpty) {
       return Text(
-        'Receipt ${receipt.id?.substring(0, 8) ?? ""}',
+        label,
         style: textStyle,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,

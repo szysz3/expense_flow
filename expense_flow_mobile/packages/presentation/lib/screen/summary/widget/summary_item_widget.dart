@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
@@ -39,6 +40,7 @@ class SummaryItemWidget extends StatelessWidget {
   Widget _buildTotalColumn(BuildContext context, MonthSummary month) {
     final locale = Localizations.localeOf(context).toString();
     var currencyFormatter = CurrencyTextFormatter(locale: locale);
+    final l10n = AppLocalizations.of(context);
 
     return Expanded(
         flex: 2,
@@ -46,8 +48,8 @@ class SummaryItemWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const Text(
-              "Total",
+            Text(
+              l10n.total,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,
@@ -69,6 +71,7 @@ class SummaryItemWidget extends StatelessWidget {
   Widget _buildSavingsColumn(BuildContext context, MonthSummary month) {
     final locale = Localizations.localeOf(context).toString();
     var currencyFormatter = CurrencyTextFormatter(locale: locale);
+    final l10n = AppLocalizations.of(context);
 
     final double savings = month.calculateSavings();
     final savingsColor = month.savingsOnTrack
@@ -85,8 +88,8 @@ class SummaryItemWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Savings",
+          Text(
+            l10n.savingsTitle,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.normal,

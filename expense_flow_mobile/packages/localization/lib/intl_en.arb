@@ -1,271 +1,217 @@
 {
   "@@locale": "en",
-
   "appTitle": "Expense Flow",
   "@appTitle": {
     "description": "The title of the application"
   },
-
   "retry": "Retry",
   "@retry": {
     "description": "Button to retry an action"
   },
-
   "refresh": "Refresh",
   "@refresh": {
     "description": "Button to refresh data"
   },
-
   "checkAgain": "Check Again",
   "@checkAgain": {
     "description": "Button to check for updates"
   },
-
   "scan": "Scan",
   "@scan": {
     "description": "Navigation label for scan tab"
   },
-
   "orders": "Add",
   "@orders": {
     "description": "Navigation label for orders tab"
   },
-
   "categories": "Categories",
   "@categories": {
     "description": "Navigation label for categories tab"
   },
-
   "summary": "Summary",
   "@summary": {
     "description": "Navigation label for summary tab"
   },
-
   "unprocessed": "Unprocessed",
   "@unprocessed": {
     "description": "Navigation label for unprocessed tab"
   },
-
   "networkError": "Network error",
   "@networkError": {
     "description": "Error message for network connectivity issues"
   },
-
   "checkInternetConnection": "Please check your internet connection and try again.",
   "@checkInternetConnection": {
     "description": "Suggestion to check internet connection"
   },
-
   "authenticationError": "Authentication error",
   "@authenticationError": {
     "description": "Error message for authentication issues"
   },
-
   "sessionExpired": "Your session has expired. Please sign in again.",
   "@sessionExpired": {
     "description": "Message when user session has expired"
   },
-
   "notFound": "Not found",
   "@notFound": {
     "description": "Error message when a resource is not found"
   },
-
   "resourceNotFound": "The requested resource could not be found.",
   "@resourceNotFound": {
     "description": "Detailed message when a resource is not found"
   },
-
   "invalidData": "Invalid data",
   "@invalidData": {
     "description": "Error message for invalid data submission"
   },
-
   "checkInputAndTryAgain": "Please check your input and try again.",
   "@checkInputAndTryAgain": {
     "description": "Suggestion to review input data"
   },
-
   "somethingWentWrong": "Something went wrong",
   "@somethingWentWrong": {
     "description": "Generic error message"
   },
-
   "unexpectedError": "Unexpected error",
   "@unexpectedError": {
     "description": "Error message for unexpected exceptions"
   },
-
   "noMonthlyData": "No Monthly Summaries",
   "@noMonthlyData": {
     "description": "Text shown when there is no monthly summary data"
   },
-
   "addExpensesToSeeMonthly": "Add expenses to see your monthly summary",
   "@addExpensesToSeeMonthly": {
     "description": "Guidance text when monthly summary is empty"
   },
-
   "noCategories": "No Categories",
   "@noCategories": {
     "description": "Text shown when there are no categories"
   },
-
   "addExpensesToSeeCategories": "Add expenses to see your expense categories",
   "@addExpensesToSeeCategories": {
     "description": "Guidance text when categories are empty"
   },
-
   "noUnprocessedReceipts": "No Unprocessed Receipts",
   "@noUnprocessedReceipts": {
     "description": "Text shown when there are no unprocessed receipts"
   },
-
   "allReceiptsProcessed": "All receipts have been processed",
   "@allReceiptsProcessed": {
     "description": "Message when all receipts have been processed"
   },
-
   "uploadFailed": "Upload failed!",
   "@uploadFailed": {
     "description": "Error message when receipt upload fails"
   },
-
   "noPhotoAvailable": "No photo available",
   "@noPhotoAvailable": {
     "description": "Error message when no photo is available"
   },
-
   "takePhotoFirst": "Please take a photo first",
   "@takePhotoFirst": {
     "description": "Instruction to take a photo before proceeding"
   },
-
   "invalidInputData": "Invalid Data",
   "@invalidInputData": {
     "description": "Error title for invalid input data"
   },
-
   "fillAllRequiredFields": "Please fill in all required fields.",
   "@fillAllRequiredFields": {
     "description": "Error message for incomplete form data"
   },
-
   "description": "Description",
   "@description": {
     "description": "Label for item description field"
   },
-
   "enterItemDescription": "Enter item description",
   "@enterItemDescription": {
     "description": "Hint text for item description field"
   },
-
   "quantity": "Quantity",
   "@quantity": {
     "description": "Label for quantity field"
   },
-
   "enterQuantity": "Enter quantity",
   "@enterQuantity": {
     "description": "Hint text for quantity field"
   },
-
   "totalPrice": "Total Price",
   "@totalPrice": {
     "description": "Label for total price field"
   },
-
   "enterPrice": "Enter price",
   "@enterPrice": {
     "description": "Hint text for price field"
   },
-
   "category": "Category",
   "@category": {
     "description": "Label for category selection"
   },
-
   "groceries": "Groceries",
   "@groceries": {
     "description": "Category name for groceries"
   },
-
   "alcohol": "Alcohol",
   "@alcohol": {
     "description": "Category name for alcoholic beverages"
   },
-
   "personalCare": "Personal Care",
   "@personalCare": {
     "description": "Category name for personal care items"
   },
-
   "household": "Household",
   "@household": {
     "description": "Category name for household items"
   },
-
   "clothing": "Clothing",
   "@clothing": {
     "description": "Category name for clothing items"
   },
-
   "entertainment": "Entertainment",
   "@entertainment": {
     "description": "Category name for entertainment expenses"
   },
-
   "transportation": "Transportation",
   "@transportation": {
     "description": "Category name for transportation expenses"
   },
-
   "pet": "Pet",
   "@pet": {
     "description": "Category name for pet expenses"
   },
-
   "other": "Other",
   "@other": {
     "description": "Category name for miscellaneous expenses"
   },
-
   "standingOrders": "Standing Orders",
   "@standingOrders": {
     "description": "Category name for recurring payments"
   },
-
   "settings": "Settings",
   "@settings": {
     "description": "Title for settings screen"
   },
-
   "languageSettings": "Language Settings",
   "@languageSettings": {
     "description": "Title for language settings screen"
   },
-
   "languageChanged": "Language changed successfully",
   "@languageChanged": {
     "description": "Confirmation message after changing language"
   },
-
   "pending": "Pending",
   "@pending": {
     "description": "Status for pending receipts"
   },
-
   "processing": "Processing",
   "@processing": {
     "description": "Status for receipts being processed"
   },
-
   "error": "Error",
   "@error": {
     "description": "Status for receipts with errors"
   },
-
   "itemCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
   "@itemCount": {
     "description": "Count of items with pluralization",
@@ -276,7 +222,6 @@
       }
     }
   },
-
   "processingItemMessage": "Processing {itemName}...",
   "@processingItemMessage": {
     "description": "Message shown when processing a specific item",
@@ -287,7 +232,6 @@
       }
     }
   },
-
   "receiptCreatedSuccess": "Receipt item created successfully: {id}",
   "@receiptCreatedSuccess": {
     "description": "Success message when a receipt is created",
@@ -298,7 +242,6 @@
       }
     }
   },
-
   "receiptAnalyzedSuccess": "Receipt analyzed successfully: {id}",
   "@receiptAnalyzedSuccess": {
     "description": "Success message when a receipt is analyzed",
@@ -309,7 +252,6 @@
       }
     }
   },
-
   "failedToAnalyzeReceipt": "Failed to analyze receipt: {error}",
   "@failedToAnalyzeReceipt": {
     "description": "Error message when receipt analysis fails",
@@ -320,209 +262,192 @@
       }
     }
   },
-
-    "pieChart": "Pie Chart",
-    "@pieChart": {
-      "description": "Caption for pie chart"
-    },
-
-    "barChart": "Bar Chart",
-    "@settings": {
-      "description": "Caption for bar chart"
-    },
-
-    "list": "List",
-    "@settings": {
-      "description": "List caption"
-    },
-
-    "monthlySummaryChartTitle": "Last 12 months",
-    "@settings": {
-      "description": "Monthly summary expenses"
-    },
-
-    "noDataChartTitle": "No data to display",
-    "@settings": {
-      "description": "No data available to display on chart"
-    },
-
-    "totalChartData": "Total",
-    "@settings": {
-      "description": "Total expenses"
-    },
-
-    "appBarScanReceiptsTitle": "Scan Receipt",
-    "@settings": {
-      "description": "Receipt scan screen title"
-    },
-
-    "appBarAddItemTitle": "Add Item",
-    "@settings": {
-      "description": "Add item screen title"
-    },
-
-    "appBarCategoriesTitle": "Categories",
-    "@settings": {
-      "description": "Categories screen title"
-    },
-
-    "appBarSummaryTitle": "Summary",
-    "@settings": {
-      "description": "Summary screen title"
-    },
-
-    "appBarUnprocessedReceiptsTitle": "Unprocessed Receipts",
-    "@settings": {
-      "description": "Unprocessed receipts screen title"
-    },
-
-    "savingsAmount": "Monthly Saving Amount",
-    "@settings": {
-      "description": "Savings amount description field"
-    },
-
-    "savingsAmountHint": "Amount you save each month",
-    "@settings": {
-      "description": "Savings amount hint field"
-    },
-
-    "income": "Monthly Income",
-    "@settings": {
-      "description": "Income description field"
-    },
-
-    "incomeHint": "Enter your total monthly income",
-    "@settings": {
-      "description": "Income hint field"
-    },
-
-    "balance": "To spend",
-    "@settings": {
-      "description": "Balance between expenses and savings. Amount available to spend."
-    },
-
-    "savingsChart": "Savings Chart",
-    "@settings": {
-      "description": "Caption for savings chart screen menu entry"
-    },
-
-    "monthlySavingsChart": "Monthly Savings Chart",
-    "@settings": {
-      "description": "Title for savings chart screen"
-    },
-
-    "maxAllowedExpenses": "Max Allowed Expenses",
-    "@settings": {
-      "description": "Max allowed expenses label on savings chart screen"
-    },
-
-    "currentSavings": "Current Savings",
-    "@settings": {
-      "description": "Current savings label on savings chart screen"
-    },
-
-    "browse": "Browse",
-    "@settings": {
-      "description": "Title for browse receipt screen navigation item"
-    },
-
-    "appBarBrowseReceiptsTitle": "Browse Receipts",
-    "@settings": {
-      "description": "Title for browse receipt screen"
-    },
-
-    "noReceiptsFound": "No receipts found",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "receiptDetails": "Receipt Details",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "merchant": "Merchant",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "transactionDetails": "Transaction Details",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "transactionDate": "Date",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "items": "Items",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "delete": "Delete",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "deleteConfirmation": "Delete Receipt",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "deleteReceiptConfirmMessage": "Are you sure you want to delete this receipt? This action cannot be undone.",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "deletingReceipt": "Receipt deleted successfully",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "deleteFailed": "Failed to delete receipt",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "cancel": "Cancel",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "receiptDeleted": "Receipt Deleted",
-    "@settings": {
-      "description": "No receipts found. Scan a receipt to get started."
-    },
-
-    "receiptUpdated": "Receipt updated successfully",
-    "@settings": {
-      "description": "Receipt updated successfully caption"
-    },
-
-    "editItem": "Edit Item",
-    "@settings": {
-      "description": "Edit item caption"
-    },
-
-    "save": "Save",
-    "@settings": {
-      "description": "Save caption"
-    },
-
-    "merchantName": "Merchant Name",
-    "@settings": {
-      "description": "Merchant name caption"
-    },
-
-    "merchantAddress": "Merchant Address",
-    "@settings": {
-      "description": "Merchant address caption"
-    },
-
-    "savingsTitle": "Savings",
-    "@settings": {
-      "description": "Savings title caption"
+  "pieChart": "Pie Chart",
+  "@pieChart": {
+    "description": "Caption for pie chart"
+  },
+  "barChart": "Bar Chart",
+  "@settings": {
+    "description": "Caption for bar chart"
+  },
+  "list": "List",
+  "@settings": {
+    "description": "List caption"
+  },
+  "monthlySummaryChartTitle": "Last 12 months",
+  "@settings": {
+    "description": "Monthly summary expenses"
+  },
+  "noDataChartTitle": "No data to display",
+  "@settings": {
+    "description": "No data available to display on chart"
+  },
+  "totalChartData": "Total",
+  "@settings": {
+    "description": "Total expenses"
+  },
+  "appBarScanReceiptsTitle": "Scan Receipt",
+  "@settings": {
+    "description": "Receipt scan screen title"
+  },
+  "appBarAddItemTitle": "Add Item",
+  "@settings": {
+    "description": "Add item screen title"
+  },
+  "appBarCategoriesTitle": "Categories",
+  "@settings": {
+    "description": "Categories screen title"
+  },
+  "appBarSummaryTitle": "Summary",
+  "@settings": {
+    "description": "Summary screen title"
+  },
+  "appBarUnprocessedReceiptsTitle": "Unprocessed Receipts",
+  "@settings": {
+    "description": "Unprocessed receipts screen title"
+  },
+  "savingsAmount": "Monthly Saving Amount",
+  "@settings": {
+    "description": "Savings amount description field"
+  },
+  "savingsAmountHint": "Amount you save each month",
+  "@settings": {
+    "description": "Savings amount hint field"
+  },
+  "income": "Monthly Income",
+  "@settings": {
+    "description": "Income description field"
+  },
+  "incomeHint": "Enter your total monthly income",
+  "@settings": {
+    "description": "Income hint field"
+  },
+  "balance": "To spend",
+  "@settings": {
+    "description": "Balance between expenses and savings. Amount available to spend."
+  },
+  "savingsChart": "Savings Chart",
+  "@settings": {
+    "description": "Caption for savings chart screen menu entry"
+  },
+  "monthlySavingsChart": "Monthly Savings Chart",
+  "@settings": {
+    "description": "Title for savings chart screen"
+  },
+  "maxAllowedExpenses": "Max Allowed Expenses",
+  "@settings": {
+    "description": "Max allowed expenses label on savings chart screen"
+  },
+  "currentSavings": "Current Savings",
+  "@settings": {
+    "description": "Current savings label on savings chart screen"
+  },
+  "browse": "Browse",
+  "@settings": {
+    "description": "Title for browse receipt screen navigation item"
+  },
+  "appBarBrowseReceiptsTitle": "Browse Receipts",
+  "@settings": {
+    "description": "Title for browse receipt screen"
+  },
+  "noReceiptsFound": "No receipts found",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "receiptDetails": "Receipt Details",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "merchant": "Merchant",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "transactionDetails": "Transaction Details",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "transactionDate": "Date",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "items": "Items",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "delete": "Delete",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "deleteConfirmation": "Delete Receipt",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "deleteReceiptConfirmMessage": "Are you sure you want to delete this receipt? This action cannot be undone.",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "deletingReceipt": "Receipt deleted successfully",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "deleteFailed": "Failed to delete receipt",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "cancel": "Cancel",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "receiptDeleted": "Receipt Deleted",
+  "@settings": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "receiptUpdated": "Receipt updated successfully",
+  "@settings": {
+    "description": "Receipt updated successfully caption"
+  },
+  "editItem": "Edit Item",
+  "@settings": {
+    "description": "Edit item caption"
+  },
+  "save": "Save",
+  "@settings": {
+    "description": "Save caption"
+  },
+  "merchantName": "Merchant Name",
+  "@settings": {
+    "description": "Merchant name caption"
+  },
+  "merchantAddress": "Merchant Address",
+  "@settings": {
+    "description": "Merchant address caption"
+  },
+  "savingsTitle": "Savings",
+  "@settings": {
+    "description": "Savings title caption"
+  },
+  "total": "Total",
+  "@settings": {
+    "description": "Total caption on receipt details"
+  },
+  "receiptIdLabel": "Receipt {id}",
+  "@receiptIdLabel": {
+    "description": "Label for receipt with optional ID",
+    "placeholders": {
+      "id": {
+        "type": "String",
+        "example": "abc123"
+      }
     }
+  },
+  "dayIndexLabel": "Day {dayNumber}\n",
+  "@dayIndexLabel": {
+    "description": "Label showing the day number",
+    "placeholders": {
+      "dayNumber": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  }
 }
