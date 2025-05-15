@@ -120,9 +120,9 @@ class _CustomAutocompleteInputState
             child: Container(
               constraints: const BoxConstraints(maxHeight: 200),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
               ),
               child: widget.isLoadingSuggestions
                   ? const Center(
@@ -146,7 +146,8 @@ class _CustomAutocompleteInputState
                               border: index != _currentSuggestions.length - 1
                                   ? Border(
                                       bottom: BorderSide(
-                                        color: Colors.white.withOpacity(0.1),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.1),
                                       ),
                                     )
                                   : null,
@@ -156,7 +157,7 @@ class _CustomAutocompleteInputState
                             child: Text(
                               suggestion,
                               style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9)),
+                                  color: Colors.white.withValues(alpha: 0.9)),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -205,7 +206,7 @@ class _CustomAutocompleteInputState
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(12),
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
         ),
         child: TextField(
           controller: widget.controller,

@@ -72,7 +72,7 @@ class InputWidget extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
       ),
       child: TextField(
         controller: controller,
@@ -98,7 +98,7 @@ class InputWidget extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
       ),
       child: TextField(
         controller: fieldController,
@@ -129,9 +129,9 @@ class InputWidget extends StatelessWidget {
           constraints: const BoxConstraints(maxHeight: 200),
           margin: const EdgeInsets.only(top: 8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.7),
+            color: Colors.black.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.3)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
           ),
           child: ListView.builder(
             padding: EdgeInsets.zero,
@@ -146,7 +146,7 @@ class InputWidget extends StatelessWidget {
                     border: index != options.length - 1
                         ? Border(
                             bottom: BorderSide(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                             ),
                           )
                         : null,
@@ -155,7 +155,8 @@ class InputWidget extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Text(
                     option,
-                    style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                    style:
+                        TextStyle(color: Colors.white.withValues(alpha: 0.9)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

@@ -28,14 +28,15 @@ class CategoryButton extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
-                  color:
-                      isSelected ? Colors.white : Colors.white.withOpacity(0.3),
+                  color: isSelected
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.3),
                   width: 1,
                 ),
                 borderRadius: BorderRadius.circular(8),
                 color: isSelected
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.4),
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : Colors.black.withValues(alpha: 0.4),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -53,7 +54,7 @@ class CategoryButton extends StatelessWidget {
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
-                            : Colors.white.withOpacity(0.7),
+                            : Colors.white.withValues(alpha: 0.7),
                         fontSize: 12,
                       ),
                       textAlign: TextAlign.center,

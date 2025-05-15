@@ -113,7 +113,8 @@ class ReceiptDetailScreen extends StatelessWidget {
           return Container(
             height: MediaQuery.of(context).size.height * 0.90,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+              color:
+                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(16)),
             ),
@@ -152,7 +153,10 @@ class ReceiptDetailScreen extends StatelessWidget {
             width: 40,
             height: 5,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2.5),
             ),
           ),

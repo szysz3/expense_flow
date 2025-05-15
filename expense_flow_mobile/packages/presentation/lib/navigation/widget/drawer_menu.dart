@@ -29,7 +29,7 @@ class DrawerMenu extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
       decoration: BoxDecoration(
-        color: colorScheme.primary.withOpacity(0.2),
+        color: colorScheme.primary.withValues(alpha: 0.2),
       ),
       child: Row(
         children: [

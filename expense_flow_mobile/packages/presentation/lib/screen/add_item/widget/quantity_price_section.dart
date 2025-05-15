@@ -23,7 +23,7 @@ class QuantityPriceSection extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(12),
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
         ),
         child: Row(
           children: [

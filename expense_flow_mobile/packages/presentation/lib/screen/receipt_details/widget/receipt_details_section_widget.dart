@@ -24,7 +24,7 @@ class ReceiptDetailsSectionWidget extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface.withOpacity(0.9),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
             ),
           ),
           const SizedBox(height: 12),

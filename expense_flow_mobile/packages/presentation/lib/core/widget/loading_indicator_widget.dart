@@ -198,12 +198,12 @@ class LoadingPainter extends CustomPainter {
     final scale = size.width / 100;
 
     final outerPaint = Paint()
-      ..color = const Color(0xFFFF00FF).withOpacity(0.4)
+      ..color = const Color(0xFFFF00FF).withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8 * scale;
 
     final middlePaint = Paint()
-      ..color = const Color(0xFF00FFFF).withOpacity(0.6)
+      ..color = const Color(0xFF00FFFF).withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6 * scale;
 
@@ -271,12 +271,12 @@ class SuccessPainter extends CustomPainter {
     final scale = size.width / 100;
 
     final outerCheckmark = Paint()
-      ..color = const Color(0xFFFF00FF).withOpacity(0.4)
+      ..color = const Color(0xFFFF00FF).withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8 * scale;
 
     final middleCheckmark = Paint()
-      ..color = const Color(0xFF00FFFF).withOpacity(0.6)
+      ..color = const Color(0xFF00FFFF).withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6 * scale;
 

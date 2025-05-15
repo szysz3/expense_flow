@@ -17,7 +17,7 @@ class ActionBarContent extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.white),
           borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
         ),
         transform: Matrix4.translationValues(0, -1, 0),
         height: 64,

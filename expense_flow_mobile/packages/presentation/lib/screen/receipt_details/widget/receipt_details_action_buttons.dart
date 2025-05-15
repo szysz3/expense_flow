@@ -53,7 +53,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
       height: 36.0,
       iconSize: 18.0,
       borderColor: Colors.grey,
-      backgroundColor: Colors.grey.withOpacity(0.3),
+      backgroundColor: Colors.grey.withValues(alpha: 0.3),
       icon: SvgPicture.asset(
         'packages/presentation/assets/icon_close.svg',
         height: 18,
@@ -73,7 +73,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
           height: 36.0,
           iconSize: 18.0,
           borderColor: ExpenseFlowColors.chartRed,
-          backgroundColor: Colors.red.withOpacity(0.3),
+          backgroundColor: Colors.red.withValues(alpha: 0.3),
           icon: SvgPicture.asset(
             'packages/presentation/assets/icon_delete.svg',
             height: 18,
@@ -110,8 +110,8 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
               ? ExpenseFlowColors.chartMutedGreen
               : Theme.of(context).colorScheme.primary,
           backgroundColor: isEditMode
-              ? ExpenseFlowColors.chartMutedGreen.withOpacity(0.3)
-              : Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              ? ExpenseFlowColors.chartMutedGreen.withValues(alpha: 0.3)
+              : Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
           icon: SvgPicture.asset(
             isEditMode
                 ? 'packages/presentation/assets/icon_tick.svg'

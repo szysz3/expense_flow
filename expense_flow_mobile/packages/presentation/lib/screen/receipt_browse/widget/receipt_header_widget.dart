@@ -36,7 +36,7 @@ class ReceiptHeaderWidget extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,7 +74,7 @@ class ReceiptHeaderWidget extends StatelessWidget {
     final formattedTime = _timeFormat.format(date);
 
     final textStyle = theme.textTheme.bodyMedium?.copyWith(
-      color: theme.colorScheme.onSurface.withOpacity(0.7),
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
     );
 
     return Row(
@@ -94,7 +94,7 @@ class ReceiptHeaderWidget extends StatelessWidget {
         Text(
           '${receipt.items.length} items',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.5),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
           ),
         ),
         const Spacer(),
@@ -104,7 +104,7 @@ class ReceiptHeaderWidget extends StatelessWidget {
         ],
         Icon(
           Icons.chevron_right,
-          color: theme.colorScheme.onSurface.withOpacity(0.5),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
           size: 18,
         ),
       ],
@@ -163,13 +163,13 @@ class ReceiptHeaderWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: theme.colorScheme.onSurface.withOpacity(0.1),
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         displayName,
         style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurface.withOpacity(0.7),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
           fontSize: 10,
         ),
       ),

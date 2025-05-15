@@ -47,11 +47,11 @@ class ReceiptDetailsTransactionInfoWidget extends StatelessWidget {
               suffixIcon: Icon(
                 Icons.calendar_today,
                 size: 20,
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               enabledBorder: UnderlineInputBorder(
                 borderSide: BorderSide(
-                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                 ),
               ),
             ),
@@ -68,12 +68,12 @@ class ReceiptDetailsTransactionInfoWidget extends StatelessWidget {
             labelText: l10n.totalChartData,
             enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(
-                color: theme.colorScheme.onSurface.withOpacity(0.3),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
               ),
             ),
             focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(
-                color: theme.colorScheme.primary.withOpacity(0.7),
+                color: theme.colorScheme.primary.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -102,7 +102,7 @@ class ReceiptDetailsTransactionInfoWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withOpacity(0.3),
+        color: theme.colorScheme.surface.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(

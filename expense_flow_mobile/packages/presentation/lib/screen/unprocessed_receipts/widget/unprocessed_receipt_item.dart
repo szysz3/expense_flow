@@ -17,7 +17,7 @@ class UnprocessedReceiptItem extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -67,7 +67,8 @@ class UnprocessedReceiptItem extends StatelessWidget {
     return Text(
       dateFormat.format(receipt.rawData.transactionDatetime),
       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
     );
   }

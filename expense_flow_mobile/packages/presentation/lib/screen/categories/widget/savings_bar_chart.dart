@@ -144,7 +144,7 @@ class SavingsBarChart extends StatelessWidget {
     return BarTouchData(
       enabled: true,
       touchTooltipData: BarTouchTooltipData(
-        getTooltipColor: (_) => Colors.black.withOpacity(0.6),
+        getTooltipColor: (_) => Colors.black.withValues(alpha: 0.6),
         getTooltipItem: (group, _, rod, __) {
           final dayIndex = group.x;
           if (dayIndex >= dailyExpenses.length) return null;
@@ -180,7 +180,7 @@ class SavingsBarChart extends StatelessWidget {
     return List.generate(currentDay, (i) {
       final barColor = i == currentDay - 1
           ? colorScheme.primary
-          : colorScheme.primary.withOpacity(0.7);
+          : colorScheme.primary.withValues(alpha: 0.7);
 
       return BarChartGroupData(
         x: i,
@@ -241,7 +241,7 @@ class SavingsBarChart extends StatelessWidget {
       dotData: const FlDotData(show: false),
       belowBarData: BarAreaData(
         show: false,
-        color: ExpenseFlowColors.chartYellow.withOpacity(0.15),
+        color: ExpenseFlowColors.chartYellow.withValues(alpha: 0.15),
       ),
     );
   }
@@ -258,7 +258,7 @@ class SavingsBarChart extends StatelessWidget {
     return LineChartBarData(
       spots: spots,
       isCurved: false,
-      color: ExpenseFlowColors.chartRed.withOpacity(0.8),
+      color: ExpenseFlowColors.chartRed.withValues(alpha: 0.8),
       barWidth: 2,
       isStrokeCapRound: true,
       dotData: const FlDotData(show: false),
@@ -369,9 +369,9 @@ class SavingsBarChart extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.withOpacity(0.4)),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.4)),
         borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -409,7 +409,7 @@ class SavingsBarChart extends StatelessWidget {
           LinearProgressIndicator(
             value: _calculateSavingsProgress(currentSavings),
             minHeight: 6,
-            backgroundColor: Colors.grey.withOpacity(0.3),
+            backgroundColor: Colors.grey.withValues(alpha: 0.3),
             valueColor: AlwaysStoppedAnimation<Color>(savingsColor),
             borderRadius: BorderRadius.circular(3),
           ),
@@ -426,7 +426,7 @@ class SavingsBarChart extends StatelessWidget {
     required TextTheme textTheme,
   }) {
     final labelStyle = textTheme.bodyMedium?.copyWith(
-      color: Colors.white.withOpacity(0.9),
+      color: Colors.white.withValues(alpha: 0.9),
       fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
     );
 
@@ -452,7 +452,7 @@ class SavingsBarChart extends StatelessWidget {
     TextTheme textTheme,
   ) {
     final labelStyle = textTheme.bodyMedium?.copyWith(
-      color: Colors.white.withOpacity(0.9),
+      color: Colors.white.withValues(alpha: 0.9),
       fontWeight: FontWeight.bold,
     );
 
