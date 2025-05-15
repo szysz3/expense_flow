@@ -22,8 +22,6 @@ class ReceiptDetailsItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final categoryIconPath = CategoryUtils.getIconPath(item.category);
     final categoryName = CategoryUtils.getDisplayName(item.category, context);
-    final theme = Theme.of(context);
-
     final content = _buildItemContent(context, categoryIconPath, categoryName);
 
     if (isEditMode) {
@@ -52,7 +50,7 @@ class ReceiptDetailsItemWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant,
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
           ),
           child: SvgPicture.asset(
