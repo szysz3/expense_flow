@@ -250,7 +250,7 @@ Widget _buildEmptyState(BuildContext context) {
           onPressed: () {
             context.read<SummaryBloc>().add(const SummaryEvent.init());
           },
-          width: 100.0,
+          width: 124.0,
           height: 52.0,
           iconSize: 20.0,
           borderColor: Colors.white,

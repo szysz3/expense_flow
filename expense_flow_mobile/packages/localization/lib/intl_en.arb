@@ -431,7 +431,7 @@
       "description": "Title for browse receipt screen"
     },
 
-    "noReceiptsFound": "Browse Receipts",
+    "noReceiptsFound": "No receipts found",
     "@settings": {
       "description": "No receipts found. Scan a receipt to get started."
     },

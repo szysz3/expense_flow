@@ -173,7 +173,7 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
             borderColor: Colors.white,
             backgroundColor: Colors.black,
             icon: Text(
-              AppLocalizations.of(context).checkAgain,
+              AppLocalizations.of(context).refresh,
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
