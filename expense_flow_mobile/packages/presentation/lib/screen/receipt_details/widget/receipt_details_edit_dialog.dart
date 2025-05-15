@@ -69,12 +69,12 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
                 labelText: l10n.description,
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: theme.colorScheme.onSurface.withOpacity(0.3),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
                 ),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: theme.colorScheme.primary.withOpacity(0.7),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -86,12 +86,12 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
                 labelText: l10n.quantity,
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: theme.colorScheme.onSurface.withOpacity(0.3),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
                 ),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: theme.colorScheme.primary.withOpacity(0.7),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -106,12 +106,12 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
                 labelText: l10n.totalPrice,
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: theme.colorScheme.onSurface.withOpacity(0.3),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
                 ),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: theme.colorScheme.primary.withOpacity(0.7),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -147,12 +147,12 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
         labelText: l10n.category,
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-            color: theme.colorScheme.onSurface.withOpacity(0.3),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
           ),
         ),
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-            color: theme.colorScheme.primary.withOpacity(0.7),
+            color: theme.colorScheme.primary.withValues(alpha: 0.7),
           ),
         ),
       ),

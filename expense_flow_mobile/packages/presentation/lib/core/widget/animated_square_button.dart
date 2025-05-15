@@ -97,7 +97,7 @@ class AnimatedSquareButton extends StatelessWidget {
           border: Border.all(color: borderColor),
           borderRadius:
               BorderRadius.circular(AnimatedSquareButtonConstants.borderRadius),
-          color: backgroundColor.withOpacity(opacity),
+          color: backgroundColor.withValues(alpha: opacity),
         ),
         child: _buildButtonContent(),
       );

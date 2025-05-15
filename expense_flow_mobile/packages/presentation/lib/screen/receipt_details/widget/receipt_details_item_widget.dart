@@ -78,7 +78,7 @@ class ReceiptDetailsItemWidget extends StatelessWidget {
                   Text(
                     categoryName,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -89,7 +89,7 @@ class ReceiptDetailsItemWidget extends StatelessWidget {
                   Text(
                     '${item.quantity.toStringAsFixed(item.quantity.truncateToDouble() == item.quantity ? 0 : 2)} × ',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                   const Spacer(),
@@ -109,7 +109,7 @@ class ReceiptDetailsItemWidget extends StatelessWidget {
           Icon(
             Icons.edit,
             size: 16,
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
       ],
     );

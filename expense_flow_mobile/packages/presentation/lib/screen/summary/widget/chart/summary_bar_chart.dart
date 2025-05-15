@@ -75,7 +75,7 @@ class SummaryBarChart extends StatelessWidget {
     return BarTouchData(
       enabled: true,
       touchTooltipData: BarTouchTooltipData(
-        getTooltipColor: (touchedSpot) => Colors.black.withOpacity(0.4),
+        getTooltipColor: (touchedSpot) => Colors.black.withValues(alpha: 0.4),
         getTooltipItem: (group, groupIndex, rod, rodIndex) {
           return BarTooltipItem(
             '${displayMonths[groupIndex].monthName}\n',

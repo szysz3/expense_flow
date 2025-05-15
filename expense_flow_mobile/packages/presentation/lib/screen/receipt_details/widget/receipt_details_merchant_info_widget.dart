@@ -41,12 +41,12 @@ class ReceiptDetailsMerchantInfoWidget extends StatelessWidget {
             labelText: AppLocalizations.of(context).merchantName,
             enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(
-                color: theme.colorScheme.onSurface.withOpacity(0.3),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
               ),
             ),
             focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(
-                color: theme.colorScheme.primary.withOpacity(0.7),
+                color: theme.colorScheme.primary.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -68,12 +68,12 @@ class ReceiptDetailsMerchantInfoWidget extends StatelessWidget {
             labelText: AppLocalizations.of(context).merchantAddress,
             enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(
-                color: theme.colorScheme.onSurface.withOpacity(0.3),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
               ),
             ),
             focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(
-                color: theme.colorScheme.primary.withOpacity(0.7),
+                color: theme.colorScheme.primary.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -97,7 +97,7 @@ class ReceiptDetailsMerchantInfoWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withOpacity(0.3),
+        color: theme.colorScheme.surface.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(

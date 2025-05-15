@@ -23,14 +23,14 @@ class ReceiptDetailsItemsListWidget extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withOpacity(0.3),
+        color: theme.colorScheme.surface.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(8),
       ),
       child: ListView.separated(
         physics: const ClampingScrollPhysics(),
         itemCount: receipt.items.length,
         separatorBuilder: (_, __) => Divider(
-          color: theme.colorScheme.onSurface.withOpacity(0.1),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
           height: 1,
         ),
         itemBuilder: (context, index) => ReceiptDetailsItemWidget(
