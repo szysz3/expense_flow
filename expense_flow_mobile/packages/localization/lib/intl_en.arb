@@ -26,7 +26,7 @@
     "description": "Navigation label for scan tab"
   },
 
-  "orders": "Orders",
+  "orders": "Add",
   "@orders": {
     "description": "Navigation label for orders tab"
   },
@@ -519,5 +519,10 @@
     "merchantAddress": "Merchant Address",
     "@settings": {
       "description": "Merchant address caption"
+    },
+
+    "savingsTitle": "Savings",
+    "@settings": {
+      "description": "Savings title caption"
     }
 }
