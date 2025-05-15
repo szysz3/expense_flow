@@ -71,13 +71,8 @@ class SavingsBarChart extends StatelessWidget {
       child: Stack(
         children: [
           BarChart(
-            _createBarChartData(
-              cumulativeExpenses,
-              daysInMonth,
-              currentDay,
-              maxAllowedExpenses,
-              colorScheme,
-            ),
+            _createBarChartData(cumulativeExpenses, daysInMonth, currentDay,
+                maxAllowedExpenses, colorScheme, context),
           ),
           Positioned.fill(
             left: 40,
@@ -118,18 +113,18 @@ class SavingsBarChart extends StatelessWidget {
   }
 
   BarChartData _createBarChartData(
-    List<double> dailyExpenses,
-    int daysInMonth,
-    int currentDay,
-    double maxAllowedExpenses,
-    ColorScheme colorScheme,
-  ) {
+      List<double> dailyExpenses,
+      int daysInMonth,
+      int currentDay,
+      double maxAllowedExpenses,
+      ColorScheme colorScheme,
+      BuildContext context) {
     final maxY = _calculateMaxY(dailyExpenses, maxAllowedExpenses);
 
     return BarChartData(
       alignment: BarChartAlignment.spaceAround,
       maxY: maxY,
-      barTouchData: _createBarTooltipData(dailyExpenses, colorScheme),
+      barTouchData: _createBarTooltipData(dailyExpenses, colorScheme, context),
       titlesData: _createAxisTitles(daysInMonth, currentDay),
       gridData: _createGridData(),
       borderData: _createBorderData(),
@@ -137,10 +132,8 @@ class SavingsBarChart extends StatelessWidget {
     );
   }
 
-  BarTouchData _createBarTooltipData(
-    List<double> dailyExpenses,
-    ColorScheme colorScheme,
-  ) {
+  BarTouchData _createBarTooltipData(List<double> dailyExpenses,
+      ColorScheme colorScheme, BuildContext context) {
     return BarTouchData(
       enabled: true,
       touchTooltipData: BarTouchTooltipData(
@@ -149,8 +142,11 @@ class SavingsBarChart extends StatelessWidget {
           final dayIndex = group.x;
           if (dayIndex >= dailyExpenses.length) return null;
 
+          String label =
+              AppLocalizations.of(context).dayIndexLabel(dayIndex + 1);
+
           return BarTooltipItem(
-            'Day ${dayIndex + 1}\n',
+            label,
             const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
