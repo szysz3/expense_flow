@@ -147,13 +147,14 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
             expectedSavingsAmount: expectedSavingsAmount);
       }).toList();
 
-      final totalSavings = presentationMonths
-          // We remove first month (current) from total savings calculation
-          .sublist(1, presentationMonths.length)
-          .fold<double>(
-            0.0,
-            (sum, month) => sum + month.calculateSavings(),
-          );
+      final totalSavings = presentationMonths.length > 1
+          ? presentationMonths
+              .sublist(1, presentationMonths.length)
+              .fold<double>(
+                0.0,
+                (sum, month) => sum + month.calculateSavings(),
+              )
+          : 0.0;
 
       emit(state.copyWith(
         months: presentationMonths,

@@ -72,10 +72,6 @@ class CategoriesScreenView extends StatelessWidget {
           );
         }
 
-        if (state.categories.isEmpty) {
-          return _buildEmptyState(context);
-        }
-
         return _buildContent(context, state);
       },
     );
@@ -224,42 +220,6 @@ class CategoriesScreenView extends StatelessWidget {
                 ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.category_outlined,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context).noCategories,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context).addExpensesToSeeCategories,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              context.read<CategoriesBloc>().add(const CategoriesEvent.init());
-            },
-            child: Text(AppLocalizations.of(context).refresh),
-          ),
-        ],
       ),
     );
   }

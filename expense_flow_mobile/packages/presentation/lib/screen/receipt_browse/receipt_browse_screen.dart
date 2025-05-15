@@ -9,6 +9,7 @@ import 'package:logger/logger.dart';
 import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../core/error/error_utils.dart';
+import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
 import '../receipt_details/receipt_details_screen.dart';
@@ -147,19 +148,32 @@ class ReceiptBrowseView extends StatelessWidget {
             AppLocalizations.of(context).noReceiptsFound,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
+              color:
+              Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
+          AnimatedSquareButton(
+            isProcessing: false,
             onPressed: () {
               context.read<ReceiptBrowseBloc>().add(
-                    const ReceiptBrowseEvent.refresh(),
-                  );
+                const ReceiptBrowseEvent.refresh(),
+              );
             },
-            child: Text(AppLocalizations.of(context).refresh),
-          ),
+            width: 124.0,
+            height: 52.0,
+            iconSize: 20.0,
+            borderColor: Colors.white,
+            backgroundColor: Colors.black,
+            icon: Text(
+              AppLocalizations.of(context).refresh,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          )
         ],
       ),
     );
