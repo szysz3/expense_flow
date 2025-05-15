@@ -61,10 +61,10 @@ class MainScreen extends StatelessWidget {
                     case 1:
                       return Text(
                           AppLocalizations.of(context).appBarAddItemTitle);
-                    case 3:
+                    case 2:
                       return Text(
                           AppLocalizations.of(context).appBarCategoriesTitle);
-                    case 2:
+                    case 3:
                       return Text(
                           AppLocalizations.of(context).appBarSummaryTitle);
                     case 4:

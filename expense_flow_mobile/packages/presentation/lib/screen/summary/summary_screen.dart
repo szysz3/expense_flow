@@ -136,7 +136,7 @@ class SummaryScreenView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Savings",
+                    AppLocalizations.of(context).savingsTitle,
                     style: const TextStyle(
                       color: Colors.white,
                     ),
