@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 import 'package:presentation/core/utils/string_utils.dart';
 
+import '../../../core/utils/currency_text_formatter.dart';
+
 class ReceiptHeaderWidget extends StatelessWidget {
   final Receipt receipt;
   final VoidCallback onTap;
@@ -53,6 +55,9 @@ class ReceiptHeaderWidget extends StatelessWidget {
   }
 
   Widget _buildHeaderRow(ThemeData theme, BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -60,7 +65,7 @@ class ReceiptHeaderWidget extends StatelessWidget {
           child: _buildMerchantName(theme, context),
         ),
         Text(
-          receipt.total.toStringAsFixed(2),
+          currencyFormatter.formatCurrency(receipt.total),
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),

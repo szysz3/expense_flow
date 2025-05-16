@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 
+import '../../../../core/utils/currency_text_formatter.dart';
 import '../../../../theme/expense_flow_colors.dart';
 import '../../model/month_summary.dart';
 
@@ -30,7 +31,7 @@ class SummaryPieChart extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                ..._buildLegendItems(displayMonths, chartColors),
+                ..._buildLegendItems(displayMonths, chartColors, context),
                 if (displayMonths.isNotEmpty)
                   _buildTotalRow(context, totalExpenses),
               ],
@@ -105,8 +106,11 @@ class SummaryPieChart extends StatelessWidget {
     return sections;
   }
 
-  List<Widget> _buildLegendItems(
-      List<MonthSummary> months, List<Color> chartColors) {
+  List<Widget> _buildLegendItems(List<MonthSummary> months,
+      List<Color> chartColors, BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     return [
       for (int i = 0; i < months.length; i++)
         Padding(
@@ -125,7 +129,8 @@ class SummaryPieChart extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                _calculateMonthTotal(months[i]).toStringAsFixed(2),
+                currencyFormatter
+                    .formatCurrency(_calculateMonthTotal(months[i])),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -138,6 +143,9 @@ class SummaryPieChart extends StatelessWidget {
   }
 
   Widget _buildTotalRow(BuildContext context, double totalExpenses) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
       child: Container(
@@ -157,7 +165,7 @@ class SummaryPieChart extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              totalExpenses.toStringAsFixed(2),
+              currencyFormatter.formatCurrency(totalExpenses),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: ExpenseFlowColors.darkPrimary,

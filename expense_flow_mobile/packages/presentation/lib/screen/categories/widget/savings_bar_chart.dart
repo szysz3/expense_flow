@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
 
+import '../../../core/utils/currency_text_formatter.dart';
 import '../../../theme/expense_flow_colors.dart';
 
 class SavingsBarChart extends StatelessWidget {
@@ -355,6 +356,9 @@ class SavingsBarChart extends StatelessWidget {
     bool isSavingsOnTrack,
     double maxAllowedExpenses,
   ) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     final savingsColor = isSavingsOnTrack
         ? ExpenseFlowColors.chartMutedGreen
         : ExpenseFlowColors.chartMutedRed;
@@ -374,7 +378,7 @@ class SavingsBarChart extends StatelessWidget {
         children: [
           _buildSummaryRow(
             localizations.totalChartData,
-            totalExpenses.toStringAsFixed(2),
+            currencyFormatter.formatCurrency(totalExpenses),
             Theme.of(context).colorScheme.primary,
             isBold: true,
             textTheme: textTheme,
@@ -382,21 +386,22 @@ class SavingsBarChart extends StatelessWidget {
           const SizedBox(height: 12),
           _buildSummaryRow(
             localizations.maxAllowedExpenses,
-            maxAllowedExpenses.toStringAsFixed(2),
+            currencyFormatter.formatCurrency(maxAllowedExpenses),
             Colors.white,
             textTheme: textTheme,
           ),
           const SizedBox(height: 12),
           _buildSummaryRow(
             localizations.balance,
-            (maxAllowedExpenses - totalExpenses).toStringAsFixed(2),
+            currencyFormatter
+                .formatCurrency(maxAllowedExpenses - totalExpenses),
             savingsColor,
             textTheme: textTheme,
           ),
           const SizedBox(height: 12),
           _buildSavingsRow(
             localizations.currentSavings,
-            currentSavings.toStringAsFixed(2),
+            currencyFormatter.formatCurrency(currentSavings),
             savingsColor,
             isSavingsOnTrack,
             textTheme,
