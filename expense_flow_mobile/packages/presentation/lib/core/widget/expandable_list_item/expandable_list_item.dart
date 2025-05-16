@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:presentation/core/utils/currency_text_formatter.dart';
 
 import 'expandable_header_data.dart';
 import 'expandable_item_count_badge.dart';
@@ -223,6 +224,9 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
   }
 
   Widget _buildItemRow(I item) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     if (widget.itemContent != null) {
       return widget.itemContent!(item);
     }
@@ -254,7 +258,7 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
           ),
           if (widget.itemTrailing != null) widget.itemTrailing!(item),
           Text(
-            item.amount.toStringAsFixed(2),
+            currencyFormatter.formatCurrency(item.amount),
             style: TextStyle(fontSize: 14, color: textColor),
           ),
         ],

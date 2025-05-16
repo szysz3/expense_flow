@@ -98,6 +98,8 @@ class ReceiptDetailsTransactionInfoWidget extends StatelessWidget {
   Widget _buildReadOnlyView(BuildContext context, ThemeData theme) {
     final l10n = AppLocalizations.of(context);
     final dateFormat = DateFormat('MMMM dd, yyyy - HH:mm');
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -115,7 +117,7 @@ class ReceiptDetailsTransactionInfoWidget extends StatelessWidget {
           const SizedBox(height: 8),
           ReceiptDetailsInfoRow(
             label: l10n.totalChartData,
-            value: receipt.total.toStringAsFixed(2),
+            value: currencyFormatter.formatCurrency(receipt.total),
             isHighlighted: true,
           ),
         ],

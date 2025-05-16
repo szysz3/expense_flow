@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/utils/currency_text_formatter.dart';
+
 class UnprocessedReceiptItem extends StatelessWidget {
   final UnprocessedReceipt receipt;
 
@@ -74,10 +76,12 @@ class UnprocessedReceiptItem extends StatelessWidget {
   }
 
   Widget _buildAmount(BuildContext context) {
-    final amount = receipt.rawData.total;
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
+    final amount = currencyFormatter.formatCurrency(receipt.rawData.total);
 
     return Text(
-      '$amount',
+      amount,
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),

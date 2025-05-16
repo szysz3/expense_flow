@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../core/utils/category_utils.dart';
+import '../../../core/utils/currency_text_formatter.dart';
 
 class ReceiptDetailsItemWidget extends StatelessWidget {
   final ReceiptItem item;
@@ -42,6 +43,8 @@ class ReceiptDetailsItemWidget extends StatelessWidget {
 
   Widget _buildItemContent(
       BuildContext context, String categoryIconPath, String categoryName) {
+    final locale = Localizations.localeOf(context).toString();
+    var currencyFormatter = CurrencyTextFormatter(locale: locale);
     final theme = Theme.of(context);
 
     return Row(
@@ -92,7 +95,7 @@ class ReceiptDetailsItemWidget extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    item.totalPrice.toStringAsFixed(2),
+                    currencyFormatter.formatCurrency(item.totalPrice),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
