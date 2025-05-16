@@ -43,7 +43,7 @@ class ChatScreen extends StatelessWidget {
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Container(
-            height: MediaQuery.of(context).size.height * 0.9,
+            height: MediaQuery.of(context).size.height * 0.8,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: const BorderRadius.only(
@@ -157,6 +157,7 @@ class _ChatScreenViewState extends State<ChatScreenView> {
               },
               isLoading: state.isSending,
             ),
+            const SizedBox(height: 8.0),
           ],
         );
       },
