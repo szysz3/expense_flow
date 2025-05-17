@@ -8,12 +8,16 @@ import 'package:domain/repository/chat_repository.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/repository/settings_repository.dart';
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
+// Import new chat use cases
+import 'package:domain/use_case/connect_to_chat_use_case.dart';
 import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:domain/use_case/delete_use_case.dart';
+import 'package:domain/use_case/dispose_chat_connection_use_case.dart';
 import 'package:domain/use_case/get_autocomplete_suggestions_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
+// Import GetChatMessagesStreamUseCase
+import 'package:domain/use_case/get_chat_messages_stream_use_case.dart';
 import 'package:domain/use_case/get_daily_expenses_use_case.dart';
-import 'package:domain/use_case/get_messages_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:domain/use_case/get_receipts_use_case.dart';
 import 'package:domain/use_case/send_message_use_case.dart';
@@ -72,10 +76,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<ChatRepository>(
     () => ChatRepositoryImpl(
-      dio: _getDio(),
-      errorLogger: getIt<Logger>(),
-      connectivity: getIt<Connectivity>(),
-    ),
+        errorLogger: getIt<Logger>(),
+        connectivity: getIt<Connectivity>(),
+        webSocketUrl: EnvConfig.webSocketUrl,
+        apiKey: EnvConfig.apiKey),
   );
 
   getIt.registerLazySingleton(
@@ -130,12 +134,21 @@ Future<void> configureDependencies() async {
     () => GetAutocompleteSuggestionsUseCase(getIt<ReceiptRepository>()),
   );
 
+  // Register new Chat Use Cases
   getIt.registerLazySingleton(
-    () => GetMessagesUseCase(getIt<ChatRepository>()),
+    () => ConnectToChatUseCase(getIt<ChatRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => GetChatMessagesStreamUseCase(getIt<ChatRepository>()),
   );
 
   getIt.registerLazySingleton(
     () => SendMessageUseCase(getIt<ChatRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => DisposeChatConnectionUseCase(getIt<ChatRepository>()),
   );
 }
 
@@ -164,12 +177,18 @@ class EnvConfig {
 
   static String get apiKey => dotenv.env['API_KEY'] ?? '';
 
+  // Add WebSocket URL to EnvConfig
+  static String get webSocketUrl =>
+      dotenv.env['WEBSOCKET_URL'] ??
+      'ws://localhost:8000/api/chat'; // Example URL
+
   static Future<void> load() async {
     await dotenv.load();
   }
 
   static bool validate() {
-    if (baseUrl.isEmpty || apiKey.isEmpty) {
+    if (baseUrl.isEmpty || apiKey.isEmpty || webSocketUrl.isEmpty) {
+      // Validate new URL
       throw Exception('Missing required environment variables');
     }
     return true;

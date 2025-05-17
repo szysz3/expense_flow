@@ -1,48 +1,38 @@
 import 'dart:async';
 
+import 'package:dartz/dartz.dart';
 import 'package:domain/model/chat_message.dart';
-import 'package:domain/use_case/get_messages_use_case.dart';
+import 'package:domain/model/failure/failures.dart';
+import 'package:domain/use_case/connect_to_chat_use_case.dart';
+import 'package:domain/use_case/dispose_chat_connection_use_case.dart';
+import 'package:domain/use_case/get_chat_messages_stream_use_case.dart';
 import 'package:domain/use_case/send_message_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../../core/error/app_error.dart';
 import 'chat_event.dart';
 import 'chat_state.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  final GetMessagesUseCase _getMessagesUseCase;
+  final ConnectToChatUseCase _connectToChatUseCase;
+  final GetChatMessagesStreamUseCase _getChatMessagesStreamUseCase;
   final SendMessageUseCase _sendMessageUseCase;
+  final DisposeChatConnectionUseCase _disposeChatConnectionUseCase;
   final Logger _errorLogger;
   final LocalizationService _localizationService;
 
+  StreamSubscription<Either<Failure, ChatMessage>>? _messagesSubscription;
   Completer<void>? _refreshCompleter;
-
-  // Mock data for messages
-  final List<ChatMessage> _mockMessages = [
-    ChatMessage(
-      id: '1',
-      content: 'Hello! How can I help you with your expenses today?',
-      sender: 'Assistant',
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-    ChatMessage(
-      id: '2',
-      content: 'I\'d like to know more about my spending this month.',
-      sender: 'User',
-      timestamp: DateTime.now().subtract(const Duration(hours: 23)),
-    ),
-    ChatMessage(
-      id: '3',
-      content: 'Your top spending category this month is Groceries with \$320.',
-      sender: 'Assistant',
-      timestamp: DateTime.now().subtract(const Duration(hours: 22)),
-    ),
-  ];
+  String _conversationId = Uuid().v4();
 
   ChatBloc(
-    this._getMessagesUseCase,
+    this._connectToChatUseCase,
+    this._getChatMessagesStreamUseCase,
     this._sendMessageUseCase,
+    this._disposeChatConnectionUseCase,
     this._errorLogger,
     this._localizationService,
   ) : super(const ChatState()) {
@@ -51,22 +41,85 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<MessageChangedEvent>(_onMessageChanged);
     on<SendMessageEvent>(_onSendMessage);
     on<ClearErrorEvent>(_onClearError);
+    on<MessageReceivedEvent>(_onMessageReceived);
+    on<ConnectionStatusChangedEvent>(_onConnectionStatusChanged);
+
+    add(const InitEvent());
   }
 
   Future<void> _onInit(
     InitEvent event,
     Emitter<ChatState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, error: null));
+    emit(state.copyWith(isLoading: true, error: null, messages: []));
 
-    // Simulate loading delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    final connectResult = await _connectToChatUseCase.call();
 
-    // Return mock messages
-    emit(state.copyWith(
-      isLoading: false,
-      messages: List.from(_mockMessages),
-    ));
+    connectResult.fold(
+      (failure) {
+        _errorLogger.e("Connection failed: ${failure.message}");
+        _handleConnectionStatusChange(emit, false,
+            errorMessage: _mapFailureToMessage(failure));
+      },
+      (_) {
+        _errorLogger
+            .i("Connection attempt successful, listening for messages.");
+        _handleConnectionStatusChange(emit, true);
+        _messagesSubscription?.cancel();
+
+        // Listen to the message stream
+        _messagesSubscription = _getChatMessagesStreamUseCase.call().listen(
+          (eitherMessageOrFailure) {
+            eitherMessageOrFailure.fold(
+              (failure) {
+                _errorLogger
+                    .e("Error from messages stream: ${failure.message}");
+                add(ChatEvent.clearError());
+                add(ChatEvent.connectionStatusChanged(false,
+                    _mapFailureToMessage(failure, 'Chat service error.')));
+              },
+              (message) {
+                _errorLogger.d("Message received from stream: ${message.id}");
+                // Use the MessageReceivedEvent which will be handled by _onMessageReceived
+                add(ChatEvent.messageReceived(message));
+              },
+            );
+          },
+          onError: (error) {
+            _errorLogger.e("Critical error on messages stream: $error");
+            add(ChatEvent.connectionStatusChanged(
+                false, 'Chat service disconnected: $error'));
+          },
+          onDone: () {
+            _errorLogger.i("Messages stream closed.");
+            if (state.error == null) {
+              add(ChatEvent.connectionStatusChanged(
+                  false, 'Chat connection closed.'));
+            } else {
+              add(ChatEvent.connectionStatusChanged(false));
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void _handleConnectionStatusChange(Emitter<ChatState> emit, bool isConnected,
+      {String? errorMessage}) {
+    if (!isConnected && errorMessage != null) {
+      emit(state.copyWith(
+          isLoading: false,
+          isSending: false,
+          error: AppError(
+              // Removed 'title'
+              // title: _localizationService.translate('chat_connection_error_title') ?? 'Connection Error',
+              message: errorMessage)));
+    } else if (isConnected) {
+      emit(state.copyWith(isLoading: false, error: null));
+    } else {
+      // Connected is false, but no specific error message (e.g. onDone from stream without prior error)
+      emit(state.copyWith(isLoading: false, isSending: false));
+    }
   }
 
   Future<void> _onRefresh(
@@ -74,6 +127,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     _refreshCompleter = Completer<void>();
+    _messagesSubscription?.cancel();
+    _disposeChatConnectionUseCase.call();
     await _onInit(const InitEvent(), emit);
     _refreshCompleter?.complete();
   }
@@ -85,47 +140,98 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(state.copyWith(currentMessage: event.message));
   }
 
+  // Add these handlers to your ChatBloc class
+  void _onMessageReceived(
+    MessageReceivedEvent event,
+    Emitter<ChatState> emit,
+  ) {
+    final incomingMessage = event.message;
+
+    // Find if we already have a message with the same ID
+    final existingMessageIndex = state.messages.indexWhere((m) =>
+        m.id == incomingMessage.id && m.sender == incomingMessage.sender);
+
+    List<ChatMessage> updatedMessages;
+
+    if (existingMessageIndex >= 0) {
+      // We found an existing message with the same ID - update it
+      _errorLogger.d("Updating existing message: ${incomingMessage.id}");
+      updatedMessages = List<ChatMessage>.from(state.messages);
+      updatedMessages[existingMessageIndex] = incomingMessage;
+    } else {
+      // This is a new message, add it to the list
+      _errorLogger.d("Adding new message: ${incomingMessage.id}");
+      updatedMessages = [incomingMessage, ...state.messages];
+    }
+
+    emit(state.copyWith(
+        messages: updatedMessages,
+        isLoading: false,
+        isSending: false,
+        error: null));
+  }
+
+  void _onConnectionStatusChanged(
+    ConnectionStatusChangedEvent event,
+    Emitter<ChatState> emit,
+  ) {
+    if (!event.isConnected && event.errorMessage != null) {
+      emit(state.copyWith(
+          isLoading: false,
+          isSending: false,
+          error: AppError(message: event.errorMessage ?? "ERror")));
+    } else if (event.isConnected) {
+      emit(state.copyWith(isLoading: false, error: null));
+    } else {
+      // Connected is false, but no specific error message
+      emit(state.copyWith(isLoading: false, isSending: false));
+    }
+  }
+
   Future<void> _onSendMessage(
     SendMessageEvent event,
     Emitter<ChatState> emit,
   ) async {
-    if (state.currentMessage.trim().isEmpty) return;
+    final messageContent = state.currentMessage.trim();
+    if (messageContent.isEmpty) return;
 
-    emit(state.copyWith(isSending: true));
+    emit(state.copyWith(isSending: true, error: null));
 
-    // Create user message
     final userMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      content: state.currentMessage,
+      id: Uuid().v4(), // Make sure each message has a unique ID
+      content: messageContent,
       sender: 'User',
       timestamp: DateTime.now(),
     );
 
-    // Add user message to the list
-    final updatedMessages = [userMessage, ...state.messages];
+    final optimisticMessages = [userMessage, ...state.messages];
     emit(state.copyWith(
-      messages: updatedMessages,
+      messages: optimisticMessages,
       currentMessage: '',
-      isSending: true,
     ));
 
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Create mock response
-    final responseMessage = ChatMessage(
-      id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
-      content: _generateMockResponse(state.currentMessage),
-      sender: 'Assistant',
-      timestamp: DateTime.now(),
+    final result = await _sendMessageUseCase.call(
+      SendMessageParams(
+        content: messageContent,
+        conversationId: _conversationId,
+      ),
     );
 
-    // Add response to the list
-    final finalMessages = [responseMessage, ...updatedMessages];
-    emit(state.copyWith(
-      messages: finalMessages,
-      isSending: false,
-    ));
+    result.fold(
+      (failure) {
+        _errorLogger.e("Failed to send message: ${failure.message}");
+        emit(state.copyWith(
+          isSending: false,
+          error: AppError(
+            message: _mapFailureToMessage(failure, 'Could not send message.'),
+          ),
+        ));
+      },
+      (_) {
+        _errorLogger.i("Message sent successfully via use case.");
+        emit(state.copyWith(isSending: false));
+      },
+    );
   }
 
   void _onClearError(
@@ -135,34 +241,25 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(state.copyWith(error: null));
   }
 
+  String _mapFailureToMessage(Failure failure, [String? defaultMessage]) {
+    if (failure is ServerFailure) {
+      return failure.message;
+    } else if (failure is ConnectionFailure) {
+      return failure.message;
+    }
+    return defaultMessage ?? failure.message ?? 'An unknown error occurred.';
+  }
+
   Future<void> refresh() async {
     add(const ChatEvent.refresh());
     return _refreshCompleter?.future;
   }
 
-  String _generateMockResponse(String userMessage) {
-    // Simple mock responses based on user input
-    final lowerCaseMessage = userMessage.toLowerCase();
-
-    if (lowerCaseMessage.contains('hello') ||
-        lowerCaseMessage.contains('hi') ||
-        lowerCaseMessage.contains('hey')) {
-      return 'Hello! How can I help you with your expenses today?';
-    } else if (lowerCaseMessage.contains('spending') ||
-        lowerCaseMessage.contains('expense') ||
-        lowerCaseMessage.contains('cost')) {
-      return 'Based on your recent transactions, your spending looks healthy. You\'ve spent 20% less on entertainment this month compared to last month.';
-    } else if (lowerCaseMessage.contains('save') ||
-        lowerCaseMessage.contains('saving')) {
-      return 'You are currently saving about 15% of your income each month. That\'s a great start! Would you like some tips to increase your savings?';
-    } else if (lowerCaseMessage.contains('budget') ||
-        lowerCaseMessage.contains('plan')) {
-      return 'Your monthly budget looks good. You\'re keeping within your limits for most categories. However, you might want to watch your grocery spending which is slightly over budget.';
-    } else if (lowerCaseMessage.contains('receipt') ||
-        lowerCaseMessage.contains('scan')) {
-      return 'You can scan your receipts using the Scan feature in the bottom navigation. This helps track all your expenses automatically.';
-    } else {
-      return 'Thanks for your message. Is there anything specific about your finances you\'d like to know?';
-    }
+  @override
+  Future<void> close() {
+    _errorLogger.i('Closing ChatBloc and disposing resources.');
+    _messagesSubscription?.cancel();
+    _disposeChatConnectionUseCase.call();
+    return super.close();
   }
 }
