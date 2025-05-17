@@ -1,5 +1,6 @@
+from typing import Dict, List
 from openai import OpenAI
-from ollama import Client
+from ollama import Client, AsyncClient
 from expense_flow.config import Config
 from ..services.llm_service import LLMProvider
 
@@ -59,6 +60,7 @@ class OllamaProvider(LLMProvider):
         self.host = host
         self.model = model
         self._client = Client(host=host)
+        self._async_client = AsyncClient(host=host)
         
     def generate(self, prompt: str, content: str) -> str:
         """
@@ -77,6 +79,25 @@ class OllamaProvider(LLMProvider):
             options={"num_ctx": 16000}
         )
         return response['response']
+    
+    async def chat_stream(self, messages: List[Dict[str, str]]):
+        """
+        Generate streaming chat response from Ollama
+        
+        Args:
+            messages: List of message dictionaries with 'role' and 'content' keys
+            
+        Yields:
+            Response chunks with message content
+        """
+        response = await self._async_client.chat(
+            model=self.model,
+            messages=messages,
+            stream=True
+        )
+        
+        async for chunk in response:
+            yield chunk
     
     @property
     def name(self) -> str:
