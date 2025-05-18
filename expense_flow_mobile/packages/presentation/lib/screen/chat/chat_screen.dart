@@ -37,9 +37,21 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  late ChatBloc _chatBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _initChatBloc();
+  }
+
+  void _initChatBloc() {
+    _chatBloc = _createChatBloc();
+  }
 
   @override
   void dispose() {
+    _chatBloc.close();
     _textController.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -48,7 +60,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => _createChatBloc(),
+      create: (_) => _chatBloc,
       child: _buildChatModal(context),
     );
   }

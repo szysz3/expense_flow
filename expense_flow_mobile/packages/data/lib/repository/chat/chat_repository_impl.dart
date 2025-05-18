@@ -17,7 +17,7 @@ class ChatRepositoryImpl implements ChatRepository {
   final Connectivity _connectivity;
 
   WebSocketChannel? _channel;
-  final _messagesController =
+  late var _messagesController =
       StreamController<Either<Failure, ChatMessage>>.broadcast();
   StreamSubscription? _channelSubscription;
 
@@ -36,6 +36,12 @@ class ChatRepositoryImpl implements ChatRepository {
     if (_isConnected) {
       _logger.i('Already connected to WebSocket server.');
       return const Right(null);
+    }
+
+    if (_messagesController.isClosed) {
+      _logger.i('Reinitializing closed stream controller');
+      _messagesController =
+          StreamController<Either<Failure, ChatMessage>>.broadcast();
     }
 
     if (await _hasNoConnectivity()) {
@@ -103,15 +109,29 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   void dispose() {
     _logger.i('Disposing ChatRepositoryImpl');
+
     _channelSubscription?.cancel();
-    _channel?.sink.close(status.goingAway);
-    _messagesController.close();
-    _channel = null;
+    _channelSubscription = null;
+
+    if (_channel != null) {
+      _channel!.sink.close(status.goingAway);
+      _channel = null;
+    }
+
+    if (!_messagesController.isClosed) {
+      _messagesController.close();
+    }
   }
 
   void _handleIncomingMessage(dynamic data) {
     try {
       _logger.d('WebSocket data received: $data');
+
+      if (_messagesController.isClosed) {
+        _logger.w('Stream controller is closed, ignoring incoming message');
+        return;
+      }
+
       final jsonResponse = jsonDecode(data as String);
 
       if (jsonResponse is! Map<String, dynamic>) {

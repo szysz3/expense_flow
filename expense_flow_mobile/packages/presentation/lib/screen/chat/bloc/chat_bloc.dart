@@ -55,6 +55,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     InitEvent event,
     Emitter<ChatState> emit,
   ) async {
+    _messagesSubscription?.cancel();
+
     emit(state.copyWith(isLoading: true, error: null, messages: []));
 
     final connectResult = await _connectUseCase.call();
@@ -66,7 +68,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       },
       (_) {
         _updateConnectionStatus(emit, true);
-        _messagesSubscription?.cancel();
         _subscribeToMessages(emit);
       },
     );
@@ -238,8 +239,16 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   void _cleanupResources() {
+    _logger.i('Cleaning up ChatBloc resources');
+
     _messagesSubscription?.cancel();
+    _messagesSubscription = null;
+
     _disconnectUseCase.call();
+
+    if (_refreshCompleter != null && !_refreshCompleter!.isCompleted) {
+      _refreshCompleter!.complete();
+    }
   }
 
   @override
