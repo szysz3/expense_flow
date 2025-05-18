@@ -1,6 +1,6 @@
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:domain/use_case/get_daily_expenses_use_case.dart';
-import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
+import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -29,7 +29,7 @@ class CategoriesScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
       create: (_) => CategoriesBloc(
             getIt<GetCategoriesUseCase>(),
-            getIt<GetSavingsSettingsUseCase>(),
+            getIt<SettingsGetSavingsUseCase>(),
             getIt<GetDailyExpensesUseCase>(),
             getIt<Logger>(),
             getIt<LocalizationService>(),

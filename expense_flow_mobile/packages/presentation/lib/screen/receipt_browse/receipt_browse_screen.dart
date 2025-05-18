@@ -1,5 +1,5 @@
 import 'package:domain/model/receipt.dart';
-import 'package:domain/use_case/get_receipts_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_get_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -26,7 +26,7 @@ class ReceiptBrowseScreen extends StatelessWidget {
       create: (_) => ReceiptBrowseBloc(
             getIt<Logger>(),
             getIt<LocalizationService>(),
-            getIt<GetReceiptsUseCase>(),
+            getIt<ReceiptGetUseCase>(),
           )..add(const ReceiptBrowseEvent.init()),
       child: Stack(children: [
         Positioned.fill(

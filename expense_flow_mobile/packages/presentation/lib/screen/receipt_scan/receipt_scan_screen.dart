@@ -1,4 +1,4 @@
-import 'package:domain/use_case/analyze_receipt_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_analyze_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -22,7 +22,7 @@ class ReceiptScanScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
       create: (_) => ReceiptScanBloc(
             getIt<CameraService>(),
-            getIt<AnalyzeReceiptUseCase>(),
+            getIt<ReceiptAnalyzeUseCase>(),
             getIt<Logger>(),
             getIt<LocalizationService>(),
           )..add(const ReceiptScanEvent.initializeCamera()),

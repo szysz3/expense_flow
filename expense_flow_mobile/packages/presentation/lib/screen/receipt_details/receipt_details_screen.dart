@@ -1,6 +1,6 @@
 import 'package:domain/model/receipt.dart';
-import 'package:domain/use_case/delete_use_case.dart';
-import 'package:domain/use_case/update_receipts_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_delete_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_update_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
@@ -36,7 +36,7 @@ class ReceiptDetailScreen extends StatelessWidget {
         providers: [
           BlocProvider(
             create: (_) => ReceiptDetailBloc(
-              getIt<DeleteReceiptUseCase>(),
+              getIt<ReceiptDeleteUseCase>(),
               getIt<Logger>(),
               getIt<LocalizationService>(),
             ),
@@ -45,7 +45,7 @@ class ReceiptDetailScreen extends StatelessWidget {
             create: (_) => ReceiptEditBloc(
               getIt<Logger>(),
               getIt<LocalizationService>(),
-              getIt<UpdateReceiptUseCase>(),
+              getIt<ReceiptUpdateUseCase>(),
               receipt,
             ),
           ),

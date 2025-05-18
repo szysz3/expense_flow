@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:domain/model/receipt_item.dart';
-import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:domain/use_case/get_autocomplete_suggestions_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_create_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -12,7 +12,7 @@ import 'add_item_event.dart';
 import 'add_item_state.dart';
 
 class AddItemBloc extends Bloc<AddItemEvent, AddItemState> {
-  final CreateReceiptUseCase _createReceiptUseCase;
+  final ReceiptCreateUseCase _createReceiptUseCase;
   final GetAutocompleteSuggestionsUseCase _getAutocompleteSuggestionsUseCase;
   final Logger _errorLogger;
   final LocalizationService _localizationService;

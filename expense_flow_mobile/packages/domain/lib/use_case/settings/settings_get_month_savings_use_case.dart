@@ -5,23 +5,23 @@ import '../../model/failure/failures.dart';
 import '../../repository/settings_repository.dart';
 import '../base/base_use_case.dart';
 
-class GetMonthSavingsSettingsParams {
+class SettingsGetMonthSavingsParams {
   final List<(int, int)> monthYearPairs;
 
-  const GetMonthSavingsSettingsParams({required this.monthYearPairs});
+  const SettingsGetMonthSavingsParams({required this.monthYearPairs});
 }
 
-class GetMonthSavingsSettingsUseCase
+class SettingsGetMonthSavingsUseCase
     implements
-        BaseUseCase<GetMonthSavingsSettingsParams,
+        BaseUseCase<SettingsGetMonthSavingsParams,
             Either<Failure, Map<(int, int), SavingsSettings>>> {
   final SettingsRepository repository;
 
-  GetMonthSavingsSettingsUseCase(this.repository);
+  SettingsGetMonthSavingsUseCase(this.repository);
 
   @override
   Future<Either<Failure, Map<(int, int), SavingsSettings>>> call(
-      GetMonthSavingsSettingsParams params) async {
+      SettingsGetMonthSavingsParams params) async {
     final settingsResult = await repository.getSettings();
 
     return settingsResult.fold(

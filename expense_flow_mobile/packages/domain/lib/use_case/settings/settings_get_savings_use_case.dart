@@ -5,11 +5,11 @@ import '../../model/failure/failures.dart';
 import '../../repository/settings_repository.dart';
 import '../base/base_use_case.dart';
 
-class GetSavingsSettingsUseCase
+class SettingsGetSavingsUseCase
     implements BaseUseCase<NoParams, Either<Failure, SavingsSettings>> {
   final SettingsRepository repository;
 
-  GetSavingsSettingsUseCase(this.repository);
+  SettingsGetSavingsUseCase(this.repository);
 
   @override
   Future<Either<Failure, SavingsSettings>> call(NoParams params) async {

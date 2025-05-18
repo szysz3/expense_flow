@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:domain/model/receipt.dart';
-import 'package:domain/use_case/get_receipts_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_get_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -13,7 +13,7 @@ import 'receipt_browse_state.dart';
 class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
   final Logger _logger;
   final LocalizationService _localizationService;
-  final GetReceiptsUseCase _getReceiptsUseCase;
+  final ReceiptGetUseCase _getReceiptsUseCase;
 
   int _currentPage = 1;
   static const int _pageSize = 10;
@@ -75,7 +75,7 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
       _currentPage = 1;
 
       final result = await _getReceiptsUseCase(
-        GetReceiptsParams(page: _currentPage, pageSize: _pageSize),
+        ReceiptGetParams(page: _currentPage, pageSize: _pageSize),
       );
 
       result.fold(
@@ -155,7 +155,7 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
       _currentPage++;
 
       final result = await _getReceiptsUseCase(
-        GetReceiptsParams(page: _currentPage, pageSize: _pageSize),
+        ReceiptGetParams(page: _currentPage, pageSize: _pageSize),
       );
 
       result.fold(

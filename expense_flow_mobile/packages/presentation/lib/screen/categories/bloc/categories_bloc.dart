@@ -4,7 +4,7 @@ import 'package:domain/model/daily_expense.dart';
 import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:domain/use_case/get_daily_expenses_use_case.dart';
-import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
+import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -18,7 +18,7 @@ import 'categories_state.dart';
 
 class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
   final GetCategoriesUseCase _getCategoriesUseCase;
-  final GetSavingsSettingsUseCase _getSavingsSettingsUseCase;
+  final SettingsGetSavingsUseCase _getSavingsSettingsUseCase;
   final GetDailyExpensesUseCase _getDailyExpensesUseCase;
   final Logger _errorLogger;
   final LocalizationService _localizationService;

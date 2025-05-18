@@ -1,4 +1,4 @@
-import 'package:domain/use_case/analyze_receipt_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_analyze_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -12,7 +12,7 @@ import 'receipt_scan_state.dart';
 
 class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
   final CameraService _cameraService;
-  final AnalyzeReceiptUseCase _analyzeReceiptUseCase;
+  final ReceiptAnalyzeUseCase _analyzeReceiptUseCase;
   final Logger _errorLogger;
   final LocalizationService _localizationService;
 
@@ -108,7 +108,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
     try {
       // Analyze receipt
       final result = await _analyzeReceiptUseCase(
-        AnalyzeReceiptParams(
+        ReceiptAnalyzeParams(
           filePath: scanState.photoPath!,
           llmType: 'local',
         ),

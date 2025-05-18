@@ -1,5 +1,5 @@
-import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:domain/use_case/get_autocomplete_suggestions_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_create_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -23,7 +23,7 @@ class AddItemScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BlocProvider(
       create: (_) => AddItemBloc(
-            getIt<CreateReceiptUseCase>(),
+            getIt<ReceiptCreateUseCase>(),
             getIt<GetAutocompleteSuggestionsUseCase>(),
             getIt<Logger>(),
             getIt<LocalizationService>(),

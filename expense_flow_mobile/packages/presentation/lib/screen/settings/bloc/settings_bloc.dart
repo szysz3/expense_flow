@@ -1,6 +1,6 @@
 import 'package:domain/use_case/base/base_use_case.dart';
-import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
-import 'package:domain/use_case/settings/save_savings_settings_use_case.dart';
+import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
+import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -12,8 +12,8 @@ import 'settings_state.dart';
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final Logger _logger;
   final LocalizationService _localizationService;
-  final GetSavingsSettingsUseCase _getSavingsSettingsUseCase;
-  final SaveSavingsSettingsUseCase _saveSavingsSettingsUseCase;
+  final SettingsGetSavingsUseCase _getSavingsSettingsUseCase;
+  final SettingsSaveSavingsUseCase _saveSavingsSettingsUseCase;
 
   SettingsBloc(
     this._logger,

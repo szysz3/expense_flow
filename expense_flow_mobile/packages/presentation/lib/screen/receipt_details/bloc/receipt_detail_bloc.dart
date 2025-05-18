@@ -1,4 +1,4 @@
-import 'package:domain/use_case/delete_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_delete_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -8,7 +8,7 @@ import 'receipt_detail_event.dart';
 import 'receipt_detail_state.dart';
 
 class ReceiptDetailBloc extends Bloc<ReceiptDetailEvent, ReceiptDetailState> {
-  final DeleteReceiptUseCase _deleteReceiptUseCase;
+  final ReceiptDeleteUseCase _deleteReceiptUseCase;
   final Logger _logger;
   final LocalizationService _localizationService;
 
@@ -28,7 +28,7 @@ class ReceiptDetailBloc extends Bloc<ReceiptDetailEvent, ReceiptDetailState> {
 
     try {
       final result = await _deleteReceiptUseCase(
-        DeleteReceiptParams(id: event.receiptId),
+        ReceiptDeleteParams(id: event.receiptId),
       );
 
       result.fold(

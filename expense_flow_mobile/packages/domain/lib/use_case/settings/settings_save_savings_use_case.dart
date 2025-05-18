@@ -6,11 +6,11 @@ import '../../model/settings.dart';
 import '../../repository/settings_repository.dart';
 import '../base/base_use_case.dart';
 
-class SaveSavingsSettingsUseCase
+class SettingsSaveSavingsUseCase
     implements BaseUseCase<SavingsSettings, Either<Failure, Settings>> {
   final SettingsRepository repository;
 
-  SaveSavingsSettingsUseCase(this.repository);
+  SettingsSaveSavingsUseCase(this.repository);
 
   @override
   Future<Either<Failure, Settings>> call(

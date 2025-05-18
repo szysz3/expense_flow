@@ -9,12 +9,12 @@ import 'package:domain/model/daily_expense.dart';
 import 'package:domain/model/failure/failures.dart';
 import 'package:domain/model/month_summary.dart';
 import 'package:domain/model/receipt.dart';
+import 'package:domain/model/receipt_get_response.dart';
 import 'package:domain/model/receipt_item.dart';
 import 'package:domain/model/receipt_query.dart';
 import 'package:domain/model/search_result.dart';
 import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:domain/repository/receipt_repository.dart';
-import 'package:domain/use_case/get_receipts_use_case.dart';
 import 'package:logger/logger.dart';
 
 import '../../consts/error_messages.dart';
@@ -326,7 +326,7 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
   }
 
   @override
-  Future<Either<Failure, ReceiptsResponse>> getReceipts(
+  Future<Either<Failure, ReceiptGetResponse>> getReceipts(
       int page, int pageSize) async {
     return _executeRequest(
       () async {
@@ -342,7 +342,7 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
             .map((json) => Receipt.fromJson(json))
             .toList();
 
-        return ReceiptsResponse(
+        return ReceiptGetResponse(
           receipts: receipts,
           totalCount: response.data['total_count'] ?? receipts.length,
         );

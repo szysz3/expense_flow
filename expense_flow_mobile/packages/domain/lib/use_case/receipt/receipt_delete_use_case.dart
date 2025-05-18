@@ -3,20 +3,20 @@ import 'package:domain/model/failure/failures.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/use_case/base/base_use_case.dart';
 
-class DeleteReceiptParams {
+class ReceiptDeleteParams {
   final String id;
 
-  DeleteReceiptParams({required this.id});
+  ReceiptDeleteParams({required this.id});
 }
 
-class DeleteReceiptUseCase
-    implements BaseUseCase<DeleteReceiptParams, Either<Failure, bool>> {
+class ReceiptDeleteUseCase
+    implements BaseUseCase<ReceiptDeleteParams, Either<Failure, bool>> {
   final ReceiptRepository repository;
 
-  DeleteReceiptUseCase(this.repository);
+  ReceiptDeleteUseCase(this.repository);
 
   @override
-  Future<Either<Failure, bool>> call(DeleteReceiptParams params) async {
+  Future<Either<Failure, bool>> call(ReceiptDeleteParams params) async {
     return await repository.deleteReceipt(params.id);
   }
 }

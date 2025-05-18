@@ -1,5 +1,5 @@
 import 'package:domain/model/receipt.dart';
-import 'package:domain/use_case/update_receipts_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_update_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -11,7 +11,7 @@ import 'receipt_edit_state.dart';
 class ReceiptEditBloc extends Bloc<ReceiptEditEvent, ReceiptEditState> {
   final Logger _logger;
   final LocalizationService _localizationService;
-  final UpdateReceiptUseCase _updateReceiptUseCase;
+  final ReceiptUpdateUseCase _updateReceiptUseCase;
 
   ReceiptEditBloc(
     this._logger,

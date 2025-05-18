@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:domain/model/failure/failures.dart';
 import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
-import 'package:domain/use_case/settings/get_month_savings_settings_use_case.dart';
+import 'package:domain/use_case/settings/settings_get_month_savings_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:localization/localization_service.dart';
@@ -18,7 +18,7 @@ import 'summary_state.dart';
 
 class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
   final GetMonthsSummaryUseCase _getMonthsSummaryUseCase;
-  final GetMonthSavingsSettingsUseCase _getMonthSavingsSettingsUseCase;
+  final SettingsGetMonthSavingsUseCase _getMonthSavingsSettingsUseCase;
   final Logger _errorLogger;
   final LocalizationService _localizationService;
   Completer<void>? _refreshCompleter;
@@ -87,7 +87,7 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
           .toList();
 
       final savingsResult = await _getMonthSavingsSettingsUseCase(
-          GetMonthSavingsSettingsParams(monthYearPairs: monthYearPairs));
+          SettingsGetMonthSavingsParams(monthYearPairs: monthYearPairs));
 
       if (savingsResult.isLeft()) {
         final failure = savingsResult.fold<Failure>(

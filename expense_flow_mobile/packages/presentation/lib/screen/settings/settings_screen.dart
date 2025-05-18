@@ -1,5 +1,5 @@
-import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
-import 'package:domain/use_case/settings/save_savings_settings_use_case.dart';
+import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
+import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -33,8 +33,8 @@ class SettingsScreen extends StatelessWidget {
         create: (_) => SettingsBloc(
           getIt<Logger>(),
           getIt<LocalizationService>(),
-          getIt<GetSavingsSettingsUseCase>(),
-          getIt<SaveSavingsSettingsUseCase>(),
+          getIt<SettingsGetSavingsUseCase>(),
+          getIt<SettingsSaveSavingsUseCase>(),
         )..add(const SettingsEvent.init()),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),

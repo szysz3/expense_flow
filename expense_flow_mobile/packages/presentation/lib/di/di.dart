@@ -8,24 +8,24 @@ import 'package:dio/dio.dart';
 import 'package:domain/repository/chat_repository.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/repository/settings_repository.dart';
-import 'package:domain/use_case/analyze_receipt_use_case.dart';
 import 'package:domain/use_case/chat/chat_connect_use_case.dart';
 import 'package:domain/use_case/chat/chat_create_user_message_use_case.dart';
 import 'package:domain/use_case/chat/chat_disconnect_use_case.dart';
 import 'package:domain/use_case/chat/chat_observe_messages_use_case.dart';
 import 'package:domain/use_case/chat/chat_process_message_use_case.dart';
 import 'package:domain/use_case/chat/chat_send_message_use_case.dart';
-import 'package:domain/use_case/create_receipt_use_case.dart';
-import 'package:domain/use_case/delete_use_case.dart';
 import 'package:domain/use_case/get_autocomplete_suggestions_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:domain/use_case/get_daily_expenses_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
-import 'package:domain/use_case/get_receipts_use_case.dart';
-import 'package:domain/use_case/settings/get_month_savings_settings_use_case.dart';
-import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
-import 'package:domain/use_case/settings/save_savings_settings_use_case.dart';
-import 'package:domain/use_case/update_receipts_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_analyze_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_create_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_delete_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_get_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_update_use_case.dart';
+import 'package:domain/use_case/settings/settings_get_month_savings_use_case.dart';
+import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
+import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
@@ -104,23 +104,23 @@ _registerUseCases() {
   );
 
   getIt.registerLazySingleton(
-    () => AnalyzeReceiptUseCase(getIt<ReceiptRepository>()),
+    () => ReceiptAnalyzeUseCase(getIt<ReceiptRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => CreateReceiptUseCase(getIt<ReceiptRepository>()),
+    () => ReceiptCreateUseCase(getIt<ReceiptRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => GetSavingsSettingsUseCase(getIt<SettingsRepository>()),
+    () => SettingsGetSavingsUseCase(getIt<SettingsRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => GetMonthSavingsSettingsUseCase(getIt<SettingsRepository>()),
+    () => SettingsGetMonthSavingsUseCase(getIt<SettingsRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => SaveSavingsSettingsUseCase(getIt<SettingsRepository>()),
+    () => SettingsSaveSavingsUseCase(getIt<SettingsRepository>()),
   );
 
   getIt.registerLazySingleton(
@@ -128,15 +128,15 @@ _registerUseCases() {
   );
 
   getIt.registerLazySingleton(
-    () => GetReceiptsUseCase(getIt<ReceiptRepository>()),
+    () => ReceiptGetUseCase(getIt<ReceiptRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => DeleteReceiptUseCase(getIt<ReceiptRepository>()),
+    () => ReceiptDeleteUseCase(getIt<ReceiptRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => UpdateReceiptUseCase(getIt<ReceiptRepository>()),
+    () => ReceiptUpdateUseCase(getIt<ReceiptRepository>()),
   );
 
   getIt.registerLazySingleton(
