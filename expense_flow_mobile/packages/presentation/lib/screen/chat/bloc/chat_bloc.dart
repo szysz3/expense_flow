@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:domain/model/chat_message.dart';
 import 'package:domain/model/failure/failures.dart';
-import 'package:domain/use_case/connect_to_chat_use_case.dart';
-import 'package:domain/use_case/dispose_chat_connection_use_case.dart';
-import 'package:domain/use_case/get_chat_messages_stream_use_case.dart';
-import 'package:domain/use_case/send_message_use_case.dart';
+import 'package:domain/use_case/chat/chat_connect_use_case.dart';
+import 'package:domain/use_case/chat/chat_create_user_message_use_case.dart';
+import 'package:domain/use_case/chat/chat_disconnect_use_case.dart';
+import 'package:domain/use_case/chat/chat_observe_messages_use_case.dart';
+import 'package:domain/use_case/chat/chat_process_message_use_case.dart';
+import 'package:domain/use_case/chat/chat_send_message_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
@@ -17,24 +19,28 @@ import 'chat_event.dart';
 import 'chat_state.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  final ConnectToChatUseCase _connectToChatUseCase;
-  final GetChatMessagesStreamUseCase _getChatMessagesStreamUseCase;
-  final SendMessageUseCase _sendMessageUseCase;
-  final DisposeChatConnectionUseCase _disposeChatConnectionUseCase;
-  final Logger _errorLogger;
-  final LocalizationService _localizationService;
+  final ChatConnectUseCase _connectUseCase;
+  final ChatObserveMessagesUseCase _observeMessagesUseCase;
+  final ChatSendMessageUseCase _sendMessageUseCase;
+  final ChatDisconnectUseCase _disconnectUseCase;
+  final ChatProcessMessageUseCase _processMessageUseCase;
+  final ChatCreateUserMessageUseCase _createUserMessageUseCase;
+  final Logger _logger;
+  final LocalizationService _localization;
 
   StreamSubscription<Either<Failure, ChatMessage>>? _messagesSubscription;
   Completer<void>? _refreshCompleter;
-  String _conversationId = Uuid().v4();
+  final String _conversationId = Uuid().v4();
 
   ChatBloc(
-    this._connectToChatUseCase,
-    this._getChatMessagesStreamUseCase,
+    this._connectUseCase,
+    this._observeMessagesUseCase,
     this._sendMessageUseCase,
-    this._disposeChatConnectionUseCase,
-    this._errorLogger,
-    this._localizationService,
+    this._disconnectUseCase,
+    this._processMessageUseCase,
+    this._createUserMessageUseCase,
+    this._logger,
+    this._localization,
   ) : super(const ChatState()) {
     on<InitEvent>(_onInit);
     on<RefreshEvent>(_onRefresh);
@@ -43,8 +49,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ClearErrorEvent>(_onClearError);
     on<MessageReceivedEvent>(_onMessageReceived);
     on<ConnectionStatusChangedEvent>(_onConnectionStatusChanged);
-
-    add(const InitEvent());
   }
 
   Future<void> _onInit(
@@ -53,73 +57,66 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     emit(state.copyWith(isLoading: true, error: null, messages: []));
 
-    final connectResult = await _connectToChatUseCase.call();
+    final connectResult = await _connectUseCase.call();
 
     connectResult.fold(
       (failure) {
-        _errorLogger.e("Connection failed: ${failure.message}");
-        _handleConnectionStatusChange(emit, false,
-            errorMessage: _mapFailureToMessage(failure));
+        _logger.e("Connection failed: ${failure.message}");
+        _updateConnectionStatus(emit, false, failure.message);
       },
       (_) {
-        _errorLogger
-            .i("Connection attempt successful, listening for messages.");
-        _handleConnectionStatusChange(emit, true);
+        _updateConnectionStatus(emit, true);
         _messagesSubscription?.cancel();
-
-        // Listen to the message stream
-        _messagesSubscription = _getChatMessagesStreamUseCase.call().listen(
-          (eitherMessageOrFailure) {
-            eitherMessageOrFailure.fold(
-              (failure) {
-                _errorLogger
-                    .e("Error from messages stream: ${failure.message}");
-                add(ChatEvent.clearError());
-                add(ChatEvent.connectionStatusChanged(false,
-                    _mapFailureToMessage(failure, 'Chat service error.')));
-              },
-              (message) {
-                _errorLogger.d("Message received from stream: ${message.id}");
-                // Use the MessageReceivedEvent which will be handled by _onMessageReceived
-                add(ChatEvent.messageReceived(message));
-              },
-            );
-          },
-          onError: (error) {
-            _errorLogger.e("Critical error on messages stream: $error");
-            add(ChatEvent.connectionStatusChanged(
-                false, 'Chat service disconnected: $error'));
-          },
-          onDone: () {
-            _errorLogger.i("Messages stream closed.");
-            if (state.error == null) {
-              add(ChatEvent.connectionStatusChanged(
-                  false, 'Chat connection closed.'));
-            } else {
-              add(ChatEvent.connectionStatusChanged(false));
-            }
-          },
-        );
+        _subscribeToMessages(emit);
       },
     );
   }
 
-  void _handleConnectionStatusChange(Emitter<ChatState> emit, bool isConnected,
-      {String? errorMessage}) {
-    if (!isConnected && errorMessage != null) {
-      emit(state.copyWith(
-          isLoading: false,
-          isSending: false,
-          error: AppError(
-              // Removed 'title'
-              // title: _localizationService.translate('chat_connection_error_title') ?? 'Connection Error',
-              message: errorMessage)));
-    } else if (isConnected) {
-      emit(state.copyWith(isLoading: false, error: null));
-    } else {
-      // Connected is false, but no specific error message (e.g. onDone from stream without prior error)
-      emit(state.copyWith(isLoading: false, isSending: false));
-    }
+  void _subscribeToMessages(Emitter<ChatState> emit) {
+    _messagesSubscription = _observeMessagesUseCase.call().listen(
+      (result) {
+        result.fold(
+          (failure) {
+            _logger.e("Error from messages stream: ${failure.message}");
+            add(ChatEvent.clearError());
+            add(ChatEvent.connectionStatusChanged(
+                false,
+                _localization.localizations
+                    .chatServiceDisconnected(failure.message)));
+          },
+          (message) {
+            add(ChatEvent.messageReceived(message));
+          },
+        );
+      },
+      onError: (error) {
+        _logger.e("Critical error on messages stream: $error");
+        add(ChatEvent.connectionStatusChanged(
+            false,
+            _localization.localizations
+                .chatServiceDisconnected(error.toString())));
+      },
+      onDone: () {
+        _logger.i("Messages stream closed.");
+        add(ChatEvent.connectionStatusChanged(
+            false,
+            state.error == null
+                ? _localization.localizations.chatConnectionClosed
+                : null));
+      },
+    );
+  }
+
+  void _updateConnectionStatus(
+    Emitter<ChatState> emit,
+    bool isConnected, [
+    String? errorMessage,
+  ]) {
+    emit(state.copyWith(
+      isLoading: false,
+      isSending: false,
+      error: errorMessage != null ? AppError(message: errorMessage) : null,
+    ));
   }
 
   Future<void> _onRefresh(
@@ -127,8 +124,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     _refreshCompleter = Completer<void>();
-    _messagesSubscription?.cancel();
-    _disposeChatConnectionUseCase.call();
+    _cleanupResources();
     await _onInit(const InitEvent(), emit);
     _refreshCompleter?.complete();
   }
@@ -140,97 +136,92 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(state.copyWith(currentMessage: event.message));
   }
 
-  // Add these handlers to your ChatBloc class
   void _onMessageReceived(
     MessageReceivedEvent event,
     Emitter<ChatState> emit,
   ) {
-    final incomingMessage = event.message;
+    final result = _processMessageUseCase(
+      ChatProcessMessageParams(
+        incomingMessage: event.message,
+        existingMessages: state.messages,
+      ),
+    );
 
-    // Find if we already have a message with the same ID
-    final existingMessageIndex = state.messages.indexWhere((m) =>
-        m.id == incomingMessage.id && m.sender == incomingMessage.sender);
-
-    List<ChatMessage> updatedMessages;
-
-    if (existingMessageIndex >= 0) {
-      // We found an existing message with the same ID - update it
-      _errorLogger.d("Updating existing message: ${incomingMessage.id}");
-      updatedMessages = List<ChatMessage>.from(state.messages);
-      updatedMessages[existingMessageIndex] = incomingMessage;
-    } else {
-      // This is a new message, add it to the list
-      _errorLogger.d("Adding new message: ${incomingMessage.id}");
-      updatedMessages = [incomingMessage, ...state.messages];
-    }
-
-    emit(state.copyWith(
-        messages: updatedMessages,
-        isLoading: false,
-        isSending: false,
-        error: null));
+    result.fold(
+      (failure) {
+        _logger.e("Error processing message: ${failure.message}");
+        emit(state.copyWith(error: AppError(message: failure.message)));
+      },
+      (updatedMessages) {
+        emit(state.copyWith(
+          messages: updatedMessages,
+          isLoading: false,
+          isSending: false,
+          error: null,
+        ));
+      },
+    );
   }
 
   void _onConnectionStatusChanged(
     ConnectionStatusChangedEvent event,
     Emitter<ChatState> emit,
   ) {
-    if (!event.isConnected && event.errorMessage != null) {
-      emit(state.copyWith(
-          isLoading: false,
-          isSending: false,
-          error: AppError(message: event.errorMessage ?? "ERror")));
-    } else if (event.isConnected) {
-      emit(state.copyWith(isLoading: false, error: null));
-    } else {
-      // Connected is false, but no specific error message
-      emit(state.copyWith(isLoading: false, isSending: false));
-    }
+    _updateConnectionStatus(emit, event.isConnected, event.errorMessage);
   }
 
   Future<void> _onSendMessage(
     SendMessageEvent event,
     Emitter<ChatState> emit,
   ) async {
-    final messageContent = state.currentMessage.trim();
-    if (messageContent.isEmpty) return;
+    final messageContent = state.currentMessage;
+    if (messageContent.trim().isEmpty) return;
 
     emit(state.copyWith(isSending: true, error: null));
 
-    final userMessage = ChatMessage(
-      id: Uuid().v4(), // Make sure each message has a unique ID
-      content: messageContent,
-      sender: 'User',
-      timestamp: DateTime.now(),
+    final userMessageResult = _createUserMessageUseCase(
+      ChatCreateUserMessageParams(
+        content: messageContent,
+        senderName: _localization.localizations.user,
+      ),
     );
 
-    final optimisticMessages = [userMessage, ...state.messages];
-    emit(state.copyWith(
-      messages: optimisticMessages,
-      currentMessage: '',
-    ));
+    userMessageResult.fold(
+      (failure) {
+        emit(state.copyWith(
+          isSending: false,
+          error: AppError(message: failure.message),
+        ));
+        return;
+      },
+      (userMessage) {
+        emit(state.copyWith(
+          messages: [userMessage, ...state.messages],
+          currentMessage: '',
+        ));
 
+        _sendMessage(userMessage.content, emit);
+      },
+    );
+  }
+
+  Future<void> _sendMessage(String content, Emitter<ChatState> emit) async {
     final result = await _sendMessageUseCase.call(
       SendMessageParams(
-        content: messageContent,
+        content: content,
         conversationId: _conversationId,
       ),
     );
 
     result.fold(
       (failure) {
-        _errorLogger.e("Failed to send message: ${failure.message}");
+        _logger.e("Failed to send message: ${failure.message}");
         emit(state.copyWith(
           isSending: false,
-          error: AppError(
-            message: _mapFailureToMessage(failure, 'Could not send message.'),
-          ),
+          error: AppError(message: failure.message),
         ));
       },
-      (_) {
-        _errorLogger.i("Message sent successfully via use case.");
-        emit(state.copyWith(isSending: false));
-      },
+      (_) => emit(state.copyWith(isSending: false)),
     );
   }
 
@@ -241,25 +232,19 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(state.copyWith(error: null));
   }
 
-  String _mapFailureToMessage(Failure failure, [String? defaultMessage]) {
-    if (failure is ServerFailure) {
-      return failure.message;
-    } else if (failure is ConnectionFailure) {
-      return failure.message;
-    }
-    return defaultMessage ?? failure.message ?? 'An unknown error occurred.';
-  }
-
   Future<void> refresh() async {
     add(const ChatEvent.refresh());
     return _refreshCompleter?.future;
   }
 
+  void _cleanupResources() {
+    _messagesSubscription?.cancel();
+    _disconnectUseCase.call();
+  }
+
   @override
   Future<void> close() {
-    _errorLogger.i('Closing ChatBloc and disposing resources.');
-    _messagesSubscription?.cancel();
-    _disposeChatConnectionUseCase.call();
+    _cleanupResources();
     return super.close();
   }
 }

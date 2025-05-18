@@ -5,10 +5,10 @@ import 'package:domain/model/chat_message.dart';
 import 'package:domain/model/failure/failures.dart';
 import 'package:domain/repository/chat_repository.dart';
 
-class GetChatMessagesStreamUseCase {
+class ChatObserveMessagesUseCase {
   final ChatRepository _chatRepository;
 
-  GetChatMessagesStreamUseCase(this._chatRepository);
+  ChatObserveMessagesUseCase(this._chatRepository);
 
   Stream<Either<Failure, ChatMessage>> call() {
     final rawStream = _chatRepository.messagesStream;
@@ -22,7 +22,7 @@ class GetChatMessagesStreamUseCase {
           (failure) => true,
           (message) =>
               message.sender.toLowerCase() !=
-              'user' // Filter user messages as they echoed back
+              'user' // Filter user messages as they echoed back by backend
           );
     });
   }

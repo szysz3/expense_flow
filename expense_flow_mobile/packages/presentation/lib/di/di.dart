@@ -1,5 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:data/repository/chat_repository_impl.dart';
+import 'package:data/repository/chat/chat_repository_config.dart';
+import 'package:data/repository/chat/chat_repository_impl.dart';
 import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/repository/receipt/receipt_repository_impl.dart';
 import 'package:data/repository/settings_repository_impl.dart';
@@ -8,19 +9,19 @@ import 'package:domain/repository/chat_repository.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/repository/settings_repository.dart';
 import 'package:domain/use_case/analyze_receipt_use_case.dart';
-// Import new chat use cases
-import 'package:domain/use_case/connect_to_chat_use_case.dart';
+import 'package:domain/use_case/chat/chat_connect_use_case.dart';
+import 'package:domain/use_case/chat/chat_create_user_message_use_case.dart';
+import 'package:domain/use_case/chat/chat_disconnect_use_case.dart';
+import 'package:domain/use_case/chat/chat_observe_messages_use_case.dart';
+import 'package:domain/use_case/chat/chat_process_message_use_case.dart';
+import 'package:domain/use_case/chat/chat_send_message_use_case.dart';
 import 'package:domain/use_case/create_receipt_use_case.dart';
 import 'package:domain/use_case/delete_use_case.dart';
-import 'package:domain/use_case/dispose_chat_connection_use_case.dart';
 import 'package:domain/use_case/get_autocomplete_suggestions_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
-// Import GetChatMessagesStreamUseCase
-import 'package:domain/use_case/get_chat_messages_stream_use_case.dart';
 import 'package:domain/use_case/get_daily_expenses_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:domain/use_case/get_receipts_use_case.dart';
-import 'package:domain/use_case/send_message_use_case.dart';
 import 'package:domain/use_case/settings/get_month_savings_settings_use_case.dart';
 import 'package:domain/use_case/settings/get_savings_settings_use_case.dart';
 import 'package:domain/use_case/settings/save_savings_settings_use_case.dart';
@@ -55,6 +56,16 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton(() => Connectivity());
 
+  getIt.registerSingleton<LocalizationService>(
+    LocalizationService.fromLocaleName("en"),
+  );
+
+  _registerRepositories();
+
+  _registerUseCases();
+}
+
+_registerRepositories() {
   getIt.registerLazySingleton<ReceiptRepository>(
     () => ReceiptRepositoryImpl(
       dio: _getDio(),
@@ -76,12 +87,14 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<ChatRepository>(
     () => ChatRepositoryImpl(
-        errorLogger: getIt<Logger>(),
+        logger: getIt<Logger>(),
         connectivity: getIt<Connectivity>(),
-        webSocketUrl: EnvConfig.webSocketUrl,
-        apiKey: EnvConfig.apiKey),
+        config: ChatRepositoryConfig(
+            webSocketUrl: EnvConfig.webSocketUrl, apiKey: EnvConfig.apiKey)),
   );
+}
 
+_registerUseCases() {
   getIt.registerLazySingleton(
     () => GetCategoriesUseCase(getIt<ReceiptRepository>()),
   );
@@ -122,10 +135,6 @@ Future<void> configureDependencies() async {
     () => DeleteReceiptUseCase(getIt<ReceiptRepository>()),
   );
 
-  getIt.registerSingleton<LocalizationService>(
-    LocalizationService.fromLocaleName("en"),
-  );
-
   getIt.registerLazySingleton(
     () => UpdateReceiptUseCase(getIt<ReceiptRepository>()),
   );
@@ -134,21 +143,28 @@ Future<void> configureDependencies() async {
     () => GetAutocompleteSuggestionsUseCase(getIt<ReceiptRepository>()),
   );
 
-  // Register new Chat Use Cases
   getIt.registerLazySingleton(
-    () => ConnectToChatUseCase(getIt<ChatRepository>()),
+    () => ChatConnectUseCase(getIt<ChatRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => GetChatMessagesStreamUseCase(getIt<ChatRepository>()),
+    () => ChatObserveMessagesUseCase(getIt<ChatRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => SendMessageUseCase(getIt<ChatRepository>()),
+    () => ChatSendMessageUseCase(getIt<ChatRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => DisposeChatConnectionUseCase(getIt<ChatRepository>()),
+    () => ChatDisconnectUseCase(getIt<ChatRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => ChatProcessMessageUseCase(),
+  );
+
+  getIt.registerLazySingleton(
+    () => ChatCreateUserMessageUseCase(),
   );
 }
 
@@ -173,14 +189,12 @@ Dio _getDio() {
 
 class EnvConfig {
   static String get baseUrl =>
-      dotenv.env['BASE_URL'] ?? 'http://localhost:8000/';
+      dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000/';
 
   static String get apiKey => dotenv.env['API_KEY'] ?? '';
 
-  // Add WebSocket URL to EnvConfig
   static String get webSocketUrl =>
-      dotenv.env['WEBSOCKET_URL'] ??
-      'ws://localhost:8000/api/chat'; // Example URL
+      dotenv.env['CHAT_WEBSOCKET_URL'] ?? 'ws://localhost:8000/api/chat';
 
   static Future<void> load() async {
     await dotenv.load();
@@ -188,7 +202,6 @@ class EnvConfig {
 
   static bool validate() {
     if (baseUrl.isEmpty || apiKey.isEmpty || webSocketUrl.isEmpty) {
-      // Validate new URL
       throw Exception('Missing required environment variables');
     }
     return true;
