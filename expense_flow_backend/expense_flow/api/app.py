@@ -1,3 +1,6 @@
+from fastapi import WebSocket, WebSocketDisconnect
+from fastapi.encoders import jsonable_encoder
+from expense_flow.services.chat_service import ChatService
 from decimal import Decimal
 from fastapi import FastAPI, File, Form, Request, UploadFile, Depends, HTTPException, BackgroundTasks
 from fastapi.exceptions import RequestValidationError
@@ -97,6 +100,11 @@ def get_vector_store_service():
         return VectorStoreService(config)
     except ImportError:
         return None
+
+def get_chat_service():
+    """Get chat service"""
+    config = get_config()
+    return ChatService(config)
 
 @contextmanager
 def temp_file_handler(suffix: str):
@@ -753,12 +761,52 @@ async def get_autocomplete_suggestions(
     
     return suggestions
 
+
+@app.websocket("/api/chat")
+async def chat_endpoint(
+    websocket: WebSocket,
+    chat_service: ChatService = Depends(get_chat_service)
+):
+    """WebSocket endpoint for interactive chat"""
+    await websocket.accept()
+    
+    try:
+        data = await websocket.receive_json()
+        
+        if "api_key" in data and data["api_key"] != get_config().api_key:
+            await websocket.send_json({"error": "Invalid API key"})
+            await websocket.close()
+            return
+            
+        await websocket.send_json({"status": "connected", "message": "Connection established"})
+        
+        while True:
+            data = await websocket.receive_json()
+            message = data.get("message")
+            conversation_id = data.get("conversation_id")
+            
+            if not message:
+                await websocket.send_json({"error": "Message field is required"})
+                continue
+                
+            async for chat_message in chat_service.send_message(message, conversation_id):
+                json_data = jsonable_encoder(chat_message)
+                await websocket.send_json(json_data)
+                
+    except WebSocketDisconnect:
+        logger.info("WebSocket client disconnected")
+    except Exception as e:
+        logger.error(f"Error in chat endpoint: {str(e)}", exc_info=True)
+        try:
+            await websocket.send_json({"error": str(e)})
+        except:
+            pass
+
 @app.on_event("startup")
 async def startup_event():
     """Ensure databases exist on startup"""
     config = get_config()
     
-    # Ensure both database directories exist
     for db_path in [config.db_path, config.temp_db_path]:
         if not db_path:
             continue

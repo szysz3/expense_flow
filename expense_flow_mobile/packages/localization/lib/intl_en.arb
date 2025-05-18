@@ -449,5 +449,27 @@
         "example": "15"
       }
     }
+  },
+  "chatConnectionClosed": "Chat connection closed.",
+  "@chatConnectionClosed": {
+    "description": "Message shown when chat connection is closed normally"
+  },
+  "chatServiceDisconnected": "Chat service disconnected: {error}",
+  "@chatServiceDisconnected": {
+    "description": "Message shown when chat service disconnects with error",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "timeout"
+      }
+    }
+  },
+  "noMessagesYet": "No messages yet",
+  "@noMessagesYet": {
+    "description": "Text shown when chat has no messages"
+  },
+  "user": "User",
+  "@user": {
+    "description": "Label for user messages in chat"
   }
 }

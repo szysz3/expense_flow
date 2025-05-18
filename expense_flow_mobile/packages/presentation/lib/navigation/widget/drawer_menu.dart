@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:presentation/screen/chat/chat_screen.dart';
 import 'package:presentation/screen/settings/settings_screen.dart';
 import 'package:presentation/screen/unprocessed_receipts/unprocessed_receipts_screen.dart';
 
@@ -53,6 +54,19 @@ class DrawerMenu extends StatelessWidget {
   Widget _buildDrawerItems(BuildContext context) {
     return Column(
       children: [
+        _buildDrawerItem(
+          context: context,
+          icon: SvgPicture.asset(
+            'packages/presentation/assets/icon_chat.svg',
+            width: 24,
+            height: 24,
+          ),
+          title: 'Chat',
+          onTap: () {
+            Navigator.pop(context);
+            ChatScreen.show(context);
+          },
+        ),
         _buildDrawerItem(
           context: context,
           icon: SvgPicture.asset(

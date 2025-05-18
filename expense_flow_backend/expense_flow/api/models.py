@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, model_validator, validator
 from decimal import Decimal
+import uuid
+from pydantic import BaseModel, Field
 
 class LLMType(str, Enum):
     LOCAL = "local"
@@ -239,3 +241,18 @@ class DailyExpense(BaseModel):
         json_encoders = {
             Decimal: float
         }    
+
+class ChatRequest(BaseModel):
+    message: str
+    conversation_id: Optional[str] = None
+    
+class ChatMessage(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    content: str
+    sender: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
