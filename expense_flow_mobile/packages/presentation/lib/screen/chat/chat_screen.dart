@@ -57,12 +57,11 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: MediaQuery.of(context).padding.top +
-              40, // Space for modal drag handle and status bar
         ),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Container(
+            height: MediaQuery.of(context).size.height * 0.8,
             decoration: BoxDecoration(
               color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: const BorderRadius.only(
@@ -70,81 +69,88 @@ class _ChatScreenState extends State<ChatScreen> {
                 topRight: Radius.circular(16.0),
               ),
             ),
-            child: Column(
-              children: [
-                _buildModalHeader(context),
-                Expanded(
-                  child: BlocConsumer<ChatBloc, ChatState>(
-                    listener: (context, state) {
-                      if (state.error != null) {
-                        ErrorUtils.showErrorSnackBar(
-                          context,
-                          state.error!,
-                        );
-                      }
-                      // If currentMessage in state is empty (e.g., after sending), clear controller
-                      if (state.currentMessage.isEmpty &&
-                          _textController.text.isNotEmpty) {
-                        _textController.clear();
-                      }
-                    },
-                    builder: (context, state) {
-                      if (state.isLoading && state.messages.isEmpty) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (state.messages.isEmpty && !state.isLoading) {
-                        return Center(
-                          child: Text(
-                            "No messages yet",
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                        );
-                      }
-                      return ListView.builder(
-                        reverse: true,
-                        padding: const EdgeInsets.all(8.0),
-                        itemCount: state.messages.length,
-                        itemBuilder: (context, index) {
-                          final message = state.messages[index];
-                          final isCurrentUser = message.sender == 'User';
-                          return ChatMessageItem(
-                            message: message,
-                            isCurrentUser: isCurrentUser,
-                            onTap: () {
-                              // Handle message tap if needed, e.g., copy text
-                            },
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildModalHeader(context),
+                  Expanded(
+                    child: BlocConsumer<ChatBloc, ChatState>(
+                      listener: (context, state) {
+                        if (state.error != null) {
+                          ErrorUtils.showErrorSnackBar(
+                            context,
+                            state.error!,
                           );
+                        }
+                        // If currentMessage in state is empty (e.g., after sending), clear controller
+                        if (state.currentMessage.isEmpty &&
+                            _textController.text.isNotEmpty) {
+                          _textController.clear();
+                        }
+                      },
+                      builder: (context, state) {
+                        if (state.isLoading && state.messages.isEmpty) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        if (state.messages.isEmpty && !state.isLoading) {
+                          return Center(
+                            child: Text(
+                              "No messages yet",
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          );
+                        }
+                        return ListView.builder(
+                          reverse: true,
+                          padding: const EdgeInsets.all(8.0),
+                          itemCount: state.messages.length,
+                          itemBuilder: (context, index) {
+                            final message = state.messages[index];
+                            final isCurrentUser = message.sender == 'User';
+                            return ChatMessageItem(
+                              message: message,
+                              isCurrentUser: isCurrentUser,
+                              onTap: () {
+                                // Handle message tap if needed, e.g., copy text
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  BlocBuilder<ChatBloc, ChatState>(
+                    // Rebuild ChatInputField only when isSending or currentMessage changes
+                    // currentMessage is used to potentially update the controller if needed externally
+                    // but primarily, controller drives the input field's text.
+                    buildWhen: (previous, current) =>
+                        previous.isSending != current.isSending ||
+                        previous.currentMessage != current.currentMessage,
+                    builder: (context, state) {
+                      return ChatInputField(
+                        controller: _textController,
+                        focusNode: _focusNode,
+                        onChanged: (message) => context
+                            .read<ChatBloc>()
+                            .add(ChatEvent.messageChanged(message)),
+                        onSend: () {
+                          context
+                              .read<ChatBloc>()
+                              .add(const ChatEvent.sendMessage());
+                          // Optionally, keep focus or dismiss keyboard
+                          // _focusNode.requestFocus();
                         },
+                        isLoading: state.isSending,
                       );
                     },
                   ),
-                ),
-                BlocBuilder<ChatBloc, ChatState>(
-                  // Rebuild ChatInputField only when isSending or currentMessage changes
-                  // currentMessage is used to potentially update the controller if needed externally
-                  // but primarily, controller drives the input field's text.
-                  buildWhen: (previous, current) =>
-                      previous.isSending != current.isSending ||
-                      previous.currentMessage != current.currentMessage,
-                  builder: (context, state) {
-                    return ChatInputField(
-                      controller: _textController,
-                      focusNode: _focusNode,
-                      onChanged: (message) => context
-                          .read<ChatBloc>()
-                          .add(ChatEvent.messageChanged(message)),
-                      onSend: () {
-                        context
-                            .read<ChatBloc>()
-                            .add(const ChatEvent.sendMessage());
-                        // Optionally, keep focus or dismiss keyboard
-                        // _focusNode.requestFocus();
-                      },
-                      isLoading: state.isSending,
-                    );
-                  },
-                ),
-              ],
+                  const SizedBox(
+                    height: 16,
+                  )
+                ],
+              ),
             ),
           ),
         ),
