@@ -11,19 +11,17 @@ class ChatObserveMessagesUseCase {
   ChatObserveMessagesUseCase(this._chatRepository);
 
   Stream<Either<Failure, ChatMessage>> call() {
-    final rawStream = _chatRepository.messagesStream;
-
-    return rawStream.where((eitherFailureOrMessage) {
-      if (eitherFailureOrMessage.isLeft()) {
-        return true;
-      }
-
+    return _chatRepository.messagesStream.map((eitherFailureOrMessage) {
       return eitherFailureOrMessage.fold(
-          (failure) => true,
-          (message) =>
-              message.sender.toLowerCase() !=
-              'user' // Filter user messages as they echoed back by backend
-          );
+        (failure) => Left(failure),
+        (message) {
+          // API returns messages in chunks and the last one always contains
+          // a new line character which we don't want to display
+          final trimmedContent =
+              message.content.replaceAll(RegExp(r'\n+$'), '');
+          return Right(message.copyWith(content: trimmedContent));
+        },
+      );
     });
   }
 }

@@ -39,13 +39,7 @@ class ChatService:
             self._conversations[conversation_id] = []
         
         self._conversations[conversation_id].append({"role": "user", "content": message})
-        
-        user_message = ChatMessage(
-            content=message,
-            sender="user"
-        )
-        yield user_message
-        
+                
         assistant_id = str(uuid.uuid4())
         assistant_message = ChatMessage(
             id=assistant_id,
