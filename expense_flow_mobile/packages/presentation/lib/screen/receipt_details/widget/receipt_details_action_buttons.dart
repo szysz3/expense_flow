@@ -67,7 +67,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
     return BlocBuilder<ReceiptDetailBloc, ReceiptDetailState>(
       builder: (context, state) {
         return AnimatedSquareButton(
-          isProcessing: state.isDeleting,
+          isProcessing: false,
           onPressed: () => _showDeleteConfirmation(context),
           width: 36.0,
           height: 36.0,
@@ -91,7 +91,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
     return BlocBuilder<ReceiptEditBloc, ReceiptEditState>(
       builder: (context, state) {
         return AnimatedSquareButton(
-          isProcessing: state.isSaving,
+          isProcessing: false,
           onPressed: () {
             if (isEditMode) {
               context.read<ReceiptEditBloc>().add(

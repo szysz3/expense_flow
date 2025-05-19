@@ -110,35 +110,85 @@ class ReceiptDetailScreen extends StatelessWidget {
       onTap: () => FocusScope.of(context).unfocus(),
       child: BlocBuilder<ReceiptEditBloc, ReceiptEditState>(
         builder: (context, editState) {
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.90,
-            decoration: BoxDecoration(
-              color:
-                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Stack(
-              children: [
-                Column(
+          return Stack(
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height * 0.90,
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surface
+                      .withValues(alpha: 0.9),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Stack(
                   children: [
-                    _buildDragHandle(context),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: ReceiptDetailsContent(
-                          receipt: editState.receipt ?? receipt,
-                          isEditMode: editState.isEditMode,
+                    Column(
+                      children: [
+                        _buildDragHandle(context),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: ReceiptDetailsContent(
+                              receipt: editState.receipt ?? receipt,
+                              isEditMode: editState.isEditMode,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
+                    ReceiptDetailsActionButtons(receipt: receipt),
                   ],
                 ),
-                ReceiptDetailsActionButtons(receipt: receipt),
-              ],
-            ),
+              ),
+              BlocBuilder<ReceiptDetailBloc, ReceiptDetailState>(
+                builder: (context, state) {
+                  if (state.isDeleting) {
+                    return _buildLoadingOverlay(
+                        context, AppLocalizations.of(context).deletingReceipt);
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+              BlocBuilder<ReceiptEditBloc, ReceiptEditState>(
+                builder: (context, state) {
+                  if (state.isSaving) {
+                    return _buildLoadingOverlay(
+                        context, AppLocalizations.of(context).savingReceipt);
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildLoadingOverlay(BuildContext context, String message) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.90,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ],
+        ),
       ),
     );
   }

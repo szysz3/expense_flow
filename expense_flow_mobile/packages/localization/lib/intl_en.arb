@@ -386,8 +386,12 @@
   "@deleteReceiptConfirmMessage": {
     "description": "No receipts found. Scan a receipt to get started."
   },
-  "deletingReceipt": "Receipt deleted successfully",
+  "deletingReceipt": "Deleting receipt..",
   "@deletingReceipt": {
+    "description": "No receipts found. Scan a receipt to get started."
+  },
+  "savingReceipt": "Saving receipt..",
+  "@savingReceipt": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "deleteFailed": "Failed to delete receipt",
