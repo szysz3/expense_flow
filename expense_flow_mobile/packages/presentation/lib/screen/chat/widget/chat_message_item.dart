@@ -1,5 +1,6 @@
 import 'package:domain/model/chat_message.dart';
 import 'package:flutter/material.dart';
+import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:intl/intl.dart';
 
 class ChatMessageItem extends StatelessWidget {
@@ -40,10 +41,7 @@ class ChatMessageItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message.content,
-                    style: theme.textTheme.bodyMedium,
-                  ),
+                  GptMarkdown(message.content),
                   const SizedBox(height: 4),
                   Text(
                     dateFormat.format(message.timestamp),
