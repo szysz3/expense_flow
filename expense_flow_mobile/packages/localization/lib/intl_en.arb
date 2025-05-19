@@ -267,167 +267,167 @@
     "description": "Caption for pie chart"
   },
   "barChart": "Bar Chart",
-  "@settings": {
+  "@barChart": {
     "description": "Caption for bar chart"
   },
   "list": "List",
-  "@settings": {
+  "@list": {
     "description": "List caption"
   },
-  "monthlySummaryChartTitle": "Last 12 months",
-  "@settings": {
+  "monthlySummaryChartTitle": "Monthly Expenses",
+  "@monthlySummaryChartTitle": {
     "description": "Monthly summary expenses"
   },
   "noDataChartTitle": "No data to display",
-  "@settings": {
+  "@noDataChartTitle": {
     "description": "No data available to display on chart"
   },
   "totalChartData": "Total",
-  "@settings": {
+  "@totalChartData": {
     "description": "Total expenses"
   },
   "appBarScanReceiptsTitle": "Scan Receipt",
-  "@settings": {
+  "@appBarScanReceiptsTitle": {
     "description": "Receipt scan screen title"
   },
   "appBarAddItemTitle": "Add Item",
-  "@settings": {
+  "@appBarAddItemTitle": {
     "description": "Add item screen title"
   },
   "appBarCategoriesTitle": "Categories",
-  "@settings": {
+  "@appBarCategoriesTitle": {
     "description": "Categories screen title"
   },
   "appBarSummaryTitle": "Summary",
-  "@settings": {
+  "@appBarSummaryTitle": {
     "description": "Summary screen title"
   },
   "appBarUnprocessedReceiptsTitle": "Unprocessed Receipts",
-  "@settings": {
+  "@appBarUnprocessedReceiptsTitle": {
     "description": "Unprocessed receipts screen title"
   },
   "savingsAmount": "Monthly Saving Amount",
-  "@settings": {
+  "@savingsAmount": {
     "description": "Savings amount description field"
   },
   "savingsAmountHint": "Amount you save each month",
-  "@settings": {
+  "@savingsAmountHint": {
     "description": "Savings amount hint field"
   },
   "income": "Monthly Income",
-  "@settings": {
+  "@income": {
     "description": "Income description field"
   },
   "incomeHint": "Enter your total monthly income",
-  "@settings": {
+  "@incomeHint": {
     "description": "Income hint field"
   },
   "balance": "To spend",
-  "@settings": {
+  "@balance": {
     "description": "Balance between expenses and savings. Amount available to spend."
   },
-  "savingsChart": "Savings Chart",
-  "@settings": {
+  "savingsChart": "Expenses Chart",
+  "@savingsChart": {
     "description": "Caption for savings chart screen menu entry"
   },
-  "monthlySavingsChart": "Monthly Savings Chart",
-  "@settings": {
+  "monthlySavingsChart": "Daily Expenses Chart",
+  "@monthlySavingsChart": {
     "description": "Title for savings chart screen"
   },
   "maxAllowedExpenses": "Max Allowed Expenses",
-  "@settings": {
+  "@maxAllowedExpenses": {
     "description": "Max allowed expenses label on savings chart screen"
   },
   "currentSavings": "Current Savings",
-  "@settings": {
+  "@currentSavings": {
     "description": "Current savings label on savings chart screen"
   },
   "browse": "Browse",
-  "@settings": {
+  "@browse": {
     "description": "Title for browse receipt screen navigation item"
   },
   "appBarBrowseReceiptsTitle": "Browse Receipts",
-  "@settings": {
+  "@appBarBrowseReceiptsTitle": {
     "description": "Title for browse receipt screen"
   },
   "noReceiptsFound": "No receipts found",
-  "@settings": {
+  "@noReceiptsFound": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "receiptDetails": "Receipt Details",
-  "@settings": {
+  "@receiptDetails": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "merchant": "Merchant",
-  "@settings": {
+  "@merchant": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "transactionDetails": "Transaction Details",
-  "@settings": {
+  "@transactionDetails": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "transactionDate": "Date",
-  "@settings": {
+  "@transactionDate": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "items": "Items",
-  "@settings": {
+  "@items": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "delete": "Delete",
-  "@settings": {
+  "@delete": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "deleteConfirmation": "Delete Receipt",
-  "@settings": {
+  "@deleteConfirmation": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "deleteReceiptConfirmMessage": "Are you sure you want to delete this receipt? This action cannot be undone.",
-  "@settings": {
+  "@deleteReceiptConfirmMessage": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "deletingReceipt": "Receipt deleted successfully",
-  "@settings": {
+  "@deletingReceipt": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "deleteFailed": "Failed to delete receipt",
-  "@settings": {
+  "@deleteFailed": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "cancel": "Cancel",
-  "@settings": {
+  "@cancel": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "receiptDeleted": "Receipt Deleted",
-  "@settings": {
+  "@receiptDeleted": {
     "description": "No receipts found. Scan a receipt to get started."
   },
   "receiptUpdated": "Receipt updated successfully",
-  "@settings": {
+  "@receiptUpdated": {
     "description": "Receipt updated successfully caption"
   },
   "editItem": "Edit Item",
-  "@settings": {
+  "@editItem": {
     "description": "Edit item caption"
   },
   "save": "Save",
-  "@settings": {
+  "@save": {
     "description": "Save caption"
   },
   "merchantName": "Merchant Name",
-  "@settings": {
+  "@merchantName": {
     "description": "Merchant name caption"
   },
   "merchantAddress": "Merchant Address",
-  "@settings": {
+  "@merchantAddress": {
     "description": "Merchant address caption"
   },
   "savingsTitle": "Savings",
-  "@settings": {
+  "@savingsTitle": {
     "description": "Savings title caption"
   },
   "total": "Total",
-  "@settings": {
+  "@total": {
     "description": "Total caption on receipt details"
   },
   "receiptIdLabel": "Receipt {id}",
