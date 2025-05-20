@@ -34,8 +34,8 @@ class ChatMessageItem extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isCurrentUser
-                    ? theme.colorScheme.primary.withOpacity(0.3)
-                    : theme.colorScheme.secondary.withOpacity(0.1),
+                    ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                    : theme.colorScheme.secondary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -46,7 +46,7 @@ class ChatMessageItem extends StatelessWidget {
                   Text(
                     dateFormat.format(message.timestamp),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                       fontSize: 10,
                     ),
                   ),
@@ -66,8 +66,8 @@ class ChatMessageItem extends StatelessWidget {
     return CircleAvatar(
       radius: 16,
       backgroundColor: isCurrentUser
-          ? theme.colorScheme.primary.withOpacity(0.5)
-          : theme.colorScheme.secondary.withOpacity(0.5),
+          ? theme.colorScheme.primary.withValues(alpha: 0.5)
+          : theme.colorScheme.secondary.withValues(alpha: 0.5),
       child: Text(
         isCurrentUser ? 'U' : 'A',
         style: const TextStyle(

@@ -25,10 +25,10 @@ class ChatInputField extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: theme.colorScheme.onSurface.withOpacity(0.2),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -40,9 +40,9 @@ class ChatInputField extends StatelessWidget {
               onChanged: onChanged,
               style: TextStyle(color: theme.colorScheme.onSurface),
               decoration: InputDecoration(
-                hintText: 'Type a message...',
+                hintText: l10n.typeAMessage,
                 hintStyle: TextStyle(
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),

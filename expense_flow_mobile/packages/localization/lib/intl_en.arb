@@ -475,5 +475,9 @@
   "user": "User",
   "@user": {
     "description": "Label for user messages in chat"
+  },
+  "typeAMessage": "Type a message...",
+  "@typeAMessage": {
+    "description": "Label for empty chat window"
   }
 }
