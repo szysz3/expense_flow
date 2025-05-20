@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:domain/repository/chat_repository.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/repository/settings_repository.dart';
+import 'package:domain/use_case/calculate_total_savings_use_case.dart';
 import 'package:domain/use_case/chat/chat_connect_use_case.dart';
 import 'package:domain/use_case/chat/chat_create_user_message_use_case.dart';
 import 'package:domain/use_case/chat/chat_disconnect_use_case.dart';
@@ -165,6 +166,10 @@ _registerUseCases() {
 
   getIt.registerLazySingleton(
     () => ChatCreateUserMessageUseCase(),
+  );
+
+  getIt.registerLazySingleton(
+    () => CalculateTotalSavingsUseCase(),
   );
 }
 

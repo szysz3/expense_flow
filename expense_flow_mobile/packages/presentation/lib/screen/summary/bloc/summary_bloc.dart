@@ -1,17 +1,18 @@
 import 'dart:async';
 
 import 'package:domain/model/failure/failures.dart';
+import 'package:domain/model/month_summary.dart' as domain;
+import 'package:domain/model/savings_settings.dart';
 import 'package:domain/use_case/base/base_use_case.dart';
+import 'package:domain/use_case/calculate_total_savings_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:domain/use_case/settings/settings_get_month_savings_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../../../core/error/app_error.dart';
-import '../model/category_summary.dart';
-import '../model/month_summary.dart';
+import '../model/month_summary_mapper.dart';
 import '../model/summary_display_type.dart';
 import 'summary_events.dart';
 import 'summary_state.dart';
@@ -19,6 +20,7 @@ import 'summary_state.dart';
 class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
   final GetMonthsSummaryUseCase _getMonthsSummaryUseCase;
   final SettingsGetMonthSavingsUseCase _getMonthSavingsSettingsUseCase;
+  final CalculateTotalSavingsUseCase _calculateTotalSavingsUseCase;
   final Logger _errorLogger;
   final LocalizationService _localizationService;
   Completer<void>? _refreshCompleter;
@@ -26,6 +28,7 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
   SummaryBloc(
       this._getMonthsSummaryUseCase,
       this._getMonthSavingsSettingsUseCase,
+      this._calculateTotalSavingsUseCase,
       this._errorLogger,
       this._localizationService)
       : super(const SummaryState()) {
@@ -41,12 +44,6 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
     return _refreshCompleter?.future;
   }
 
-  String _getMonthName(int monthNumber) {
-    if (monthNumber < 1 || monthNumber > 12) return 'Unknown';
-    final dateTime = DateTime(DateTime.now().year, monthNumber);
-    return DateFormat('MMMM').format(dateTime);
-  }
-
   Future<void> _handleInit(
     InitEvent event,
     Emitter<SummaryState> emit,
@@ -56,6 +53,7 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
       emit(state.copyWith(isLoading: true, error: null));
 
       final monthsResult = await _getMonthsSummaryUseCase(const NoParams());
+
       if (monthsResult.isLeft()) {
         final failure = monthsResult.fold<Failure>(
           (failure) => failure,
@@ -76,14 +74,13 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
         return;
       }
 
-      final domainMonths = monthsResult.fold<List<dynamic>>(
+      final domainMonths = monthsResult.fold<List<domain.MonthSummary>>(
         (_) => [],
         (data) => data,
       );
 
       final monthYearPairs = domainMonths
-          .map<(int, int)>(
-              (month) => (month.monthNumber as int, month.year as int))
+          .map<(int, int)>((month) => (month.monthNumber, month.year))
           .toList();
 
       final savingsResult = await _getMonthSavingsSettingsUseCase(
@@ -109,52 +106,37 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
         return;
       }
 
-      final savingsMap = savingsResult.fold<Map<(int, int), dynamic>>(
+      final savingsMap = savingsResult.fold<Map<(int, int), SavingsSettings>>(
         (_) => {},
         (data) => data,
       );
 
-      final presentationMonths = domainMonths.map((dynamic month) {
-        final monthNumber = month.monthNumber as int;
-        final year = month.year as int;
-        final monthName = _getMonthName(monthNumber);
+      final presentationMonths = domainMonths.map((domain.MonthSummary month) {
+        final monthNumber = month.monthNumber;
+        final year = month.year;
+        final key = (monthNumber, year);
 
         double income = 0.0;
         double expectedSavingsAmount = 0.0;
-        final key = (monthNumber, year);
         if (savingsMap.containsKey(key)) {
-          income = savingsMap[key]!.income as double;
-          expectedSavingsAmount = savingsMap[key]!.savingsAmount as double;
+          income = savingsMap[key]!.income;
+          expectedSavingsAmount = savingsMap[key]!.savingsAmount;
         }
 
-        return MonthSummary(
-            id: month.id as String,
-            monthNumber: monthNumber,
-            monthName: monthName,
-            year: year,
-            previousMonthAmount: month.previousMonthTotal as double,
-            categories: (month.categories as List<dynamic>)
-                .map<CategorySummary>((dynamic category) => CategorySummary(
-                      id: category.id as String,
-                      name: category.name as String,
-                      iconName: category.iconName as String,
-                      amount: category.amount as double,
-                      previousMonthAmount:
-                          category.previousMonthAmount as double,
-                    ))
-                .toList(),
-            income: income,
-            expectedSavingsAmount: expectedSavingsAmount);
+        return MonthSummaryMapper.mapDomainToPresentation(month,
+            income: income, expectedSavingsAmount: expectedSavingsAmount);
       }).toList();
 
-      final totalSavings = presentationMonths.length > 1
-          ? presentationMonths
-              .sublist(1, presentationMonths.length)
-              .fold<double>(
-                0.0,
-                (sum, month) => sum + month.calculateSavings(),
-              )
-          : 0.0;
+      final savingsCalcResult =
+          await _calculateTotalSavingsUseCase(CalculateTotalSavingsParams(
+        months: domainMonths,
+        savingsMap: savingsMap,
+      ));
+
+      final totalSavings = savingsCalcResult.fold<double>(
+        (_) => 0.0,
+        (data) => data,
+      );
 
       emit(state.copyWith(
         months: presentationMonths,

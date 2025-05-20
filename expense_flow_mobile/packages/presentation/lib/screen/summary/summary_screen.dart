@@ -1,3 +1,4 @@
+import 'package:domain/use_case/calculate_total_savings_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:domain/use_case/settings/settings_get_month_savings_use_case.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ class SummaryScreen extends StatelessWidget {
       create: (_) => SummaryBloc(
             getIt<GetMonthsSummaryUseCase>(),
             getIt<SettingsGetMonthSavingsUseCase>(),
+            getIt<CalculateTotalSavingsUseCase>(),
             getIt<Logger>(),
             getIt<LocalizationService>(),
           )..add(const SummaryEvent.init()),
