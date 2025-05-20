@@ -88,7 +88,6 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
 
     final scanState = state as ReceiptScanState;
 
-    // Validate photo exists
     if (scanState.photoPath == null) {
       emit(scanState.copyWith(
         error: AppError(
@@ -99,22 +98,16 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       return;
     }
 
-    // Set loading state
     emit(scanState.copyWith(
       cameraPreviewState: CameraPreviewState.loading,
       error: null,
     ));
 
     try {
-      // Analyze receipt
       final result = await _analyzeReceiptUseCase(
-        ReceiptAnalyzeParams(
-          filePath: scanState.photoPath!,
-          llmType: 'local',
-        ),
+        ReceiptAnalyzeParams(filePath: scanState.photoPath!),
       );
 
-      // Handle success or failure
       result.fold(
         (failure) {
           _errorLogger.e('Failed to analyze receipt', error: failure);
@@ -149,10 +142,8 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
       ));
     }
 
-    // Wait for animation to complete
     await Future.delayed(const Duration(milliseconds: 1500));
 
-    // Reset state if still in success/failure state
     if (state is ReceiptScanState) {
       final currentState = state as ReceiptScanState;
       final isCompleted = currentState.cameraPreviewState ==
@@ -163,7 +154,6 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
         emit(currentState.copyWith(
           photoPath: null,
           cameraPreviewState: CameraPreviewState.idle,
-          // Preserves error if there was a failure
         ));
       }
     }
@@ -219,7 +209,7 @@ class ReceiptScanBloc extends Bloc<ReceiptScanEvent, BaseReceiptScanState> {
 
       emit(scanState.copyWith(
         cameraPreviewState: CameraPreviewState.photoProcessing,
-        error: null, // Clear any errors when taking a new photo
+        error: null,
       ));
 
       try {

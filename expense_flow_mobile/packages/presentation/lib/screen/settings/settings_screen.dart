@@ -216,7 +216,6 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
   }
 
   String _parseNumberInput(String value) {
-    // Remove formatting characters for processing
     final locale = Localizations.localeOf(context);
     final format = NumberFormat.decimalPattern(locale.toString());
     final decimalSeparator = format.symbols.DECIMAL_SEP;
