@@ -5,423 +5,377 @@ import 'package:domain/model/category_with_items.dart';
 import 'package:domain/model/daily_expense.dart';
 import 'package:domain/model/month_summary.dart';
 import 'package:domain/model/savings_settings.dart';
+import 'package:domain/model/settings.dart';
 
 class TestDataFactory {
-  static List<AutocompleteSuggestion> createAutocompleteSuggestions(
-      {int count = 3}) {
-    return List.generate(count, (index) {
-      switch (index) {
-        case 0:
-          return const AutocompleteSuggestion(
-            description: 'Groceries',
-            category: 'Food & Dining',
-            score: 0.95,
-          );
-        case 1:
-          return const AutocompleteSuggestion(
-            description: 'Coffee',
-            category: 'Food & Dining',
-            score: 0.87,
-          );
-        case 2:
-          return const AutocompleteSuggestion(
-            description: 'Gasoline',
-            category: 'Transportation',
-            score: 0.82,
-          );
-        case 3:
-          return const AutocompleteSuggestion(
-            description: 'Restaurant',
-            category: 'Food & Dining',
-            score: 0.78,
-          );
-        case 4:
-          return const AutocompleteSuggestion(
-            description: 'Pharmacy',
-            category: 'Health & Medical',
-            score: 0.75,
-          );
-        default:
-          return AutocompleteSuggestion(
-            description: 'Test Item $index',
-            category: 'Test Category',
-            score: 0.5 + (index * 0.1),
-          );
-      }
-    });
-  }
+  static const _defaultYear = 2023;
+  static const _defaultMonth = 1;
+  static const _defaultIncome = 3000.0;
+  static const _defaultSavingsAmount = 500.0;
+  static const _defaultAmount = 50.0;
+  static const _defaultScore = 0.8;
 
-  static AutocompleteSuggestion createSingleAutocompleteSuggestion({
-    String description = 'Test Description',
-    String category = 'Test Category',
-    double score = 0.8,
-  }) {
-    return AutocompleteSuggestion(
-      description: description,
-      category: category,
-      score: score,
-    );
-  }
+  static const _predefinedSuggestions = [
+    AutocompleteSuggestion(
+        description: 'Groceries', category: 'Food & Dining', score: 0.95),
+    AutocompleteSuggestion(
+        description: 'Coffee', category: 'Food & Dining', score: 0.87),
+    AutocompleteSuggestion(
+        description: 'Gasoline', category: 'Transportation', score: 0.82),
+    AutocompleteSuggestion(
+        description: 'Restaurant', category: 'Food & Dining', score: 0.78),
+    AutocompleteSuggestion(
+        description: 'Pharmacy', category: 'Health & Medical', score: 0.75),
+  ];
 
-  static List<CategorySummary> createCategorySummaries() {
-    return [
-      const CategorySummary(
+  static const _predefinedCategories = [
+    CategorySummary(
         id: 'cat1',
         name: 'Groceries',
         iconName: 'shopping_cart',
         amount: 75.0,
-        previousMonthAmount: 65.0,
-      ),
-      const CategorySummary(
+        previousMonthAmount: 65.0),
+    CategorySummary(
         id: 'cat2',
         name: 'Entertainment',
         iconName: 'movie',
         amount: 25.0,
-        previousMonthAmount: 30.0,
-      ),
-    ];
+        previousMonthAmount: 30.0),
+  ];
+
+  static List<T> createList<T>(T Function(int index) builder, {int count = 3}) {
+    return List.generate(count, builder);
   }
 
-  static SavingsSettings createSavingsSettings({
-    int month = 1,
-    int year = 2023,
-    double savingsAmount = 0.0,
-    double income = 1000.0,
-  }) {
-    return SavingsSettings(
-      month: month,
-      year: year,
-      savingsAmount: savingsAmount,
-      income: income,
-    );
+  static List<T> createPredefinedList<T>(List<T> predefined, {int? count}) {
+    if (count == null || count <= predefined.length) {
+      return predefined.take(count ?? predefined.length).toList();
+    }
+
+    final result = List<T>.from(predefined);
+    for (int i = predefined.length; i < count; i++) {
+      if (T == AutocompleteSuggestion) {
+        result.add(AutocompleteSuggestion(
+          description: 'Test Item $i',
+          category: 'Test Category',
+          score: 0.5 + (i * 0.1),
+        ) as T);
+      }
+    }
+    return result;
   }
 
-  static Map<(int, int), SavingsSettings> createSavingsMap() {
-    return {
-      (1, 2023): SavingsSettings(month: 1, year: 2023, income: 3000.0),
-      (2, 2023): SavingsSettings(month: 2, year: 2023, income: 3200.0),
-      (3, 2023): SavingsSettings(month: 3, year: 2023, income: 3100.0),
-    };
-  }
+  static List<AutocompleteSuggestion> createAutocompleteSuggestions(
+          {int count = 3}) =>
+      createPredefinedList(_predefinedSuggestions, count: count);
 
-  static List<MonthSummary> createMonthsForSavingsCalculation() {
-    return [
-      MonthSummary(
-        id: 'jan2023',
-        monthNumber: 1,
-        year: 2023,
-        previousMonthTotal: 0.0,
-        categories: [
-          const CategorySummary(
-              id: 'cat1',
-              name: 'Food',
-              iconName: 'food',
-              amount: 500.0,
-              previousMonthAmount: 450.0),
-          const CategorySummary(
-              id: 'cat2',
-              name: 'Transport',
-              iconName: 'car',
-              amount: 200.0,
-              previousMonthAmount: 180.0),
-        ],
-      ),
-      MonthSummary(
-        id: 'feb2023',
-        monthNumber: 2,
-        year: 2023,
-        previousMonthTotal: 700.0,
-        categories: [
-          const CategorySummary(
-              id: 'cat1',
-              name: 'Food',
-              iconName: 'food',
-              amount: 600.0,
-              previousMonthAmount: 500.0),
-          const CategorySummary(
-              id: 'cat2',
-              name: 'Transport',
-              iconName: 'car',
-              amount: 250.0,
-              previousMonthAmount: 200.0),
-        ],
-      ),
-      MonthSummary(
-        id: 'mar2023',
-        monthNumber: 3,
-        year: 2023,
-        previousMonthTotal: 850.0,
-        categories: [
-          const CategorySummary(
-              id: 'cat1',
-              name: 'Food',
-              iconName: 'food',
-              amount: 550.0,
-              previousMonthAmount: 600.0),
-          const CategorySummary(
-              id: 'cat2',
-              name: 'Transport',
-              iconName: 'car',
-              amount: 300.0,
-              previousMonthAmount: 250.0),
-        ],
-      ),
-    ];
-  }
+  static AutocompleteSuggestion createSingleAutocompleteSuggestion({
+    String description = 'Test Description',
+    String category = 'Test Category',
+    double score = _defaultScore,
+  }) =>
+      AutocompleteSuggestion(
+          description: description, category: category, score: score);
 
-  static List<MonthSummary> createSingleMonthList() {
-    return [
-      MonthSummary(
-        id: 'jan2023',
-        monthNumber: 1,
-        year: 2023,
-        previousMonthTotal: 0.0,
-        categories: createCategorySummaries(),
-      ),
-    ];
-  }
-
-  static Map<(int, int), SavingsSettings> createEmptySavingsMap() {
-    return <(int, int), SavingsSettings>{};
-  }
+  static List<CategorySummary> createCategorySummaries() =>
+      List.from(_predefinedCategories);
 
   static CategorySummary createSingleCategorySummary({
     String id = 'test-cat',
     String name = 'Test Category',
     String iconName = 'test_icon',
-    double amount = 50.0,
+    double amount = _defaultAmount,
     double previousMonthAmount = 40.0,
-  }) {
-    return CategorySummary(
-      id: id,
-      name: name,
-      iconName: iconName,
-      amount: amount,
-      previousMonthAmount: previousMonthAmount,
-    );
-  }
+  }) =>
+      CategorySummary(
+        id: id,
+        name: name,
+        iconName: iconName,
+        amount: amount,
+        previousMonthAmount: previousMonthAmount,
+      );
 
-  static List<MonthSummary> createMonthsSummary() {
-    final categories = createCategorySummaries();
-    return [
-      MonthSummary(
-        id: 'jan2023',
-        monthNumber: 1,
-        year: 2023,
-        previousMonthTotal: 0.0,
-        categories: categories,
-      ),
-      MonthSummary(
-        id: 'feb2023',
-        monthNumber: 2,
-        year: 2023,
-        previousMonthTotal: 100.0,
-        categories: categories,
-      ),
-    ];
-  }
+  static SavingsSettings createSavingsSettings({
+    int month = _defaultMonth,
+    int year = _defaultYear,
+    double savingsAmount = _defaultSavingsAmount,
+    double income = _defaultIncome,
+  }) =>
+      SavingsSettings(
+        month: month,
+        year: year,
+        savingsAmount: savingsAmount,
+        income: income,
+      );
+
+  static Map<(int, int), SavingsSettings> createSavingsMap() => {
+        (1, _defaultYear): createSavingsSettings(month: 1, income: 3000.0),
+        (2, _defaultYear): createSavingsSettings(month: 2, income: 3200.0),
+        (3, _defaultYear): createSavingsSettings(month: 3, income: 3100.0),
+      };
+
+  static Map<(int, int), SavingsSettings> createEmptySavingsMap() => {};
+
+  static List<SavingsSettings> createSavingsSettingsList() => [
+        createSavingsSettings(month: 1, income: 3000.0, savingsAmount: 500.0),
+        createSavingsSettings(month: 2, income: 3200.0, savingsAmount: 600.0),
+        createSavingsSettings(month: 3, income: 3100.0, savingsAmount: 550.0),
+      ];
 
   static MonthSummary createSingleMonthSummary({
     String id = 'test-month',
-    int monthNumber = 1,
-    int year = 2023,
+    int monthNumber = _defaultMonth,
+    int year = _defaultYear,
     double previousMonthTotal = 0.0,
     List<CategorySummary>? categories,
-  }) {
-    return MonthSummary(
-      id: id,
-      monthNumber: monthNumber,
-      year: year,
-      previousMonthTotal: previousMonthTotal,
-      categories: categories ?? createCategorySummaries(),
-    );
-  }
+  }) =>
+      MonthSummary(
+        id: id,
+        monthNumber: monthNumber,
+        year: year,
+        previousMonthTotal: previousMonthTotal,
+        categories: categories ?? createCategorySummaries(),
+      );
 
-  static List<DailyExpense> createDailyExpenses() {
+  static List<MonthSummary> createMonthsSummary() => [
+        createSingleMonthSummary(
+            id: 'jan2023', monthNumber: 1, year: _defaultYear),
+        createSingleMonthSummary(
+            id: 'feb2023',
+            monthNumber: 2,
+            year: _defaultYear,
+            previousMonthTotal: 100.0),
+      ];
+
+  static List<MonthSummary> createSingleMonthList() => [
+        createSingleMonthSummary(
+            id: 'jan2023', monthNumber: 1, year: _defaultYear),
+      ];
+
+  static List<MonthSummary> createMonthsForSavingsCalculation() {
+    const baseExpenses = [
+      CategorySummary(
+          id: 'cat1',
+          name: 'Food',
+          iconName: 'food',
+          amount: 500.0,
+          previousMonthAmount: 450.0),
+      CategorySummary(
+          id: 'cat2',
+          name: 'Transport',
+          iconName: 'car',
+          amount: 200.0,
+          previousMonthAmount: 180.0),
+    ];
+
     return [
-      DailyExpense(
-        day: 1,
-        total: 45.67,
-        transactionDatetime: DateTime(2023, 5, 1, 14, 30),
-      ),
-      DailyExpense(
-        day: 3,
-        total: 23.45,
-        transactionDatetime: DateTime(2023, 5, 3, 10, 15),
-      ),
-      DailyExpense(
-        day: 5,
-        total: 78.90,
-        transactionDatetime: DateTime(2023, 5, 5, 18, 45),
-      ),
-      DailyExpense(
-        day: 10,
-        total: 156.34,
-        transactionDatetime: DateTime(2023, 5, 10, 12, 0),
-      ),
-      DailyExpense(
-        day: 15,
-        total: 89.12,
-        transactionDatetime: DateTime(2023, 5, 15, 16, 20),
-      ),
+      MonthSummary(
+          id: 'jan2023',
+          monthNumber: 1,
+          year: _defaultYear,
+          previousMonthTotal: 0.0,
+          categories: baseExpenses),
+      MonthSummary(
+          id: 'feb2023',
+          monthNumber: 2,
+          year: _defaultYear,
+          previousMonthTotal: 700.0,
+          categories: [
+            const CategorySummary(
+                id: 'cat1',
+                name: 'Food',
+                iconName: 'food',
+                amount: 600.0,
+                previousMonthAmount: 500.0),
+            const CategorySummary(
+                id: 'cat2',
+                name: 'Transport',
+                iconName: 'car',
+                amount: 250.0,
+                previousMonthAmount: 200.0),
+          ]),
+      MonthSummary(
+          id: 'mar2023',
+          monthNumber: 3,
+          year: _defaultYear,
+          previousMonthTotal: 850.0,
+          categories: [
+            const CategorySummary(
+                id: 'cat1',
+                name: 'Food',
+                iconName: 'food',
+                amount: 550.0,
+                previousMonthAmount: 600.0),
+            const CategorySummary(
+                id: 'cat2',
+                name: 'Transport',
+                iconName: 'car',
+                amount: 300.0,
+                previousMonthAmount: 250.0),
+          ]),
     ];
   }
+
+  static Settings createSettings({List<SavingsSettings>? savingsSettings}) =>
+      Settings(
+        savingsSettings: savingsSettings ??
+            [
+              createSavingsSettings(
+                  month: 1, income: 3000.0, savingsAmount: 500.0),
+              createSavingsSettings(
+                  month: 2, income: 3200.0, savingsAmount: 600.0),
+            ],
+      );
+
+  static Settings createEmptySettings() => const Settings(savingsSettings: []);
+
+  static Settings createSettingsWithNullSavings() =>
+      const Settings(savingsSettings: null);
 
   static DailyExpense createSingleDailyExpense({
     int day = 1,
-    double total = 50.0,
+    double total = _defaultAmount,
     DateTime? transactionDatetime,
-  }) {
-    return DailyExpense(
-      day: day,
-      total: total,
-      transactionDatetime: transactionDatetime ?? DateTime(2023, 5, day, 12, 0),
-    );
-  }
+  }) =>
+      DailyExpense(
+        day: day,
+        total: total,
+        transactionDatetime:
+            transactionDatetime ?? DateTime(_defaultYear, 5, day, 12, 0),
+      );
 
-  static List<CategoryWithItems> createCategoriesWithItems() {
-    return [
-      CategoryWithItems(
-        id: 'cat1',
-        name: 'Groceries',
-        iconName: 'shopping_cart',
-        items: [
-          CategoryItem(id: 'item3', name: 'Bakery', amount: 12.20, count: 1),
-          CategoryItem(
-              id: 'item1', name: 'Supermarket', amount: 75.50, count: 3),
-          CategoryItem(
-              id: 'item2', name: 'Local Store', amount: 45.30, count: 2),
-        ],
-      ),
-      CategoryWithItems(
-        id: 'cat2',
-        name: 'Entertainment',
-        iconName: 'movie',
-        items: [
-          CategoryItem(id: 'item4', name: 'Cinema', amount: 35.00, count: 1),
-          CategoryItem(id: 'item6', name: 'Streaming', amount: 15.99, count: 2),
-          CategoryItem(id: 'item5', name: 'Concert', amount: 85.00, count: 1),
-        ],
-      ),
-      CategoryWithItems(
-        id: 'cat3',
-        name: 'Transportation',
-        iconName: 'car',
-        items: [
-          CategoryItem(
-              id: 'item8', name: 'Public Transport', amount: 25.50, count: 10),
-          CategoryItem(
-              id: 'item7', name: 'Gas Station', amount: 60.00, count: 4),
-        ],
-      ),
-    ];
-  }
-
-  static CategoryWithItems createSingleCategoryWithItems({
-    String id = 'test-cat',
-    String name = 'Test Category',
-    String iconName = 'test_icon',
-    List<CategoryItem>? items,
-  }) {
-    return CategoryWithItems(
-      id: id,
-      name: name,
-      iconName: iconName,
-      items: items ??
-          [
-            CategoryItem(
-                id: 'test-item1', name: 'Test Item 1', amount: 50.0, count: 2),
-            CategoryItem(
-                id: 'test-item2', name: 'Test Item 2', amount: 30.0, count: 1),
-          ],
-    );
-  }
+  static List<DailyExpense> createDailyExpenses() => [
+        createSingleDailyExpense(
+            day: 1,
+            total: 45.67,
+            transactionDatetime: DateTime(2023, 5, 1, 14, 30)),
+        createSingleDailyExpense(
+            day: 3,
+            total: 23.45,
+            transactionDatetime: DateTime(2023, 5, 3, 10, 15)),
+        createSingleDailyExpense(
+            day: 5,
+            total: 78.90,
+            transactionDatetime: DateTime(2023, 5, 5, 18, 45)),
+        createSingleDailyExpense(
+            day: 10,
+            total: 156.34,
+            transactionDatetime: DateTime(2023, 5, 10, 12, 0)),
+        createSingleDailyExpense(
+            day: 15,
+            total: 89.12,
+            transactionDatetime: DateTime(2023, 5, 15, 16, 20)),
+      ];
 
   static CategoryItem createCategoryItem({
     String id = 'test-item',
     String name = 'Test Item',
     double amount = 25.0,
     int count = 1,
-  }) {
-    return CategoryItem(
-      id: id,
-      name: name,
-      amount: amount,
-      count: count,
-    );
+  }) =>
+      CategoryItem(id: id, name: name, amount: amount, count: count);
+
+  static CategoryWithItems createSingleCategoryWithItems({
+    String id = 'test-cat',
+    String name = 'Test Category',
+    String iconName = 'test_icon',
+    List<CategoryItem>? items,
+  }) =>
+      CategoryWithItems(
+        id: id,
+        name: name,
+        iconName: iconName,
+        items: items ??
+            [
+              createCategoryItem(
+                  id: 'test-item1',
+                  name: 'Test Item 1',
+                  amount: 50.0,
+                  count: 2),
+              createCategoryItem(
+                  id: 'test-item2',
+                  name: 'Test Item 2',
+                  amount: 30.0,
+                  count: 1),
+            ],
+      );
+
+  static List<CategoryWithItems> createCategoriesWithItems() => [
+        CategoryWithItems(
+          id: 'cat1',
+          name: 'Groceries',
+          iconName: 'shopping_cart',
+          items: [
+            createCategoryItem(
+                id: 'item3', name: 'Bakery', amount: 12.20, count: 1),
+            createCategoryItem(
+                id: 'item1', name: 'Supermarket', amount: 75.50, count: 3),
+            createCategoryItem(
+                id: 'item2', name: 'Local Store', amount: 45.30, count: 2),
+          ],
+        ),
+        CategoryWithItems(
+          id: 'cat2',
+          name: 'Entertainment',
+          iconName: 'movie',
+          items: [
+            createCategoryItem(
+                id: 'item4', name: 'Cinema', amount: 35.00, count: 1),
+            createCategoryItem(
+                id: 'item6', name: 'Streaming', amount: 15.99, count: 2),
+            createCategoryItem(
+                id: 'item5', name: 'Concert', amount: 85.00, count: 1),
+          ],
+        ),
+        CategoryWithItems(
+          id: 'cat3',
+          name: 'Transportation',
+          iconName: 'car',
+          items: [
+            createCategoryItem(
+                id: 'item8',
+                name: 'Public Transport',
+                amount: 25.50,
+                count: 10),
+            createCategoryItem(
+                id: 'item7', name: 'Gas Station', amount: 60.00, count: 4),
+          ],
+        ),
+      ];
+
+  static List<CategoryWithItems> _sortCategoriesByAmount(
+      List<CategoryWithItems> categories) {
+    return categories.map((category) {
+      final sortedItems = List<CategoryItem>.from(category.items)
+        ..sort((a, b) => b.amount.compareTo(a.amount));
+      return CategoryWithItems(
+        id: category.id,
+        name: category.name,
+        iconName: category.iconName,
+        items: sortedItems,
+      );
+    }).toList();
   }
 
-  static List<CategoryWithItems> createCategoriesWithUnsortedItems() {
-    return [
-      CategoryWithItems(
-        id: 'cat1',
-        name: 'Food',
-        iconName: 'restaurant',
-        items: [
-          CategoryItem(
-              id: 'item1', name: 'Small Purchase', amount: 12.50, count: 1),
-          CategoryItem(
-              id: 'item2', name: 'Large Purchase', amount: 89.99, count: 2),
-          CategoryItem(
-              id: 'item3', name: 'Medium Purchase', amount: 45.75, count: 1),
-        ],
-      ),
-    ];
-  }
+  static List<CategoryWithItems> createCategoriesWithItemsSorted() =>
+      _sortCategoriesByAmount(createCategoriesWithItems());
 
-  static List<CategoryWithItems> createCategoriesWithSortedItems() {
-    return [
-      CategoryWithItems(
-        id: 'cat1',
-        name: 'Food',
-        iconName: 'restaurant',
-        items: [
-          CategoryItem(
-              id: 'item2', name: 'Large Purchase', amount: 89.99, count: 2),
-          CategoryItem(
-              id: 'item3', name: 'Medium Purchase', amount: 45.75, count: 1),
-          CategoryItem(
-              id: 'item1', name: 'Small Purchase', amount: 12.50, count: 1),
-        ],
-      ),
-    ];
-  }
+  static List<CategoryWithItems> createCategoriesWithUnsortedItems() => [
+        CategoryWithItems(
+          id: 'cat1',
+          name: 'Food',
+          iconName: 'restaurant',
+          items: [
+            createCategoryItem(
+                id: 'item1', name: 'Small Purchase', amount: 12.50, count: 1),
+            createCategoryItem(
+                id: 'item2', name: 'Large Purchase', amount: 89.99, count: 2),
+            createCategoryItem(
+                id: 'item3', name: 'Medium Purchase', amount: 45.75, count: 1),
+          ],
+        ),
+      ];
 
-  static List<CategoryWithItems> createCategoriesWithItemsSorted() {
-    return [
-      CategoryWithItems(
-        id: 'cat1',
-        name: 'Groceries',
-        iconName: 'shopping_cart',
-        items: [
-          CategoryItem(
-              id: 'item1', name: 'Supermarket', amount: 75.50, count: 3),
-          CategoryItem(
-              id: 'item2', name: 'Local Store', amount: 45.30, count: 2),
-          CategoryItem(id: 'item3', name: 'Bakery', amount: 12.20, count: 1),
-        ],
-      ),
-      CategoryWithItems(
-        id: 'cat2',
-        name: 'Entertainment',
-        iconName: 'movie',
-        items: [
-          CategoryItem(id: 'item5', name: 'Concert', amount: 85.00, count: 1),
-          CategoryItem(id: 'item4', name: 'Cinema', amount: 35.00, count: 1),
-          CategoryItem(id: 'item6', name: 'Streaming', amount: 15.99, count: 2),
-        ],
-      ),
-      CategoryWithItems(
-        id: 'cat3',
-        name: 'Transportation',
-        iconName: 'car',
-        items: [
-          CategoryItem(
-              id: 'item7', name: 'Gas Station', amount: 60.00, count: 4),
-          CategoryItem(
-              id: 'item8', name: 'Public Transport', amount: 25.50, count: 10),
-        ],
-      ),
-    ];
-  }
+  static List<CategoryWithItems> createCategoriesWithSortedItems() =>
+      _sortCategoriesByAmount(createCategoriesWithUnsortedItems());
 }
