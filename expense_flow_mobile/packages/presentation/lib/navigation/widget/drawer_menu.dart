@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/app_localizations.dart';
 import 'package:presentation/screen/chat/chat_screen.dart';
 import 'package:presentation/screen/settings/settings_screen.dart';
 import 'package:presentation/screen/unprocessed_receipts/unprocessed_receipts_screen.dart';

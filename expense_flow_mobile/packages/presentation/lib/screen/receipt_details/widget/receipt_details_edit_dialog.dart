@@ -1,7 +1,7 @@
 import 'package:domain/model/category.dart';
 import 'package:domain/model/receipt_item.dart';
 import 'package:flutter/material.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/app_localizations.dart';
 import 'package:presentation/core/utils/category_utils.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';

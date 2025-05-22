@@ -3,6 +3,7 @@ import 'package:domain/use_case/receipt/receipt_create_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:localization/app_localizations.dart';
 import 'package:localization/localization.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/screen/add_item/widget/description_autocomplete_widget.dart';

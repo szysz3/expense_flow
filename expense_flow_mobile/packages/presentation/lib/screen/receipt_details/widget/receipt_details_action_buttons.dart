@@ -2,7 +2,7 @@ import 'package:domain/model/receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/app_localizations.dart';
 
 import '../../../core/widget/animated_square_button.dart';
 import '../../../theme/expense_flow_colors.dart';

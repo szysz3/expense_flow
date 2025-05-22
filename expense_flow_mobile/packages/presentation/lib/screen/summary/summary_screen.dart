@@ -4,7 +4,7 @@ import 'package:domain/use_case/settings/settings_get_month_savings_use_case.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/core/utils/currency_text_formatter.dart';

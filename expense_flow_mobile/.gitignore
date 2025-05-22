@@ -52,3 +52,5 @@ app.*.map.json
 /android/app/release
 /android/app/.cxx
 
+/packages/localization/lib/app_localizations.dart
+/packages/localization/lib/app_localizations_en.dart

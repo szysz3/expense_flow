@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/app_localizations.dart';
 
 import '../../../../core/utils/currency_text_formatter.dart';
 import '../../../../theme/expense_flow_colors.dart';

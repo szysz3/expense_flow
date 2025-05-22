@@ -3,7 +3,7 @@ import 'package:domain/use_case/receipt/receipt_delete_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_update_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 import 'package:presentation/screen/receipt_details/widget/receipt_details_action_buttons.dart';

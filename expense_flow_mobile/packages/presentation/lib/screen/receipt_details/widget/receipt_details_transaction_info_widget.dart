@@ -1,7 +1,7 @@
 import 'package:domain/model/receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/app_localizations.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
 import 'receipt_details_info_row.dart';

@@ -1,6 +1,6 @@
 import 'package:domain/model/category.dart';
 import 'package:flutter/material.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/app_localizations.dart';
 
 class CategoryUtils {
   CategoryUtils._();

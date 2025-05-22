@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'gen_l10n/app_localizations.dart';
+import 'app_localizations.dart';
 
 /// Service to provide localized strings without requiring a BuildContext
 class LocalizationService {

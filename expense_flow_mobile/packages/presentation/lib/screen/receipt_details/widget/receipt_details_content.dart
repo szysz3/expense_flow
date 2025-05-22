@@ -2,7 +2,7 @@ import 'package:domain/model/receipt.dart';
 import 'package:domain/model/receipt_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:localization/gen_l10n/app_localizations.dart';
+import 'package:localization/app_localizations.dart';
 import 'package:presentation/screen/receipt_details/widget/receipt_details_transaction_info_widget.dart';
 
 import '../bloc/receipt_edit_bloc.dart';
