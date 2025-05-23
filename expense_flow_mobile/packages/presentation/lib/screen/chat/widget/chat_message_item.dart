@@ -1,6 +1,7 @@
 import 'package:domain/model/chat_message.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:markdown_widget/config/all.dart';
 import 'package:markdown_widget/widget/markdown_block.dart';
 
 class ChatMessageItem extends StatelessWidget {
@@ -41,7 +42,10 @@ class ChatMessageItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  MarkdownBlock(data: message.content),
+                  MarkdownBlock(
+                    data: message.content,
+                    config: MarkdownConfig.darkConfig,
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     dateFormat.format(message.timestamp),
