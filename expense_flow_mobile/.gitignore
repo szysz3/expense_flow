@@ -52,5 +52,13 @@ app.*.map.json
 /android/app/release
 /android/app/.cxx
 
+# Localization files
 /packages/localization/lib/app_localizations.dart
 /packages/localization/lib/app_localizations_en.dart
+
+# Coverage files
+/coverage/*
+**/coverage/*.*
+/packages/data/test/coverage_helper_test.dart
+/packages/domain/test/coverage_helper_test.dart
+/packages/presentation/test/coverage_helper_test.dart

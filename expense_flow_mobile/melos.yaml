@@ -13,3 +13,70 @@ scripts:
     run: melos exec -- flutter analyze
   test:
     run: melos exec -- flutter test
+
+  test:coverage:
+    run: flutter test --coverage
+    exec:
+      concurrency: 1
+
+  coverage:combine:
+    run: |
+      rm -rf coverage
+      mkdir -p coverage
+      
+      # Process each package's coverage
+      for package in packages/*/; do
+        if [ -f "$package/coverage/lcov.info" ]; then
+          package_name=$(basename "$package")
+          echo "Processing coverage for $package_name"
+      
+          # Add package path prefix to all file paths
+          sed "s|SF:|SF:$package/|g" "$package/coverage/lcov.info" >> coverage/lcov_temp.info
+        fi
+      done
+      
+      # Combine all coverage files
+      if [ -f coverage/lcov_temp.info ]; then
+        mv coverage/lcov_temp.info coverage/lcov.info
+      
+        # Generate HTML report
+        genhtml coverage/lcov.info -o coverage/html --ignore-errors source
+      
+        # Show coverage summary
+        lcov --summary coverage/lcov.info
+      
+        echo "Opening coverage report..."
+        open coverage/html/index.html || xdg-open coverage/html/index.html || start coverage/html/index.html
+      else
+        echo "No coverage files found!"
+      fi
+
+  coverage:
+    run: melos run test:coverage && melos run coverage:combine
+
+  coverage:generate-helpers:
+    run: ./scripts/generate_coverage_helpers.sh
+
+  coverage:full:
+    run: |
+      echo "🔄 Generating coverage helpers..."
+      melos run coverage:generate-helpers
+      
+      echo "🧪 Running tests with full coverage..."
+      melos run test:coverage
+      
+      echo "📊 Combining coverage..."
+      melos run coverage:combine
+      
+      echo "📈 Coverage summary:"
+      lcov --summary coverage/lcov.info
+      
+      echo ""
+      echo "📂 Files included: $(grep '^SF:' coverage/lcov.info | wc -l)"
+      echo "📄 Total source files:"
+      for pkg in domain data presentation; do
+        if [ -d "packages/$pkg" ]; then
+          count=$(find "packages/$pkg/lib" -name "*.dart" -not -name "*.g.dart" -not -name "*.freezed.dart" | wc -l)
+          echo "   $pkg: $count files"
+        fi
+      done
