@@ -3,7 +3,10 @@ import 'package:domain/model/category_item.dart';
 import 'package:domain/model/category_summary.dart';
 import 'package:domain/model/category_with_items.dart';
 import 'package:domain/model/daily_expense.dart';
+import 'package:domain/model/merchant.dart';
 import 'package:domain/model/month_summary.dart';
+import 'package:domain/model/receipt.dart';
+import 'package:domain/model/receipt_item.dart';
 import 'package:domain/model/savings_settings.dart';
 import 'package:domain/model/settings.dart';
 
@@ -43,6 +46,69 @@ class TestDataFactory {
         previousMonthAmount: 30.0),
   ];
 
+  // Receipt-related factory methods
+  static Merchant createMerchant({
+    String name = 'Test Store',
+    String address = '123 Test Street',
+  }) =>
+      Merchant(
+        name: name,
+        address: address,
+      );
+
+  static ReceiptItem createReceiptItem({
+    String description = 'Test Item',
+    double quantity = 1.0,
+    double totalPrice = 25.50,
+    String? category = 'Test Category',
+  }) =>
+      ReceiptItem(
+        description: description,
+        quantity: quantity,
+        totalPrice: totalPrice,
+        category: category,
+      );
+
+  static List<ReceiptItem> createReceiptItems({int count = 3}) => [
+        createReceiptItem(
+          description: 'Bread',
+          quantity: 2.0,
+          totalPrice: 7.00,
+          category: 'Food & Dining',
+        ),
+        createReceiptItem(
+          description: 'Milk',
+          quantity: 1.0,
+          totalPrice: 4.25,
+          category: 'Food & Dining',
+        ),
+        createReceiptItem(
+          description: 'Coffee',
+          quantity: 1.0,
+          totalPrice: 12.99,
+          category: 'Food & Dining',
+        ),
+      ].take(count).toList();
+
+  static Receipt createReceipt({
+    String? id = 'test-receipt-id',
+    Merchant? merchant,
+    List<ReceiptItem>? items,
+    double? total,
+    DateTime? transactionDateTime,
+    DateTime? addedDateTime,
+  }) =>
+      Receipt(
+        id: id,
+        merchant: merchant ?? createMerchant(),
+        items: items ?? createReceiptItems(),
+        total: total ?? 24.24,
+        transactionDateTime:
+            transactionDateTime ?? DateTime(2023, 12, 15, 14, 30),
+        addedDateTime: addedDateTime ?? DateTime(2023, 12, 15, 15, 0),
+      );
+
+  // Existing methods from original TestDataFactory
   static List<T> createList<T>(T Function(int index) builder, {int count = 3}) {
     return List.generate(count, builder);
   }
