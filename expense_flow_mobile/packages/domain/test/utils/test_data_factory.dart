@@ -6,6 +6,7 @@ import 'package:domain/model/daily_expense.dart';
 import 'package:domain/model/merchant.dart';
 import 'package:domain/model/month_summary.dart';
 import 'package:domain/model/receipt.dart';
+import 'package:domain/model/receipt_get_response.dart';
 import 'package:domain/model/receipt_item.dart';
 import 'package:domain/model/savings_settings.dart';
 import 'package:domain/model/settings.dart';
@@ -106,6 +107,24 @@ class TestDataFactory {
         transactionDateTime:
             transactionDateTime ?? DateTime(2023, 12, 15, 14, 30),
         addedDateTime: addedDateTime ?? DateTime(2023, 12, 15, 15, 0),
+      );
+
+  static List<Receipt> createReceiptsList({int count = 3}) => List.generate(
+        count,
+        (index) => createReceipt(
+          id: 'receipt-${index + 1}',
+          total: 20.0 + (index * 10),
+          transactionDateTime: DateTime(2023, 12, 15 + index, 14, 30),
+        ),
+      );
+
+  static ReceiptGetResponse createReceiptGetResponse({
+    List<Receipt>? receipts,
+    int? totalCount,
+  }) =>
+      ReceiptGetResponse(
+        receipts: receipts ?? createReceiptsList(),
+        totalCount: totalCount ?? 50,
       );
 
   // Existing methods from original TestDataFactory
