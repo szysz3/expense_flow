@@ -2,6 +2,7 @@ import 'package:domain/model/autocomplete_suggestion.dart';
 import 'package:domain/model/category_item.dart';
 import 'package:domain/model/category_summary.dart';
 import 'package:domain/model/category_with_items.dart';
+import 'package:domain/model/chat_message.dart';
 import 'package:domain/model/daily_expense.dart';
 import 'package:domain/model/merchant.dart';
 import 'package:domain/model/month_summary.dart';
@@ -125,6 +126,30 @@ class TestDataFactory {
       ReceiptGetResponse(
         receipts: receipts ?? createReceiptsList(),
         totalCount: totalCount ?? 50,
+      );
+
+  // Chat-related factory methods
+  static ChatMessage createChatMessage({
+    String id = 'test-message-id',
+    String content = 'Test message content',
+    String sender = 'user',
+    DateTime? timestamp,
+  }) =>
+      ChatMessage(
+        id: id,
+        content: content,
+        sender: sender,
+        timestamp: timestamp ?? DateTime(2023, 12, 15, 10, 30),
+      );
+
+  static List<ChatMessage> createChatMessages({int count = 3}) => List.generate(
+        count,
+        (index) => createChatMessage(
+          id: 'message-${index + 1}',
+          content: 'Test message ${index + 1}',
+          sender: index % 2 == 0 ? 'user' : 'assistant',
+          timestamp: DateTime(2023, 12, 15, 10, 30 + index),
+        ),
       );
 
   // Existing methods from original TestDataFactory
