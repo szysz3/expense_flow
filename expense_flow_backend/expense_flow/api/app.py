@@ -301,7 +301,7 @@ async def process_pending_receipts(
     for temp_receipt in unprocessed_receipts:
         try:
             if temp_receipt.status == ReceiptStatus.PROCESSING:
-                    continue
+                continue
 
             # Update status to processing
             temp_repository.update_status(
@@ -309,9 +309,25 @@ async def process_pending_receipts(
                 ReceiptStatus.PROCESSING
             )
             
-            # Process with Ollama
-            analyzer = LocalLLMAnalyzer(config)
-            result = await analyzer.analyze(temp_receipt.raw_data)
+            # First try with Local LLM (Ollama)
+            try:
+                logger.info(f"Processing receipt {temp_receipt.id} with LocalLLMAnalyzer")
+                analyzer = LocalLLMAnalyzer(config)
+                result = await analyzer.analyze(temp_receipt.raw_data)
+                logger.info(f"Successfully processed receipt {temp_receipt.id} with LocalLLMAnalyzer")
+            except Exception as local_llm_error:
+                # If Local LLM fails, fall back to ChatGPT
+                logger.warning(f"LocalLLMAnalyzer failed for receipt {temp_receipt.id}: {str(local_llm_error)}")
+                logger.info(f"Falling back to ChatGPTAnalyzer for receipt {temp_receipt.id}")
+                
+                try:
+                    analyzer = ChatGPTAnalyzer(config)
+                    result = await analyzer.analyze(temp_receipt.raw_data)
+                    logger.info(f"Successfully processed receipt {temp_receipt.id} with ChatGPTAnalyzer fallback")
+                except Exception as chatgpt_error:
+                    # If both analyzers fail, raise the ChatGPT error
+                    logger.error(f"ChatGPTAnalyzer fallback failed for receipt {temp_receipt.id}: {str(chatgpt_error)}")
+                    raise Exception(f"Both LocalLLM and ChatGPT analyzers failed. LocalLLM error: {str(local_llm_error)}. ChatGPT error: {str(chatgpt_error)}")
             
             # Store final receipt
             receipt = Receipt(**result)
