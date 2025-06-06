@@ -527,5 +527,9 @@
   "failedToUpdateUnprocessedReceipt": "Failed to update unprocessed receipt",
   "@failedToUpdateUnprocessedReceipt": {
     "description": "Label for empty chat window"
+  },
+  "unprocessedReceiptCategoryNote": "Categories will be assigned when the receipt is fully processed",
+  "@unprocessedReceiptCategoryNote": {
+    "description": "Label for empty chat window"
   }
 }

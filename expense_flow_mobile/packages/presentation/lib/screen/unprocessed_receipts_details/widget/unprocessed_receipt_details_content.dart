@@ -4,14 +4,14 @@ import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/app_localizations.dart';
-import 'package:presentation/screen/receipt_details/widget/receipt_details_items_list_widget.dart';
 import 'package:presentation/screen/receipt_details/widget/receipt_details_merchant_info_widget.dart';
 import 'package:presentation/screen/receipt_details/widget/receipt_details_section_widget.dart';
 import 'package:presentation/screen/receipt_details/widget/receipt_details_transaction_info_widget.dart';
-import 'package:presentation/screen/unprocessed_receipts_details/widget/unprocessed_receipt_status_widget.dart';
 
 import '../bloc/unprocessed_receipt_edit_bloc.dart';
 import '../bloc/unprocessed_receipt_edit_event.dart';
+import '../widget/unprocessed_receipt_items_list_widget.dart';
+import '../widget/unprocessed_receipt_status_widget.dart';
 
 class UnprocessedReceiptDetailsContent extends StatefulWidget {
   final UnprocessedReceipt receipt;
@@ -125,7 +125,7 @@ class _UnprocessedReceiptDetailsContentState
         ),
         const SizedBox(height: 12),
         Expanded(
-          child: ReceiptDetailsItemsListWidget(
+          child: UnprocessedReceiptItemsListWidget(
             receipt: _convertToReceipt(widget.receipt),
             isEditMode: widget.isEditMode,
             onItemUpdated: (index, updatedItem) {
