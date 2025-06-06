@@ -10,6 +10,7 @@ import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
+import '../unprocessed_receipts_details/unprocessed_receipt_detail_screen.dart';
 import 'bloc/unprocessed_receipts_bloc.dart';
 import 'bloc/unprocessed_receipts_event.dart';
 import 'bloc/unprocessed_receipts_state.dart';
@@ -132,10 +133,17 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
         separatorBuilder: (context, index) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
           final receipt = state.receipts[index];
-          return UnprocessedReceiptItem(receipt: receipt);
+          return UnprocessedReceiptItem(
+            receipt: receipt,
+            onTap: () => _navigateToUnprocessedReceiptDetail(context, receipt),
+          );
         },
       ),
     );
+  }
+
+  void _navigateToUnprocessedReceiptDetail(BuildContext context, receipt) {
+    UnprocessedReceiptDetailScreen.show(context, receipt);
   }
 
   Widget _buildEmptyState(BuildContext context) {

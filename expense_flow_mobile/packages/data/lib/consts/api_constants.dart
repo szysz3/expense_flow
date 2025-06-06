@@ -1,6 +1,7 @@
 class ApiConstants {
   static const String apiPrefix = '/api';
   static const String receiptPrefix = '$apiPrefix/receipts';
+  static const String tempReceiptPrefix = '$apiPrefix/temp-receipts';
 
   static const String analyze = '$receiptPrefix/analyze';
   static const String receipt = '$receiptPrefix/';
@@ -12,4 +13,5 @@ class ApiConstants {
   static const String dailyExpenses =
       '$apiPrefix/months/{year}/{month}/daily-expenses';
   static const String autocomplete = '$apiPrefix/autocomplete';
+  static const String tempReceipt = '$tempReceiptPrefix/';
 }

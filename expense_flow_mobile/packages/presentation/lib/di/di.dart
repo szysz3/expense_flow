@@ -4,10 +4,12 @@ import 'package:data/repository/chat/chat_repository_impl.dart';
 import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/repository/receipt/receipt_repository_impl.dart';
 import 'package:data/repository/settings_repository_impl.dart';
+import 'package:data/repository/unprocessed_receipt/unprocessed_receipt_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/repository/chat_repository.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/repository/settings_repository.dart';
+import 'package:domain/repository/unprocessed_receipt_repository.dart';
 import 'package:domain/use_case/calculate_total_savings_use_case.dart';
 import 'package:domain/use_case/chat/chat_connect_use_case.dart';
 import 'package:domain/use_case/chat/chat_create_user_message_use_case.dart';
@@ -27,6 +29,8 @@ import 'package:domain/use_case/receipt/receipt_update_use_case.dart';
 import 'package:domain/use_case/settings/settings_get_month_savings_use_case.dart';
 import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
 import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
+import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_delete_use_case.dart';
+import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_update_use_case.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
@@ -92,6 +96,17 @@ _registerRepositories() {
         connectivity: getIt<Connectivity>(),
         config: ChatRepositoryConfig(
             webSocketUrl: EnvConfig.webSocketUrl, apiKey: EnvConfig.apiKey)),
+  );
+
+  getIt.registerLazySingleton<UnprocessedReceiptRepository>(
+    () => UnprocessedReceiptRepositoryImpl(
+        dio: _getDio(),
+        errorLogger: getIt<Logger>(),
+        connectivity: getIt<Connectivity>(),
+        config: RepositoryConfig(
+          baseUrl: EnvConfig.baseUrl,
+          apiKey: EnvConfig.apiKey,
+        )),
   );
 }
 
@@ -171,6 +186,12 @@ _registerUseCases() {
   getIt.registerLazySingleton(
     () => CalculateTotalSavingsUseCase(),
   );
+
+  getIt.registerLazySingleton(() =>
+      UnprocessedReceiptDeleteUseCase(getIt<UnprocessedReceiptRepository>()));
+
+  getIt.registerLazySingleton(() =>
+      UnprocessedReceiptUpdateUseCase(getIt<UnprocessedReceiptRepository>()));
 }
 
 Future<void> _loadEnv() async {

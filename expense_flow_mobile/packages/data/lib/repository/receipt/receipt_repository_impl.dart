@@ -19,7 +19,7 @@ import 'package:logger/logger.dart';
 
 import '../../consts/error_messages.dart';
 import '../../consts/http_constants.dart';
-import '../../consts/receipt_constants.dart';
+import '../../consts/receipt_constants.dart' hide FormDataConstants;
 import '../../remote/api_endpoints.dart';
 import '../../remote/exception/exceptions.dart';
 import '../../utils/content_type_resolver.dart';

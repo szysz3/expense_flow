@@ -10,6 +10,7 @@ class ApiEndpoints {
   static const String unprocessedReceipts = ApiConstants.unprocessedReceipts;
   static const String receipts = ApiConstants.receiptPrefix;
   static const String autocomplete = ApiConstants.autocomplete;
+  static const String tempReceipt = ApiConstants.tempReceipt;
 
   static String dailyExpenses(int year, int month) => ApiConstants.dailyExpenses
       .replaceAll('{year}', year.toString())

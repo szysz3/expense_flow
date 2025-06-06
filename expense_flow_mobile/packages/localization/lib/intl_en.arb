@@ -479,5 +479,53 @@
   "typeAMessage": "Type a message...",
   "@typeAMessage": {
     "description": "Label for empty chat window"
+  },
+  "statusPending": "Pending",
+  "@statusPending": {
+    "description": "Label for empty chat window"
+  },
+  "statusProcessing": "Processing",
+  "@statusProcessing": {
+    "description": "Label for empty chat window"
+  },
+  "statusError": "Error",
+  "@statusError": {
+    "description": "Label for empty chat window"
+  },
+  "unprocessedReceiptDetails": "Unprocessed Receipt Details",
+  "@unprocessedReceiptDetails": {
+    "description": "Label for empty chat window"
+  },
+  "status": "Status",
+  "@status": {
+    "description": "Label for empty chat window"
+  },
+  "deleteUnprocessedReceiptConfirmMessage": "Are you sure you want to delete this unprocessed receipt? This action cannot be undone.",
+  "@deleteUnprocessedReceiptConfirmMessage": {
+    "description": "Label for empty chat window"
+  },
+  "unprocessedReceiptDeleted": "Unprocessed receipt deleted successfully",
+  "@unprocessedReceiptDeleted": {
+    "description": "Label for empty chat window"
+  },
+  "unprocessedReceiptUpdated": "Unprocessed receipt updated successfully",
+  "@unprocessedReceiptUpdated": {
+    "description": "Label for empty chat window"
+  },
+  "deletingUnprocessedReceipt": "Deleting unprocessed receipt...",
+  "@deletingUnprocessedReceipt": {
+    "description": "Label for empty chat window"
+  },
+  "savingUnprocessedReceipt": "Saving unprocessed receipt...",
+  "@savingUnprocessedReceipt": {
+    "description": "Label for empty chat window"
+  },
+  "failedToDeleteUnprocessedReceipt": "Failed to delete unprocessed receipt",
+  "@failedToDeleteUnprocessedReceipt": {
+    "description": "Label for empty chat window"
+  },
+  "failedToUpdateUnprocessedReceipt": "Failed to update unprocessed receipt",
+  "@failedToUpdateUnprocessedReceipt": {
+    "description": "Label for empty chat window"
   }
 }

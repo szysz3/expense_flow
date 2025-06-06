@@ -7,59 +7,104 @@ import '../../../core/utils/currency_text_formatter.dart';
 
 class UnprocessedReceiptItem extends StatelessWidget {
   final UnprocessedReceipt receipt;
+  final VoidCallback? onTap;
 
   const UnprocessedReceiptItem({
     required this.receipt,
+    this.onTap,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
-        ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          _buildStatusIcon(context),
-          const SizedBox(width: 16),
-          _buildDateTime(context),
-          const Spacer(),
-          _buildAmount(context),
-        ],
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.1),
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              _buildStatusIcon(context),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDateTime(context),
+                    if (receipt.status == UnprocessedReceiptStatus.error &&
+                        receipt.errorMessage != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        receipt.errorMessage!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.red,
+                            ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              _buildAmount(context),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.5),
+                size: 18,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildStatusIcon(BuildContext context) {
     String iconName;
+    Color iconColor;
     switch (receipt.status) {
       case UnprocessedReceiptStatus.pending:
         iconName = 'icon_pending.svg';
+        iconColor = Colors.orange;
         break;
       case UnprocessedReceiptStatus.processing:
         iconName = 'icon_processing.svg';
+        iconColor = Colors.blue;
         break;
       case UnprocessedReceiptStatus.error:
         iconName = 'icon_error.svg';
+        iconColor = Colors.red;
         break;
     }
 
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.white),
+        border: Border.all(color: iconColor.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
+        color: iconColor.withValues(alpha: 0.1),
       ),
       child: SvgPicture.asset(
         'packages/presentation/assets/$iconName',
-        width: 36,
-        height: 36,
-        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        width: 24,
+        height: 24,
+        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
       ),
     );
   }
