@@ -114,6 +114,25 @@ class TempReceiptRepository(BaseRepository):
             List of TempReceipt objects in PENDING status
         """
         return self._get_receipts_by_status([ReceiptStatus.PENDING])
+    
+    @handle_db_errors
+    def get_temp_receipt(self, receipt_id: str) -> Optional[TempReceipt]:
+        """
+        Retrieve a temporary receipt by ID
+        
+        Args:
+            receipt_id: UUID of the temporary receipt
+            
+        Returns:
+            TempReceipt object if found, None otherwise
+        """
+        receipt_query = Query()
+        result = self.db.get(receipt_query.id == receipt_id)
+        
+        if result:
+            deserialized_result = self.deserialize(result, datetime_fields=self.TEMP_RECEIPT_DATETIME_FIELDS)
+            return TempReceipt(**deserialized_result)
+        return None
 
     @handle_db_errors
     def update_status(
@@ -121,7 +140,7 @@ class TempReceiptRepository(BaseRepository):
         receipt_id: str, 
         status: ReceiptStatus, 
         error_message: Optional[str] = None
-    ) -> None:
+    ) -> bool:
         """
         Update receipt status and optional error message
         
@@ -129,21 +148,55 @@ class TempReceiptRepository(BaseRepository):
             receipt_id: ID of the receipt to update
             status: New status to set
             error_message: Optional error message if status is ERROR
+            
+        Returns:
+            True if receipt was updated, False otherwise
         """
         receipt_query = Query()
         update_data = {"status": status.value}
         if error_message is not None:
             update_data["error_message"] = error_message
             
-        self.db.update(update_data, receipt_query.id == receipt_id)
+        result = self.db.update(update_data, receipt_query.id == receipt_id)
+        return bool(result)
 
     @handle_db_errors
-    def delete_receipt(self, receipt_id: str) -> None:
+    def delete_receipt(self, receipt_id: str) -> bool:
         """
         Remove receipt from temp storage
         
         Args:
             receipt_id: ID of the receipt to delete
+            
+        Returns:
+            True if receipt was deleted, False if not found
         """
         receipt_query = Query()
-        self.db.remove(receipt_query.id == receipt_id)
+        result = self.db.remove(receipt_query.id == receipt_id)
+        return len(result) > 0
+        
+    @handle_db_errors
+    def update_receipt(self, temp_receipt: TempReceipt) -> bool:
+        """
+        Update an existing temporary receipt
+        
+        Args:
+            temp_receipt: TempReceipt object with updated data
+            
+        Returns:
+            True if receipt was updated, False if receipt was not found
+        """
+        receipt_dict = temp_receipt.dict()
+        
+        serialized_data = self.serialize(
+            receipt_dict,
+            datetime_fields=self.TEMP_RECEIPT_DATETIME_FIELDS
+        )
+        
+        receipt_query = Query()
+        result = self.db.update(
+            serialized_data,
+            receipt_query.id == temp_receipt.id
+        )
+        
+        return bool(result)

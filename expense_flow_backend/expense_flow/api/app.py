@@ -740,6 +740,129 @@ async def update_receipt(
             }
         )
 
+@app.delete(
+    "/api/temp-receipts/{receipt_id}",
+    response_model=dict,
+    responses={
+        404: {"model": ErrorDetail},
+        500: {"model": ErrorDetail}
+    }
+)
+async def delete_temp_receipt(
+    receipt_id: str,
+    api_key: str = Depends(verify_api_key),
+    temp_repository: TempReceiptRepository = Depends(get_temp_repository)
+):
+    """Delete a temporary receipt by ID"""
+    try:
+        temp_receipt = temp_repository.get_temp_receipt(receipt_id)
+        if not temp_receipt:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": ErrorMessages.NOT_FOUND,
+                    "detail": f"Temporary receipt {receipt_id} not found"
+                }
+            )
+            
+        success = temp_repository.delete_receipt(receipt_id)
+        
+        if not success:
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "error": ErrorMessages.DATABASE_ERROR,
+                    "detail": f"Failed to delete temporary receipt {receipt_id}"
+                }
+            )
+            
+        return {
+            "success": True,
+            "message": f"Temporary receipt {receipt_id} deleted successfully"
+        }
+        
+    except DatabaseError as e:
+        logger.error(f"Database error while deleting temporary receipt {receipt_id}: {str(e)}")
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error while deleting temporary receipt {receipt_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.INTERNAL_ERROR,
+                "detail": str(e)
+            }
+        )
+
+@app.put(
+    "/api/temp-receipts/{receipt_id}",
+    response_model=TempReceipt,
+    responses={
+        404: {"model": ErrorDetail},
+        500: {"model": ErrorDetail}
+    }
+)
+async def update_temp_receipt(
+    receipt_id: str,
+    temp_receipt: TempReceipt,
+    api_key: str = Depends(verify_api_key),
+    temp_repository: TempReceiptRepository = Depends(get_temp_repository)
+):
+    """Update a temporary receipt by ID"""
+    try:
+        existing_receipt = temp_repository.get_temp_receipt(receipt_id)
+        if not existing_receipt:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": ErrorMessages.NOT_FOUND,
+                    "detail": f"Temporary receipt {receipt_id} not found"
+                }
+            )
+        
+        temp_receipt.id = receipt_id
+        
+        if hasattr(existing_receipt, 'created_at'):
+            temp_receipt.created_at = existing_receipt.created_at
+            
+        success = temp_repository.update_receipt(temp_receipt)
+        
+        if not success:
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "error": ErrorMessages.DATABASE_ERROR,
+                    "detail": f"Failed to update temporary receipt {receipt_id}"
+                }
+            )
+            
+        return temp_receipt
+        
+    except DatabaseError as e:
+        logger.error(f"Database error while updating temporary receipt {receipt_id}: {str(e)}")
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.DATABASE_ERROR,
+                "detail": str(e)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error while updating temporary receipt {receipt_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": ErrorMessages.INTERNAL_ERROR,
+                "detail": str(e)
+            }
+        )
+
 @app.get(
     "/api/autocomplete",
     response_model=List[Dict[str, Any]],
