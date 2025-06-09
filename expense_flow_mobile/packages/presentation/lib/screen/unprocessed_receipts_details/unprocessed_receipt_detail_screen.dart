@@ -6,17 +6,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
-import 'package:presentation/screen/unprocessed_receipts_details/widget/unprocessed_receipt_details_action_buttons.dart';
 import 'package:presentation/screen/unprocessed_receipts_details/widget/unprocessed_receipt_details_content.dart';
 
 import '../../../core/error/error_utils.dart';
+import '../../../core/widget/receipt_details_action_buttons.dart';
 import '../../../di/di.dart';
 import '../../theme/expense_flow_colors.dart';
 import '../unprocessed_receipts/bloc/unprocessed_receipts_bloc.dart';
 import '../unprocessed_receipts/bloc/unprocessed_receipts_event.dart';
 import 'bloc/unprocessed_receipt_detail_bloc.dart';
+import 'bloc/unprocessed_receipt_detail_event.dart';
 import 'bloc/unprocessed_receipt_detail_state.dart';
 import 'bloc/unprocessed_receipt_edit_bloc.dart';
+import 'bloc/unprocessed_receipt_edit_event.dart';
 import 'bloc/unprocessed_receipt_edit_state.dart';
 
 class UnprocessedReceiptDetailScreen extends StatelessWidget {
@@ -141,7 +143,38 @@ class UnprocessedReceiptDetailScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    UnprocessedReceiptDetailsActionButtons(receipt: receipt),
+                    BlocBuilder<UnprocessedReceiptEditBloc,
+                        UnprocessedReceiptEditState>(
+                      builder: (context, editState) {
+                        final l10n = AppLocalizations.of(context);
+
+                        return ReceiptDetailsActionButtons(
+                          isEditMode: editState.isEditMode,
+                          deleteConfirmMessage:
+                              l10n.deleteUnprocessedReceiptConfirmMessage,
+                          onCancel: () => context
+                              .read<UnprocessedReceiptEditBloc>()
+                              .add(
+                                const UnprocessedReceiptEditEvent.cancelEdit(),
+                              ),
+                          onDelete: () =>
+                              context.read<UnprocessedReceiptDetailBloc>().add(
+                                    UnprocessedReceiptDetailEvent.deleteReceipt(
+                                        receipt.id),
+                                  ),
+                          onEdit: () =>
+                              context.read<UnprocessedReceiptEditBloc>().add(
+                                    const UnprocessedReceiptEditEvent
+                                        .toggleEditMode(),
+                                  ),
+                          onSave: () => context
+                              .read<UnprocessedReceiptEditBloc>()
+                              .add(
+                                const UnprocessedReceiptEditEvent.saveChanges(),
+                              ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

@@ -6,17 +6,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
-import 'package:presentation/screen/receipt_details/widget/receipt_details_action_buttons.dart';
 import 'package:presentation/screen/receipt_details/widget/receipt_details_content.dart';
 
 import '../../../core/error/error_utils.dart';
+import '../../../core/widget/receipt_details_action_buttons.dart';
 import '../../../di/di.dart';
 import '../../theme/expense_flow_colors.dart';
 import '../receipt_browse/bloc/receipt_browse_bloc.dart';
 import '../receipt_browse/bloc/receipt_browse_event.dart';
 import 'bloc/receipt_detail_bloc.dart';
+import 'bloc/receipt_detail_event.dart';
 import 'bloc/receipt_detail_state.dart';
 import 'bloc/receipt_edit_bloc.dart';
+import 'bloc/receipt_edit_event.dart';
 import 'bloc/receipt_edit_state.dart';
 
 class ReceiptDetailScreen extends StatelessWidget {
@@ -138,7 +140,34 @@ class ReceiptDetailScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    ReceiptDetailsActionButtons(receipt: receipt),
+                    BlocBuilder<ReceiptEditBloc, ReceiptEditState>(
+                      builder: (context, editState) {
+                        final l10n = AppLocalizations.of(context);
+
+                        return ReceiptDetailsActionButtons(
+                          isEditMode: editState.isEditMode,
+                          deleteConfirmMessage:
+                              l10n.deleteReceiptConfirmMessage,
+                          onCancel: () => context.read<ReceiptEditBloc>().add(
+                                const ReceiptEditEvent.cancelEdit(),
+                              ),
+                          onDelete: () {
+                            if (receipt.id != null) {
+                              context.read<ReceiptDetailBloc>().add(
+                                    ReceiptDetailEvent.deleteReceipt(
+                                        receipt.id!),
+                                  );
+                            }
+                          },
+                          onEdit: () => context.read<ReceiptEditBloc>().add(
+                                const ReceiptEditEvent.toggleEditMode(),
+                              ),
+                          onSave: () => context.read<ReceiptEditBloc>().add(
+                                const ReceiptEditEvent.saveChanges(),
+                              ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

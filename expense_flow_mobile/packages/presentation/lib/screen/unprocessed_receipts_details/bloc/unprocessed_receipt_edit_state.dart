@@ -21,8 +21,9 @@ class UnprocessedReceiptEditState with _$UnprocessedReceiptEditState {
   bool get hasChanges {
     if (receipt == null || originalReceipt == null) return false;
 
-    if (receipt!.rawData.merchant != originalReceipt!.rawData.merchant)
+    if (receipt!.rawData.merchant != originalReceipt!.rawData.merchant) {
       return true;
+    }
 
     if (receipt!.rawData.transactionDatetime !=
         originalReceipt!.rawData.transactionDatetime) {
@@ -31,12 +32,15 @@ class UnprocessedReceiptEditState with _$UnprocessedReceiptEditState {
 
     if (receipt!.rawData.total != originalReceipt!.rawData.total) return true;
 
-    if (receipt!.rawData.items.length != originalReceipt!.rawData.items.length)
+    if (receipt!.rawData.items.length !=
+        originalReceipt!.rawData.items.length) {
       return true;
+    }
 
     for (int i = 0; i < receipt!.rawData.items.length; i++) {
-      if (receipt!.rawData.items[i] != originalReceipt!.rawData.items[i])
+      if (receipt!.rawData.items[i] != originalReceipt!.rawData.items[i]) {
         return true;
+      }
     }
 
     return false;

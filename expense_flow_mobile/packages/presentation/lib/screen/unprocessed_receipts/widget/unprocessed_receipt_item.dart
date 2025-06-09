@@ -2,6 +2,7 @@ import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
 
@@ -48,7 +49,7 @@ class UnprocessedReceiptItem extends StatelessWidget {
                       Text(
                         receipt.errorMessage!,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.red,
+                              color: ExpenseFlowColors.chartMutedRed,
                             ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -81,15 +82,15 @@ class UnprocessedReceiptItem extends StatelessWidget {
     switch (receipt.status) {
       case UnprocessedReceiptStatus.pending:
         iconName = 'icon_pending.svg';
-        iconColor = Colors.orange;
+        iconColor = ExpenseFlowColors.chartMutedOrange;
         break;
       case UnprocessedReceiptStatus.processing:
         iconName = 'icon_processing.svg';
-        iconColor = Colors.blue;
+        iconColor = ExpenseFlowColors.chartMutedGreen;
         break;
       case UnprocessedReceiptStatus.error:
         iconName = 'icon_error.svg';
-        iconColor = Colors.red;
+        iconColor = ExpenseFlowColors.chartMutedRed;
         break;
     }
 
