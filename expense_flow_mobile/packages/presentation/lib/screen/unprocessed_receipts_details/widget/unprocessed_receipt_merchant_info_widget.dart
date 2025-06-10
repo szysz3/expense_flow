@@ -52,9 +52,11 @@ class UnprocessedReceiptMerchantInfoWidget extends StatelessWidget {
           ),
           onSubmitted: (value) {
             _updateMerchant(context);
+            FocusScope.of(context).unfocus();
           },
           onEditingComplete: () {
             _updateMerchant(context);
+            FocusScope.of(context).unfocus();
           },
         ),
         const SizedBox(height: 16),
@@ -76,9 +78,11 @@ class UnprocessedReceiptMerchantInfoWidget extends StatelessWidget {
           maxLines: 1,
           onSubmitted: (value) {
             _updateMerchant(context);
+            FocusScope.of(context).unfocus();
           },
           onEditingComplete: () {
             _updateMerchant(context);
+            FocusScope.of(context).unfocus();
           },
         ),
       ],
