@@ -4,14 +4,14 @@ import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/app_localizations.dart';
-import 'package:presentation/screen/receipt_details/widget/receipt_details_merchant_info_widget.dart';
 import 'package:presentation/screen/receipt_details/widget/receipt_details_section_widget.dart';
-import 'package:presentation/screen/receipt_details/widget/receipt_details_transaction_info_widget.dart';
 
 import '../bloc/unprocessed_receipt_edit_bloc.dart';
 import '../bloc/unprocessed_receipt_edit_event.dart';
 import '../widget/unprocessed_receipt_items_list_widget.dart';
+import '../widget/unprocessed_receipt_merchant_info_widget.dart';
 import '../widget/unprocessed_receipt_status_widget.dart';
+import '../widget/unprocessed_receipt_transaction_info_widget.dart';
 
 class UnprocessedReceiptDetailsContent extends StatefulWidget {
   final UnprocessedReceipt receipt;
@@ -89,8 +89,8 @@ class _UnprocessedReceiptDetailsContentState
         if (_hasMerchantInfo(widget.receipt))
           ReceiptDetailsSectionWidget(
             title: l10n.merchant,
-            child: ReceiptDetailsMerchantInfoWidget(
-              receipt: _convertToReceipt(widget.receipt),
+            child: UnprocessedReceiptMerchantInfoWidget(
+              receipt: widget.receipt,
               isEditMode: widget.isEditMode,
               merchantNameController: _merchantNameController,
               merchantAddressController: _merchantAddressController,
@@ -98,8 +98,8 @@ class _UnprocessedReceiptDetailsContentState
           ),
         ReceiptDetailsSectionWidget(
           title: l10n.transactionDetails,
-          child: ReceiptDetailsTransactionInfoWidget(
-            receipt: _convertToReceipt(widget.receipt),
+          child: UnprocessedReceiptTransactionInfoWidget(
+            receipt: widget.receipt,
             isEditMode: widget.isEditMode,
             totalController: _totalController,
             onDateTimeSelected: (dateTime) {
@@ -147,7 +147,6 @@ class _UnprocessedReceiptDetailsContentState
         receipt.rawData.merchant.address.isNotEmpty;
   }
 
-  // Helper method to convert UnprocessedReceipt to Receipt for reusing existing widgets
   Receipt _convertToReceipt(UnprocessedReceipt unprocessedReceipt) {
     return Receipt(
       id: unprocessedReceipt.id,

@@ -1,19 +1,19 @@
 import 'package:domain/model/merchant.dart';
-import 'package:domain/model/receipt.dart';
+import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/app_localizations.dart';
 
-import '../bloc/receipt_edit_bloc.dart';
-import '../bloc/receipt_edit_event.dart';
+import '../bloc/unprocessed_receipt_edit_bloc.dart';
+import '../bloc/unprocessed_receipt_edit_event.dart';
 
-class ReceiptDetailsMerchantInfoWidget extends StatelessWidget {
-  final Receipt receipt;
+class UnprocessedReceiptMerchantInfoWidget extends StatelessWidget {
+  final UnprocessedReceipt receipt;
   final bool isEditMode;
   final TextEditingController merchantNameController;
   final TextEditingController merchantAddressController;
 
-  const ReceiptDetailsMerchantInfoWidget({
+  const UnprocessedReceiptMerchantInfoWidget({
     super.key,
     required this.receipt,
     required this.isEditMode,
@@ -95,19 +95,19 @@ class ReceiptDetailsMerchantInfoWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (receipt.merchant.name.isNotEmpty)
+          if (receipt.rawData.merchant.name.isNotEmpty)
             Text(
-              receipt.merchant.name,
+              receipt.rawData.merchant.name,
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-          if (receipt.merchant.name.isNotEmpty &&
-              receipt.merchant.address.isNotEmpty)
+          if (receipt.rawData.merchant.name.isNotEmpty &&
+              receipt.rawData.merchant.address.isNotEmpty)
             const SizedBox(height: 4),
-          if (receipt.merchant.address.isNotEmpty)
+          if (receipt.rawData.merchant.address.isNotEmpty)
             Text(
-              receipt.merchant.address,
+              receipt.rawData.merchant.address,
               style: theme.textTheme.bodyMedium,
             ),
         ],
@@ -116,8 +116,8 @@ class ReceiptDetailsMerchantInfoWidget extends StatelessWidget {
   }
 
   void _updateMerchant(BuildContext context) {
-    context.read<ReceiptEditBloc>().add(
-          ReceiptEditEvent.updateMerchant(
+    context.read<UnprocessedReceiptEditBloc>().add(
+          UnprocessedReceiptEditEvent.updateMerchant(
             Merchant(
               name: merchantNameController.text,
               address: merchantAddressController.text,
