@@ -11,6 +11,7 @@ import 'package:presentation/screen/unprocessed_receipts_details/widget/unproces
 import '../../../core/error/error_utils.dart';
 import '../../../core/widget/receipt_details_action_buttons.dart';
 import '../../../di/di.dart';
+import '../../core/widget/receipt/base_receipt_details_screen.dart';
 import '../../theme/expense_flow_colors.dart';
 import '../unprocessed_receipts/bloc/unprocessed_receipts_bloc.dart';
 import '../unprocessed_receipts/bloc/unprocessed_receipts_event.dart';
@@ -72,7 +73,48 @@ class UnprocessedReceiptDetailScreen extends StatelessWidget {
           listener: _handleEditStateChanges,
         ),
       ],
-      child: _buildModalContent(context),
+      child:
+          BlocBuilder<UnprocessedReceiptEditBloc, UnprocessedReceiptEditState>(
+        builder: (context, editState) {
+          return BlocBuilder<UnprocessedReceiptDetailBloc,
+              UnprocessedReceiptDetailState>(
+            builder: (context, detailState) {
+              final l10n = AppLocalizations.of(context);
+
+              return BaseReceiptDetailScreen(
+                content: UnprocessedReceiptDetailsContent(
+                  receipt: editState.receipt ?? receipt,
+                  isEditMode: editState.isEditMode,
+                ),
+                actionButtons: ReceiptDetailsActionButtons(
+                  isEditMode: editState.isEditMode,
+                  deleteConfirmMessage:
+                      l10n.deleteUnprocessedReceiptConfirmMessage,
+                  onCancel: () =>
+                      context.read<UnprocessedReceiptEditBloc>().add(
+                            const UnprocessedReceiptEditEvent.cancelEdit(),
+                          ),
+                  onDelete: () => context
+                      .read<UnprocessedReceiptDetailBloc>()
+                      .add(
+                        UnprocessedReceiptDetailEvent.deleteReceipt(receipt.id),
+                      ),
+                  onEdit: () => context.read<UnprocessedReceiptEditBloc>().add(
+                        const UnprocessedReceiptEditEvent.toggleEditMode(),
+                      ),
+                  onSave: () => context.read<UnprocessedReceiptEditBloc>().add(
+                        const UnprocessedReceiptEditEvent.saveChanges(),
+                      ),
+                ),
+                isDeleting: detailState.isDeleting,
+                isSaving: editState.isSaving,
+                deletingMessage: l10n.deletingUnprocessedReceipt,
+                savingMessage: l10n.savingUnprocessedReceipt,
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -107,151 +149,5 @@ class UnprocessedReceiptDetailScreen extends StatelessWidget {
             const UnprocessedReceiptsEvent.refresh(),
           );
     }
-  }
-
-  Widget _buildModalContent(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child:
-          BlocBuilder<UnprocessedReceiptEditBloc, UnprocessedReceiptEditState>(
-        builder: (context, editState) {
-          return Stack(
-            children: [
-              Container(
-                height: MediaQuery.of(context).size.height * 0.90,
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .surface
-                      .withValues(alpha: 0.9),
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                child: Stack(
-                  children: [
-                    Column(
-                      children: [
-                        _buildDragHandle(context),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: UnprocessedReceiptDetailsContent(
-                              receipt: editState.receipt ?? receipt,
-                              isEditMode: editState.isEditMode,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    BlocBuilder<UnprocessedReceiptEditBloc,
-                        UnprocessedReceiptEditState>(
-                      builder: (context, editState) {
-                        final l10n = AppLocalizations.of(context);
-
-                        return ReceiptDetailsActionButtons(
-                          isEditMode: editState.isEditMode,
-                          deleteConfirmMessage:
-                              l10n.deleteUnprocessedReceiptConfirmMessage,
-                          onCancel: () => context
-                              .read<UnprocessedReceiptEditBloc>()
-                              .add(
-                                const UnprocessedReceiptEditEvent.cancelEdit(),
-                              ),
-                          onDelete: () =>
-                              context.read<UnprocessedReceiptDetailBloc>().add(
-                                    UnprocessedReceiptDetailEvent.deleteReceipt(
-                                        receipt.id),
-                                  ),
-                          onEdit: () =>
-                              context.read<UnprocessedReceiptEditBloc>().add(
-                                    const UnprocessedReceiptEditEvent
-                                        .toggleEditMode(),
-                                  ),
-                          onSave: () => context
-                              .read<UnprocessedReceiptEditBloc>()
-                              .add(
-                                const UnprocessedReceiptEditEvent.saveChanges(),
-                              ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              BlocBuilder<UnprocessedReceiptDetailBloc,
-                  UnprocessedReceiptDetailState>(
-                builder: (context, state) {
-                  if (state.isDeleting) {
-                    return _buildLoadingOverlay(
-                        context,
-                        AppLocalizations.of(context)
-                            .deletingUnprocessedReceipt);
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-              BlocBuilder<UnprocessedReceiptEditBloc,
-                  UnprocessedReceiptEditState>(
-                builder: (context, state) {
-                  if (state.isSaving) {
-                    return _buildLoadingOverlay(context,
-                        AppLocalizations.of(context).savingUnprocessedReceipt);
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildLoadingOverlay(BuildContext context, String message) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.90,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDragHandle(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 40,
-            height: 5,
-            decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2.5),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
