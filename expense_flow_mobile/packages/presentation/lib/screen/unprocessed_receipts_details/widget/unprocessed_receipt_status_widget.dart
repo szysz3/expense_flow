@@ -100,11 +100,11 @@ class UnprocessedReceiptStatusWidget extends StatelessWidget {
   Color _getStatusColor() {
     switch (status) {
       case UnprocessedReceiptStatus.pending:
-        return Colors.orange;
+        return ExpenseFlowColors.chartMutedOrange;
       case UnprocessedReceiptStatus.processing:
-        return Colors.blue;
+        return ExpenseFlowColors.chartMutedBlue;
       case UnprocessedReceiptStatus.error:
-        return ExpenseFlowColors.chartRed;
+        return ExpenseFlowColors.chartMutedRed;
     }
   }
 }
