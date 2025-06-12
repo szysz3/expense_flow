@@ -35,14 +35,14 @@ check_dart() {
   echo -e "${GREEN}Dart is installed.${NC}"
 }
 
-# Create .env file if it doesn't exist
+# Create .env.prod file if it doesn't exist
 create_env_file() {
   echo -e "${BLUE}Checking for .env file...${NC}"
   if [ ! -f ".env" ]; then
     echo -e "${YELLOW}Creating .env file...${NC}"
-    touch .env
-    echo "BASE_URL=http://localhost:8000/" >> .env
-    echo "API_KEY=your_api_key_here" >> .env
+    touch .env.prod
+    echo "BASE_URL=http://localhost:8000/" >> .env.prod
+    echo "API_KEY=your_api_key_here" >> .env.prod
     echo -e "${GREEN}.env file created. Please update with your actual API key.${NC}"
   else
     echo -e "${GREEN}.env file already exists.${NC}"

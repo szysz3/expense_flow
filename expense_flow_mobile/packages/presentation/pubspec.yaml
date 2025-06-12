@@ -52,7 +52,8 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - ../../.env
+    - ../../.env.prod
+    - ../../.env.demo
     - assets/icon_alcoholic_beverages.svg
     - assets/icon_groceries.svg
     - assets/icon_personal_care.svg

@@ -31,7 +31,6 @@ import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
 import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
 import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_delete_use_case.dart';
 import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_update_use_case.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:localization/localization_service.dart';
@@ -39,6 +38,7 @@ import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/env_config.dart';
 import './di.config.dart';
 
 final getIt = GetIt.instance;
@@ -211,25 +211,4 @@ Dio _getDio() {
   ));
 
   return dio;
-}
-
-class EnvConfig {
-  static String get baseUrl =>
-      dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000/';
-
-  static String get apiKey => dotenv.env['API_KEY'] ?? '';
-
-  static String get webSocketUrl =>
-      dotenv.env['CHAT_WEBSOCKET_URL'] ?? 'ws://localhost:8000/api/chat';
-
-  static Future<void> load() async {
-    await dotenv.load();
-  }
-
-  static bool validate() {
-    if (baseUrl.isEmpty || apiKey.isEmpty || webSocketUrl.isEmpty) {
-      throw Exception('Missing required environment variables');
-    }
-    return true;
-  }
 }

@@ -62,3 +62,8 @@ app.*.map.json
 /packages/data/test/coverage_helper_test.dart
 /packages/domain/test/coverage_helper_test.dart
 /packages/presentation/test/coverage_helper_test.dart
+
+# env vars
+.env.demo
+.env.prod
+.env

@@ -1,9 +1,8 @@
 version: '3.8'
-
 services:
-  api:
+  api-production:
     build: .
-    container_name: expense_flow_api
+    container_name: expense_flow_api_production
     ports:
       - "8000:8000"
     volumes:
@@ -11,6 +10,23 @@ services:
       - /mnt/sdcard:/mnt/sdcard
     env_file:
       - ./.env
+    environment:
+      - MODE=production
+    restart: unless-stopped
+    networks:
+      - expense_flow_network
+
+  api-demo:
+    build: .
+    container_name: expense_flow_api_demo
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./.data-demo:/app/.data
+    env_file:
+      - ./.env
+    environment:
+      - MODE=demo
     restart: unless-stopped
     networks:
       - expense_flow_network

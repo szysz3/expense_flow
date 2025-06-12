@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-# Prepare vector db
+echo "Starting ExpenseFlow API in ${MODE:-production} mode..."
+
 python -m scripts.setup.init_vector_db
 
-# Start the API service
 exec python -m expense_flow.api.main --host 0.0.0.0 --port 8000
