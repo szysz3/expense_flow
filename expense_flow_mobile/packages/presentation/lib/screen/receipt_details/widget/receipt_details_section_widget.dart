@@ -15,7 +15,7 @@ class ReceiptDetailsSectionWidget extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -27,7 +27,7 @@ class ReceiptDetailsSectionWidget extends StatelessWidget {
               color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           child,
         ],
       ),

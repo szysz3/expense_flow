@@ -147,6 +147,7 @@ class _UnprocessedReceiptDetailsContentState
         receipt.rawData.merchant.address.isNotEmpty;
   }
 
+  // TODO: Consider moving this conversion logic to a separate utility or service
   Receipt _convertToReceipt(UnprocessedReceipt unprocessedReceipt) {
     return Receipt(
       id: unprocessedReceipt.id,
