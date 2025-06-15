@@ -10,11 +10,6 @@ class EnvConfig {
   static String get webSocketUrl => dotenv.env['CHAT_WEBSOCKET_URL'] ?? '';
 
   static Future<void> load() async {
-    if (FlavorConfig.appFlavor == null) {
-      throw Exception(
-          'Flavor not initialized. App must be started with either prod or demo flavor.');
-    }
-
     String envFile = _getEnvFile();
     await dotenv.load(fileName: envFile);
   }
@@ -32,15 +27,17 @@ class EnvConfig {
   }
 
   static bool validate() {
-    if (FlavorConfig.appFlavor == null) {
+    final missing = <String>[];
+
+    if (baseUrl.isEmpty) missing.add('API_BASE_URL');
+    if (apiKey.isEmpty) missing.add('API_KEY');
+    if (webSocketUrl.isEmpty) missing.add('CHAT_WEBSOCKET_URL');
+
+    if (missing.isNotEmpty) {
       throw Exception(
-          'Flavor not initialized. App must be started with either prod or demo flavor.');
+          'Missing required environment variables for ${FlavorConfig.name} flavor: ${missing.join(', ')}');
     }
 
-    if (baseUrl.isEmpty || apiKey.isEmpty || webSocketUrl.isEmpty) {
-      throw Exception(
-          'Missing required environment variables for ${FlavorConfig.name} flavor');
-    }
     return true;
   }
 }

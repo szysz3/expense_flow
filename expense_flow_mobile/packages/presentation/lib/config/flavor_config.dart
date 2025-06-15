@@ -3,39 +3,26 @@ enum Flavor { prod, demo }
 class FlavorConfig {
   static Flavor? appFlavor;
 
-  static String get name {
+  static Flavor get _flavor {
     if (appFlavor == null) {
       throw Exception(
           'Flavor not initialized. App must be started with either prod or demo flavor.');
     }
-    return appFlavor!.name;
+    return appFlavor!;
   }
 
+  static String get name => _flavor.name;
+
   static String get title {
-    switch (appFlavor) {
+    switch (_flavor) {
       case Flavor.prod:
         return 'Expense Flow';
       case Flavor.demo:
         return 'Expense Flow Demo';
-      case null:
-        throw Exception(
-            'Flavor not initialized. App must be started with either prod or demo flavor.');
     }
   }
 
-  static bool get isProd {
-    if (appFlavor == null) {
-      throw Exception(
-          'Flavor not initialized. App must be started with either prod or demo flavor.');
-    }
-    return appFlavor == Flavor.prod;
-  }
+  static bool get isProd => _flavor == Flavor.prod;
 
-  static bool get isDemo {
-    if (appFlavor == null) {
-      throw Exception(
-          'Flavor not initialized. App must be started with either prod or demo flavor.');
-    }
-    return appFlavor == Flavor.demo;
-  }
+  static bool get isDemo => _flavor == Flavor.demo;
 }

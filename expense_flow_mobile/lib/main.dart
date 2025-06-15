@@ -13,8 +13,6 @@ Future<void> main() async {
         '- flutter run --flavor demo -t lib/main_demo.dart');
   }
 
-  print('---> Running with flavor: ${FlavorConfig.name}');
-
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
