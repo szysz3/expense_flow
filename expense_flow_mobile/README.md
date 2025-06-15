@@ -1,7 +1,7 @@
 # <img src="https://github.com/user-attachments/assets/40f6c7b3-30d2-47df-8229-29fc836bf4e6" width="48" height="48"> expense flow mobile
 
 # Setup
-```.setup.sh``` 
+```./scripts/setup.sh``` 
 
 Get dependencies, generate models and translations.
 ## Env
