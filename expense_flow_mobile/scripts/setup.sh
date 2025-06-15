@@ -37,15 +37,17 @@ check_dart() {
 
 # Create .env.prod file if it doesn't exist
 create_env_file() {
-  echo -e "${BLUE}Checking for .env file...${NC}"
-  if [ ! -f ".env" ]; then
-    echo -e "${YELLOW}Creating .env file...${NC}"
+  echo -e "${BLUE}Checking for .env.prod file...${NC}"
+  if [ ! -f ".env.prod" ]; then
+    echo -e "${YELLOW}Creating .env.prod file...${NC}"
     touch .env.prod
-    echo "BASE_URL=http://localhost:8000/" >> .env.prod
+    # shellcheck disable=SC2129
+    echo "API_BASE_URL=http://localhost:8000/" >> .env.prod
+    echo "CHAT_WEBSOCKET_URL=<your_chat_websocket_url_here>" >> .env.prod
     echo "API_KEY=your_api_key_here" >> .env.prod
-    echo -e "${GREEN}.env file created. Please update with your actual API key.${NC}"
+    echo -e "${GREEN}.env.prod file created. Please update with your actual API key.${NC}"
   else
-    echo -e "${GREEN}.env file already exists.${NC}"
+    echo -e "${GREEN}.env.prod file already exists.${NC}"
   fi
 }
 
