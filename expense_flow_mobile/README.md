@@ -1,4 +1,4 @@
-# <img src="https://github.com/user-attachments/assets/40f6c7b3-30d2-47df-8229-29fc836bf4e6" width="48" height="48"> expense flow mobile
+# <img src="https://github.com/user-attachments/assets/40f6c7b3-30d2-47df-8229-29fc836bf4e6" width="48" height="48"> expense_flow_mobile
 
 # Setup
 ```./scripts/setup.sh``` 
