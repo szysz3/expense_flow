@@ -1,16 +1,34 @@
-# expense_flow_mobile
+# <img src="https://github.com/user-attachments/assets/40f6c7b3-30d2-47df-8229-29fc836bf4e6" width="48" height="48"> expense flow mobile
 
-A new Flutter project.
+# Setup
+```.setup.sh``` 
 
-## Getting Started
+Get dependencies, generate models and translations.
+## Env
 
-This project is a starting point for a Flutter application.
+```
+.env.prod
+.end.demo
+```
 
-A few resources to get you started if this is your first Flutter project:
+Create .env files and fill with proper keys:
+```
+API_BASE_URL=<api_base_url>
+CHAT_WEBSOCKET_URL=<chat_base_url>
+API_KEY=<api_key>
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Flavors
+```flutter run --flavor prod -t lib/main_prod.dart```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+There are 2 flavors ```prod``` and ```demo```.
+
+# Tests
+
+```melos run coverage:full```
+
+Run tests with coverage.
+
+```./scripts/generate_coverage_helpers.sh```
+
+Generate fake tests with class imports to include in code coverage.
