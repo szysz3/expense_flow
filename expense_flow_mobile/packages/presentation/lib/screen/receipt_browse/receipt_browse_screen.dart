@@ -12,11 +12,12 @@ import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
-import '../receipt_browse/bloc/receipt_browse_bloc.dart';
-import '../receipt_browse/bloc/receipt_browse_event.dart';
-import '../receipt_browse/bloc/receipt_browse_state.dart';
-import '../receipt_browse/widget/receipt_header_widget.dart';
 import '../receipt_details/receipt_details_screen.dart';
+import '../receipt_filtering/receipt_filtering_screen.dart';
+import 'bloc/receipt_browse_bloc.dart';
+import 'bloc/receipt_browse_event.dart';
+import 'bloc/receipt_browse_state.dart';
+import 'widget/receipt_header_widget.dart';
 
 class ReceiptBrowseScreen extends StatelessWidget {
   const ReceiptBrowseScreen({super.key});
@@ -150,7 +151,9 @@ class ReceiptBrowseView extends StatelessWidget {
       bottom: 24,
       child: AnimatedSquareButton.square(
         isProcessing: false,
-        onPressed: () {},
+        onPressed: () {
+          ReceiptFilteringScreen.show(context);
+        },
         borderColor: Colors.white,
         backgroundColor: Colors.black,
         icon: SvgPicture.asset(
