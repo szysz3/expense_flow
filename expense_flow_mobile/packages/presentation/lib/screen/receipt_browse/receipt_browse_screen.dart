@@ -12,11 +12,11 @@ import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
+import '../receipt_browse/bloc/receipt_browse_bloc.dart';
+import '../receipt_browse/bloc/receipt_browse_event.dart';
+import '../receipt_browse/bloc/receipt_browse_state.dart';
+import '../receipt_browse/widget/receipt_header_widget.dart';
 import '../receipt_details/receipt_details_screen.dart';
-import 'bloc/receipt_browse_bloc.dart';
-import 'bloc/receipt_browse_event.dart';
-import 'bloc/receipt_browse_state.dart';
-import 'widget/receipt_header_widget.dart';
 
 class ReceiptBrowseScreen extends StatelessWidget {
   const ReceiptBrowseScreen({super.key});
@@ -37,10 +37,7 @@ class ReceiptBrowseScreen extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: ReceiptBrowseView(),
-        ),
+        const ReceiptBrowseView(),
       ]));
 }
 
@@ -77,11 +74,93 @@ class ReceiptBrowseView extends StatelessWidget {
         }
 
         if (state.receipts.isEmpty) {
-          return _buildEmptyState(context);
+          return _buildEmptyState(context, state);
         }
 
-        return _buildReceiptsList(context, state);
+        return _buildMainContent(context, state);
       },
+    );
+  }
+
+  Widget _buildMainContent(BuildContext context, ReceiptBrowseState state) {
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+              left: 16.0, right: 16.0, top: 16.0, bottom: 112),
+          child: _buildReceiptsList(context, state),
+        ),
+        _buildBottomPanel(context, state),
+        _buildSpeedDialMenu(context),
+      ],
+    );
+  }
+
+  Widget _buildBottomPanel(BuildContext context, ReceiptBrowseState state) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 6,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(50),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 112,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.black.withAlpha(50),
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withAlpha(50),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.only(left: 80),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Empty for now - can be populated later
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpeedDialMenu(BuildContext context) {
+    return Positioned(
+      right: 24,
+      bottom: 24,
+      child: AnimatedSquareButton.square(
+        isProcessing: false,
+        onPressed: () {},
+        borderColor: Colors.white,
+        backgroundColor: Colors.black,
+        icon: SvgPicture.asset(
+          'packages/presentation/assets/icon_menu.svg',
+          width: 40,
+          height: 40,
+        ),
+        size: 64,
+        iconSize: 40,
+      ),
     );
   }
 
@@ -128,56 +207,62 @@ class ReceiptBrowseView extends StatelessWidget {
     ReceiptDetailScreen.show(context, receipt);
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            'packages/presentation/assets/icon_scan.svg',
-            width: 64,
-            height: 64,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context).appBarBrowseReceiptsTitle,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context).noReceiptsFound,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
-                ),
-          ),
-          const SizedBox(height: 24),
-          AnimatedSquareButton(
-            isProcessing: false,
-            onPressed: () {
-              context.read<ReceiptBrowseBloc>().add(
-                    const ReceiptBrowseEvent.refresh(),
-                  );
-            },
-            width: 124.0,
-            height: 52.0,
-            iconSize: 20.0,
-            borderColor: Colors.white,
-            backgroundColor: Colors.black,
-            icon: Text(
-              AppLocalizations.of(context).refresh,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+  Widget _buildEmptyState(BuildContext context, ReceiptBrowseState state) {
+    return Stack(
+      children: [
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'packages/presentation/assets/icon_scan.svg',
+                width: 64,
+                height: 64,
               ),
-            ),
-          )
-        ],
-      ),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context).appBarBrowseReceiptsTitle,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                AppLocalizations.of(context).noReceiptsFound,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                    ),
+              ),
+              const SizedBox(height: 24),
+              AnimatedSquareButton(
+                isProcessing: false,
+                onPressed: () {
+                  context.read<ReceiptBrowseBloc>().add(
+                        const ReceiptBrowseEvent.refresh(),
+                      );
+                },
+                width: 124.0,
+                height: 52.0,
+                iconSize: 20.0,
+                borderColor: Colors.white,
+                backgroundColor: Colors.black,
+                icon: Text(
+                  AppLocalizations.of(context).refresh,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+        _buildBottomPanel(context, state),
+        _buildSpeedDialMenu(context),
+      ],
     );
   }
 }
