@@ -21,6 +21,7 @@ class ReceiptFilteringScreen extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      useSafeArea: true,
       builder: (context) => const ReceiptFilteringScreen(),
     );
   }
@@ -35,7 +36,10 @@ class ReceiptFilteringScreen extends StatelessWidget {
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Container(
-          height: MediaQuery.of(context).size.height * 0.8,
+          height: MediaQuery.of(context).size.height * 0.9,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
             borderRadius: const BorderRadius.only(
@@ -102,6 +106,7 @@ class ReceiptFilteringScreen extends StatelessWidget {
               Expanded(
                 child: _buildFilterList(context, state),
               ),
+              // Wrap action buttons with keyboard padding
               _buildActionButtons(context),
             ],
           ),
@@ -112,6 +117,10 @@ class ReceiptFilteringScreen extends StatelessWidget {
 
   Widget _buildFilterList(BuildContext context, ReceiptFilteringState state) {
     return SingleChildScrollView(
+      // Add keyboard padding to scroll view
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 16 : 0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -120,6 +129,10 @@ class ReceiptFilteringScreen extends StatelessWidget {
           _buildDateRangeSection(context),
           const SizedBox(height: 24),
           _buildSearchSection(context),
+          // Add extra space at bottom when keyboard is visible
+          SizedBox(
+            height: MediaQuery.of(context).viewInsets.bottom > 0 ? 200 : 0,
+          ),
         ],
       ),
     );
@@ -144,6 +157,10 @@ class ReceiptFilteringScreen extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.4),
           ),
           child: TextField(
+            textInputAction: TextInputAction.done,
+            onSubmitted: (value) {
+              FocusScope.of(context).unfocus();
+            },
             decoration: InputDecoration(
               labelText: 'Search receipts',
               // TODO: Add to localization
@@ -153,6 +170,16 @@ class ReceiptFilteringScreen extends StatelessWidget {
               prefixIcon: Icon(
                 Icons.search,
                 color: Colors.white.withValues(alpha: 0.7),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  Icons.clear,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+                onPressed: () {
+                  FocusScope.of(context).unfocus();
+                  // TODO: Add bloc event to clear search
+                },
               ),
             ),
             onChanged: (value) {
@@ -371,7 +398,8 @@ class ReceiptFilteringScreen extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Padding(
+    return Container(
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
       padding: const EdgeInsets.only(top: 16, bottom: 8),
       child: Row(
         children: [
