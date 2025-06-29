@@ -157,7 +157,7 @@ class ReceiptBrowseView extends StatelessWidget {
         borderColor: Colors.white,
         backgroundColor: Colors.black,
         icon: SvgPicture.asset(
-          'packages/presentation/assets/icon_menu.svg',
+          'packages/presentation/assets/icon_search.svg',
           width: 40,
           height: 40,
         ),

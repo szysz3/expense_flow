@@ -1,0 +1,20 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Glitch effect layers for magnifying glass -->
+    <circle cx="42" cy="42" r="18" fill="none" opacity="0.4" stroke="#ff00ff" stroke-width="8" />
+    <circle cx="40" cy="40" r="16" fill="none" opacity="0.6" stroke="#00ffff" stroke-width="6" />
+
+    <!-- Main magnifying glass circle -->
+    <circle cx="38" cy="38" r="15" fill="none" stroke="#ffffff" stroke-width="4" />
+
+    <!-- Glitch effect layers for handle -->
+    <line x1="52" y1="52" x2="70" y2="70" opacity="0.4" stroke="#ff00ff" stroke-width="8" />
+    <line x1="50" y1="50" x2="68" y2="68" opacity="0.6" stroke="#00ffff" stroke-width="6" />
+
+    <!-- Main handle -->
+    <line x1="48" y1="48" x2="65" y2="65" stroke="#ffffff" stroke-width="4" />
+
+
+    <!-- Geometric accent -->
+    <rect x="17.5" y="30.5" width="5" height="5" fill="#ff00ff" opacity="0.3"
+        transform="rotate(45 20 33)" />
+</svg>

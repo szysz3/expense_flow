@@ -92,6 +92,7 @@ flutter:
     - assets/icon_delete.svg
     - assets/icon_browse.svg
     - assets/icon_edit.svg
+    - assets/icon_search.svg
 
 
   # To add assets to your package, add an assets section, like this:
