@@ -1,4 +1,3 @@
-import 'package:domain/model/raw_receipt_data.dart';
 import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_update_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
