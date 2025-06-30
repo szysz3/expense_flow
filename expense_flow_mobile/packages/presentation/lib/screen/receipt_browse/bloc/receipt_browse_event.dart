@@ -1,3 +1,4 @@
+import 'package:domain/model/receipt_filter_params.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'receipt_browse_event.freezed.dart';
@@ -17,4 +18,10 @@ class ReceiptBrowseEvent with _$ReceiptBrowseEvent {
       NotifyReceiptDeletedEvent;
 
   const factory ReceiptBrowseEvent.resetDeletedState() = ResetDeletedStateEvent;
+
+  const factory ReceiptBrowseEvent.applyFilters(
+    ReceiptFilterParams filterParams,
+  ) = ApplyFiltersEvent;
+
+  const factory ReceiptBrowseEvent.clearFilters() = ClearFiltersEvent;
 }

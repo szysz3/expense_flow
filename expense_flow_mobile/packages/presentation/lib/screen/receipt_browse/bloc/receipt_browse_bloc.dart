@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:domain/model/receipt.dart';
+import 'package:domain/model/receipt_filter_params.dart';
+import 'package:domain/use_case/receipt/receipt_filter_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_get_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/localization_service.dart';
@@ -14,6 +16,7 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
   final Logger _logger;
   final LocalizationService _localizationService;
   final ReceiptGetUseCase _getReceiptsUseCase;
+  final ReceiptFilterUseCase _filterReceiptsUseCase;
 
   int _currentPage = 1;
   static const int _pageSize = 10;
@@ -24,28 +27,51 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
     this._logger,
     this._localizationService,
     this._getReceiptsUseCase,
+    this._filterReceiptsUseCase,
   ) : super(const ReceiptBrowseState()) {
     on<InitEvent>(_onInit);
     on<RefreshEvent>(_onRefresh);
     on<LoadMoreEvent>(_onLoadMore);
     on<NotifyReceiptDeletedEvent>(_onNotifyReceiptDeleted);
     on<ResetDeletedStateEvent>(_onResetDeletedState);
+    on<ApplyFiltersEvent>(_onApplyFilters);
+    on<ClearFiltersEvent>(_onClearFilters);
   }
 
   void _onNotifyReceiptDeleted(
     NotifyReceiptDeletedEvent event,
     Emitter<ReceiptBrowseState> emit,
   ) {
-    final updatedReceipts = state.receipts
-        .where((receipt) => receipt.id != event.receiptId)
-        .toList();
+    if (state.isFiltered) {
+      // If filtered, remove items from that receipt
+      final updatedItems = state.filteredItems
+          .where((item) => item.parentReceipt.id != event.receiptId)
+          .toList();
 
-    emit(state.copyWith(
-      receipts: updatedReceipts,
-      totalCount: state.totalCount - 1,
-      isDeleted: true,
-      deleteReceiptId: event.receiptId,
-    ));
+      final totalAmount = updatedItems.fold(
+        0.0,
+        (sum, item) => sum + item.amount,
+      );
+
+      emit(state.copyWith(
+        filteredItems: updatedItems,
+        filteredTotalAmount: totalAmount,
+        isDeleted: true,
+        deleteReceiptId: event.receiptId,
+      ));
+    } else {
+      // Original logic for non-filtered view
+      final updatedReceipts = state.receipts
+          .where((receipt) => receipt.id != event.receiptId)
+          .toList();
+
+      emit(state.copyWith(
+        receipts: updatedReceipts,
+        totalCount: state.totalCount - 1,
+        isDeleted: true,
+        deleteReceiptId: event.receiptId,
+      ));
+    }
 
     _resetDeletedStateTimer?.cancel();
     _resetDeletedStateTimer = Timer(
@@ -137,7 +163,12 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
     RefreshEvent event,
     Emitter<ReceiptBrowseState> emit,
   ) async {
-    add(const ReceiptBrowseEvent.init());
+    if (state.isFiltered) {
+      // Re-apply filters
+      add(ReceiptBrowseEvent.applyFilters(state.filterParams));
+    } else {
+      add(const ReceiptBrowseEvent.init());
+    }
     return _refreshCompleter?.future;
   }
 
@@ -145,6 +176,11 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
     LoadMoreEvent event,
     Emitter<ReceiptBrowseState> emit,
   ) async {
+    if (state.isFiltered) {
+      // No pagination for filtered view yet
+      return;
+    }
+
     if (state.isLoadingMore || !state.hasMoreReceipts) {
       return;
     }
@@ -205,6 +241,80 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
         ),
       ));
     }
+  }
+
+  Future<void> _onApplyFilters(
+    ApplyFiltersEvent event,
+    Emitter<ReceiptBrowseState> emit,
+  ) async {
+    try {
+      _refreshCompleter = Completer<void>();
+
+      emit(state.copyWith(isLoading: true));
+
+      final result = await _filterReceiptsUseCase(event.filterParams);
+
+      result.fold(
+        (failure) {
+          _logger.e(
+            'Failed to apply filters',
+            error: failure,
+          );
+
+          emit(state.copyWith(
+            isLoading: false,
+            error: AppError.fromFailure(
+              failure,
+              onRetry: () =>
+                  add(ReceiptBrowseEvent.applyFilters(event.filterParams)),
+              localizationService: _localizationService,
+            ),
+          ));
+        },
+        (filterResponse) {
+          emit(state.copyWith(
+            isLoading: false,
+            isFiltered: true,
+            filterParams: event.filterParams,
+            filteredItems: filterResponse.items,
+            filteredTotalAmount: filterResponse.totalAmount,
+            error: null,
+          ));
+        },
+      );
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Exception in ReceiptBrowseBloc.onApplyFilters',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
+      emit(state.copyWith(
+        isLoading: false,
+        error: AppError.fromException(
+          e,
+          onRetry: () =>
+              add(ReceiptBrowseEvent.applyFilters(event.filterParams)),
+          localizationService: _localizationService,
+        ),
+      ));
+    } finally {
+      _safeComplete(_refreshCompleter);
+    }
+  }
+
+  void _onClearFilters(
+    ClearFiltersEvent event,
+    Emitter<ReceiptBrowseState> emit,
+  ) {
+    emit(state.copyWith(
+      isFiltered: false,
+      filterParams: const ReceiptFilterParams(),
+      filteredItems: [],
+      filteredTotalAmount: 0,
+    ));
+
+    add(const ReceiptBrowseEvent.init());
   }
 
   Future<void> refresh() async {

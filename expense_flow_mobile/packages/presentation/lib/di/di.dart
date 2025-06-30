@@ -24,6 +24,7 @@ import 'package:domain/use_case/get_months_summary_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_analyze_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_create_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_delete_use_case.dart';
+import 'package:domain/use_case/receipt/receipt_filter_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_get_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_update_use_case.dart';
 import 'package:domain/use_case/settings/settings_get_month_savings_use_case.dart';
@@ -185,6 +186,10 @@ _registerUseCases() {
 
   getIt.registerLazySingleton(
     () => CalculateTotalSavingsUseCase(),
+  );
+
+  getIt.registerFactory<ReceiptFilterUseCase>(
+    () => ReceiptFilterUseCase(getIt<ReceiptRepository>()),
   );
 
   getIt.registerLazySingleton(() =>

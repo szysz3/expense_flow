@@ -1,4 +1,5 @@
 import 'package:domain/model/receipt.dart';
+import 'package:domain/use_case/receipt/receipt_filter_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_get_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +10,7 @@ import 'package:logger/logger.dart';
 import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../core/error/error_utils.dart';
+import '../../core/utils/currency_text_formatter.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
@@ -28,6 +30,7 @@ class ReceiptBrowseScreen extends StatelessWidget {
             getIt<Logger>(),
             getIt<LocalizationService>(),
             getIt<ReceiptGetUseCase>(),
+            getIt<ReceiptFilterUseCase>(),
           )..add(const ReceiptBrowseEvent.init()),
       child: Stack(children: [
         Positioned.fill(
@@ -98,6 +101,9 @@ class ReceiptBrowseView extends StatelessWidget {
   }
 
   Widget _buildBottomPanel(BuildContext context, ReceiptBrowseState state) {
+    final locale = Localizations.localeOf(context).toString();
+    final currencyFormatter = CurrencyTextFormatter(locale: locale);
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Column(
@@ -129,13 +135,53 @@ class ReceiptBrowseView extends StatelessWidget {
                 ),
               ),
             ),
-            child: const Padding(
-              padding: EdgeInsets.only(left: 80),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 80, right: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Empty for now - can be populated later
+                  if (state.isFiltered) ...[
+                    Text(
+                      'Total Amount', // TODO: Add to localization
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.7),
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      currencyFormatter
+                          .formatCurrency(state.filteredTotalAmount),
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${state.filteredItems.length} items found',
+                      // TODO: Add to localization
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                    ),
+                  ] else ...[
+                    Text(
+                      'Showing all receipts', // TODO: Add to localization
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${state.totalCount} receipts',
+                      // TODO: Add to localization
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                    ),
+                  ],
                 ],
               ),
             ),
