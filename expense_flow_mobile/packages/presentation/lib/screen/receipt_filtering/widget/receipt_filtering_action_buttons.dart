@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../bloc/receipt_filtering_bloc.dart';
+import '../bloc/receipt_filtering_event.dart';
 
 class ReceiptFilteringActionButtons extends StatelessWidget {
   const ReceiptFilteringActionButtons({super.key});
@@ -13,7 +17,9 @@ class ReceiptFilteringActionButtons extends StatelessWidget {
           Expanded(
             child: OutlinedButton(
               onPressed: () {
-                // TODO: Add clear filters logic
+                context.read<ReceiptFilteringBloc>().add(
+                      const ReceiptFilteringEvent.clearFilters(),
+                    );
               },
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
@@ -36,8 +42,11 @@ class ReceiptFilteringActionButtons extends StatelessWidget {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Add apply filters logic
-                Navigator.of(context).pop();
+                // Get the current filter params from the bloc state
+                final filterParams =
+                    context.read<ReceiptFilteringBloc>().state.filterParams;
+                // Return the filter params to the calling screen
+                Navigator.of(context).pop(filterParams);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white.withValues(alpha: 0.9),

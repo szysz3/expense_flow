@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+
+import '../bloc/receipt_filtering_bloc.dart';
+import '../bloc/receipt_filtering_event.dart';
+import '../bloc/receipt_filtering_state.dart';
 
 class ReceiptFilteringDateRangeSection extends StatelessWidget {
   const ReceiptFilteringDateRangeSection({super.key});
@@ -15,62 +21,75 @@ class ReceiptFilteringDateRangeSection extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 12),
-        const DateRangeFields(),
+        BlocBuilder<ReceiptFilteringBloc, ReceiptFilteringState>(
+          builder: (context, state) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.black.withValues(alpha: 0.4),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DateField(
+                          label: 'From',
+                          // TODO: Add to localization
+                          hint: 'Select start date',
+                          // TODO: Add to localization
+                          selectedDate: state.filterParams.startDate,
+                          onTap: () => _selectDate(context,
+                              isStartDate: true,
+                              currentDate: state.filterParams.startDate),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: DateField(
+                          label: 'To', // TODO: Add to localization
+                          hint: 'Select end date', // TODO: Add to localization
+                          selectedDate: state.filterParams.endDate,
+                          onTap: () => _selectDate(context,
+                              isStartDate: false,
+                              currentDate: state.filterParams.endDate),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  QuickDateOptions(
+                    selectedRange: state.selectedQuickRange,
+                    onRangeSelected: (rangeType) {
+                      context.read<ReceiptFilteringBloc>().add(
+                            ReceiptFilteringEvent.setQuickDateRange(rangeType),
+                          );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ],
     );
   }
-}
 
-class DateRangeFields extends StatelessWidget {
-  const DateRangeFields({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withValues(alpha: 0.4),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: DateField(
-                  label: 'From', // TODO: Add to localization
-                  hint: 'Select start date', // TODO: Add to localization
-                  onTap: () => _selectDate(context, isStartDate: true),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: DateField(
-                  label: 'To', // TODO: Add to localization
-                  hint: 'Select end date', // TODO: Add to localization
-                  onTap: () => _selectDate(context, isStartDate: false),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const QuickDateOptions(),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _selectDate(BuildContext context,
-      {required bool isStartDate}) async {
+  Future<void> _selectDate(
+    BuildContext context, {
+    required bool isStartDate,
+    DateTime? currentDate,
+  }) async {
     final now = DateTime.now();
-    final initialDate = now;
+    final initialDate = currentDate ?? now;
     final firstDate = DateTime(now.year - 5);
     final lastDate = now;
 
     final selectedDate = await showDatePicker(
       context: context,
-      initialDate: initialDate,
+      initialDate: initialDate.isAfter(lastDate) ? lastDate : initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
       builder: (context, child) {
@@ -88,8 +107,16 @@ class DateRangeFields extends StatelessWidget {
       },
     );
 
-    if (selectedDate != null) {
-      // TODO: Add bloc event to update date
+    if (selectedDate != null && context.mounted) {
+      if (isStartDate) {
+        context.read<ReceiptFilteringBloc>().add(
+              ReceiptFilteringEvent.setStartDate(selectedDate),
+            );
+      } else {
+        context.read<ReceiptFilteringBloc>().add(
+              ReceiptFilteringEvent.setEndDate(selectedDate),
+            );
+      }
     }
   }
 }
@@ -97,19 +124,21 @@ class DateRangeFields extends StatelessWidget {
 class DateField extends StatelessWidget {
   final String label;
   final String hint;
+  final DateTime? selectedDate;
   final VoidCallback onTap;
+
+  static final _dateFormat = DateFormat('d/M/yyyy');
 
   const DateField({
     super.key,
     required this.label,
     required this.hint,
+    required this.selectedDate,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final selectedDate = null; // TODO: Get from state
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -130,7 +159,7 @@ class DateField extends StatelessWidget {
                 Expanded(
                   child: Text(
                     selectedDate != null
-                        ? '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}' // TODO: Format properly
+                        ? _dateFormat.format(selectedDate!)
                         : hint,
                     style: TextStyle(
                       color: selectedDate != null
@@ -155,15 +184,26 @@ class DateField extends StatelessWidget {
 }
 
 class QuickDateOptions extends StatelessWidget {
-  const QuickDateOptions({super.key});
+  final QuickDateRangeType? selectedRange;
+  final Function(QuickDateRangeType) onRangeSelected;
+
+  const QuickDateOptions({
+    super.key,
+    required this.selectedRange,
+    required this.onRangeSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
     final quickOptions = [
-      'This Month', // TODO: Add to localization
-      'Last Month', // TODO: Add to localization
-      'Last 3 Months', // TODO: Add to localization
-      'Last 6 Months', // TODO: Add to localization
+      (QuickDateRangeType.thisMonth, 'This Month'),
+      // TODO: Add to localization
+      (QuickDateRangeType.lastMonth, 'Last Month'),
+      // TODO: Add to localization
+      (QuickDateRangeType.last3Months, 'Last 3 Months'),
+      // TODO: Add to localization
+      (QuickDateRangeType.last6Months, 'Last 6 Months'),
+      // TODO: Add to localization
     ];
 
     return Align(
@@ -172,11 +212,11 @@ class QuickDateOptions extends StatelessWidget {
         spacing: 8,
         runSpacing: 4,
         children: quickOptions.map((option) {
-          final isSelected = false; // TODO: Get from state
+          final isSelected = selectedRange == option.$1;
 
           return ActionChip(
             label: Text(
-              option,
+              option.$2,
               style: TextStyle(
                 color: isSelected
                     ? Colors.black
@@ -184,9 +224,7 @@ class QuickDateOptions extends StatelessWidget {
                 fontSize: 12,
               ),
             ),
-            onPressed: () {
-              // TODO: Add bloc event
-            },
+            onPressed: () => onRangeSelected(option.$1),
             backgroundColor: isSelected
                 ? Colors.white.withValues(alpha: 0.9)
                 : Colors.transparent,

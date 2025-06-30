@@ -7,15 +7,16 @@ import 'package:flutter_svg/svg.dart';
 import 'package:localization/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
+import 'package:presentation/core/utils/currency_text_formatter.dart';
 import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../core/error/error_utils.dart';
-import '../../core/utils/currency_text_formatter.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
 import '../receipt_details/receipt_details_screen.dart';
 import '../receipt_filtering/receipt_filtering_screen.dart';
+import '../receipt_filtering/widget/filtered_receipt_item_widget.dart';
 import 'bloc/receipt_browse_bloc.dart';
 import 'bloc/receipt_browse_event.dart';
 import 'bloc/receipt_browse_state.dart';
@@ -66,19 +67,29 @@ class ReceiptBrowseView extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        if (state.isLoading && state.receipts.isEmpty) {
+        if (state.isLoading &&
+            state.receipts.isEmpty &&
+            state.filteredItems.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state.error != null && state.receipts.isEmpty) {
+        if (state.error != null &&
+            state.receipts.isEmpty &&
+            state.filteredItems.isEmpty) {
           return ErrorDisplayWidget(
             error: state.error!,
             isFullScreen: true,
           );
         }
 
-        if (state.receipts.isEmpty) {
+        if (!state.isFiltered && state.receipts.isEmpty) {
           return _buildEmptyState(context, state);
+        }
+
+        if (state.isFiltered &&
+            state.filteredItems.isEmpty &&
+            !state.isLoading) {
+          return _buildEmptyFilteredState(context, state);
         }
 
         return _buildMainContent(context, state);
@@ -92,10 +103,12 @@ class ReceiptBrowseView extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(
               left: 16.0, right: 16.0, top: 16.0, bottom: 112),
-          child: _buildReceiptsList(context, state),
+          child: state.isFiltered
+              ? _buildFilteredItemsList(context, state)
+              : _buildReceiptsList(context, state),
         ),
         _buildBottomPanel(context, state),
-        _buildSpeedDialMenu(context),
+        _buildSpeedDialMenu(context, state),
       ],
     );
   }
@@ -191,24 +204,69 @@ class ReceiptBrowseView extends StatelessWidget {
     );
   }
 
-  Widget _buildSpeedDialMenu(BuildContext context) {
+  Widget _buildSpeedDialMenu(BuildContext context, ReceiptBrowseState state) {
     return Positioned(
       right: 24,
       bottom: 24,
       child: AnimatedSquareButton.square(
         isProcessing: false,
-        onPressed: () {
-          ReceiptFilteringScreen.show(context);
+        onPressed: () async {
+          print('DEBUG: Filter button pressed');
+
+          final filterParams = await ReceiptFilteringScreen.show(
+            context,
+            initialParams: state.filterParams,
+          );
+
+          print('DEBUG: Received params: $filterParams');
+
+          if (filterParams != null && context.mounted) {
+            print(
+                'DEBUG: Has active filters: ${filterParams.hasActiveFilters}');
+            print('DEBUG: Categories: ${filterParams.categories}');
+            print(
+                'DEBUG: Date range: ${filterParams.startDate} to ${filterParams.endDate}');
+
+            if (filterParams.hasActiveFilters) {
+              context.read<ReceiptBrowseBloc>().add(
+                    ReceiptBrowseEvent.applyFilters(filterParams),
+                  );
+            } else {
+              context.read<ReceiptBrowseBloc>().add(
+                    const ReceiptBrowseEvent.clearFilters(),
+                  );
+            }
+          }
         },
-        borderColor: Colors.white,
-        backgroundColor: Colors.black,
+        borderColor: state.isFiltered ? Colors.white : Colors.white,
+        backgroundColor: state.isFiltered ? Colors.white : Colors.black,
         icon: SvgPicture.asset(
           'packages/presentation/assets/icon_search.svg',
           width: 40,
           height: 40,
+          colorFilter: state.isFiltered
+              ? const ColorFilter.mode(Colors.black, BlendMode.srcIn)
+              : null,
         ),
         size: 64,
         iconSize: 40,
+      ),
+    );
+  }
+
+  Widget _buildFilteredItemsList(
+      BuildContext context, ReceiptBrowseState state) {
+    return RefreshIndicator(
+      onRefresh: () => context.read<ReceiptBrowseBloc>().refresh(),
+      child: ListView.builder(
+        itemCount: state.filteredItems.length,
+        itemBuilder: (context, index) {
+          final item = state.filteredItems[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: FilteredReceiptItemWidget(item: item),
+          );
+        },
       ),
     );
   }
@@ -254,6 +312,69 @@ class ReceiptBrowseView extends StatelessWidget {
 
   void _navigateToReceiptDetail(BuildContext context, Receipt receipt) {
     ReceiptDetailScreen.show(context, receipt);
+  }
+
+  Widget _buildEmptyFilteredState(
+      BuildContext context, ReceiptBrowseState state) {
+    return Stack(
+      children: [
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.filter_list_off,
+                size: 64,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No items match your filters', // TODO: Add to localization
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Try adjusting your filters', // TODO: Add to localization
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                    ),
+              ),
+              const SizedBox(height: 24),
+              AnimatedSquareButton(
+                isProcessing: false,
+                onPressed: () {
+                  context.read<ReceiptBrowseBloc>().add(
+                        const ReceiptBrowseEvent.clearFilters(),
+                      );
+                },
+                width: 124.0,
+                height: 52.0,
+                iconSize: 20.0,
+                borderColor: Colors.white,
+                backgroundColor: Colors.black,
+                icon: Text(
+                  'Clear Filters', // TODO: Add to localization
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+        _buildBottomPanel(context, state),
+        _buildSpeedDialMenu(context, state),
+      ],
+    );
   }
 
   Widget _buildEmptyState(BuildContext context, ReceiptBrowseState state) {
@@ -310,7 +431,7 @@ class ReceiptBrowseView extends StatelessWidget {
           ),
         ),
         _buildBottomPanel(context, state),
-        _buildSpeedDialMenu(context),
+        _buildSpeedDialMenu(context, state),
       ],
     );
   }

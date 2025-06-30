@@ -19,8 +19,8 @@ class ReceiptFilterUseCase
   Future<Either<Failure, ReceiptFilterResponse>> call(
       ReceiptFilterParams params) async {
     try {
-      // Get all receipts (you might want to implement pagination here)
-      final result = await repository.getReceipts(1, 1000);
+      // TODO: Get all receipts (you might want to implement pagination here)
+      final result = await repository.getReceipts(1, 100);
 
       return result.fold(
         (failure) => Left(failure),

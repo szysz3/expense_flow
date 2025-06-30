@@ -1,3 +1,4 @@
+import 'package:domain/model/receipt_filter_params.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,15 +17,25 @@ import '../receipt_filtering/widget/receipt_filtering_modal_header.dart';
 import '../receipt_filtering/widget/receipt_filtering_search_section.dart';
 
 class ReceiptFilteringScreen extends StatelessWidget {
-  const ReceiptFilteringScreen({super.key});
+  final ReceiptFilterParams? initialParams;
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
+  const ReceiptFilteringScreen({
+    super.key,
+    this.initialParams,
+  });
+
+  static Future<ReceiptFilterParams?> show(
+    BuildContext context, {
+    ReceiptFilterParams? initialParams,
+  }) {
+    return showModalBottomSheet<ReceiptFilterParams>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
-      builder: (context) => const ReceiptFilteringScreen(),
+      builder: (context) => ReceiptFilteringScreen(
+        initialParams: initialParams,
+      ),
     );
   }
 
@@ -34,7 +45,7 @@ class ReceiptFilteringScreen extends StatelessWidget {
             getIt<ReceiptRepository>(),
             getIt<Logger>(),
             getIt<LocalizationService>(),
-          )..add(const ReceiptFilteringEvent.init()),
+          )..add(ReceiptFilteringEvent.init(initialParams: initialParams)),
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Container(

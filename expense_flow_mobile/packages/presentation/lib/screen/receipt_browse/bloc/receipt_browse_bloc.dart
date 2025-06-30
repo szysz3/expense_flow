@@ -250,6 +250,11 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
     try {
       _refreshCompleter = Completer<void>();
 
+      // Add debug logging
+      _logger.d('Applying filters: ${event.filterParams.categories}, '
+          'startDate: ${event.filterParams.startDate}, '
+          'endDate: ${event.filterParams.endDate}');
+
       emit(state.copyWith(isLoading: true));
 
       final result = await _filterReceiptsUseCase(event.filterParams);
@@ -272,6 +277,10 @@ class ReceiptBrowseBloc extends Bloc<ReceiptBrowseEvent, ReceiptBrowseState> {
           ));
         },
         (filterResponse) {
+          // Add debug logging
+          _logger.d('Filter response: ${filterResponse.items.length} items, '
+              'total: ${filterResponse.totalAmount}');
+
           emit(state.copyWith(
             isLoading: false,
             isFiltered: true,
