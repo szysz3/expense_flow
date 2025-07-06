@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../model/failure/failures.dart';
 import '../../model/filtered_receipt_item.dart';
+import '../../model/receipt.dart';
 import '../../model/receipt_filter_params.dart';
 import '../../model/receipt_filter_response.dart';
 import '../../repository/receipt_repository.dart';
@@ -19,15 +20,14 @@ class ReceiptFilterUseCase
   Future<Either<Failure, ReceiptFilterResponse>> call(
       ReceiptFilterParams params) async {
     try {
-      // TODO: Get all receipts (you might want to implement pagination here)
-      final result = await repository.getReceipts(1, 100);
+      final allReceiptsResult = await _getAllReceipts();
 
-      return result.fold(
+      return allReceiptsResult.fold(
         (failure) => Left(failure),
-        (response) {
+        (allReceipts) {
           final filteredItems = <FilteredReceiptItem>[];
 
-          for (final receipt in response.receipts) {
+          for (final receipt in allReceipts) {
             if (params.startDate != null &&
                 receipt.transactionDateTime.isBefore(params.startDate!)) {
               continue;
@@ -72,5 +72,36 @@ class ReceiptFilterUseCase
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
+  }
+
+  /// Fetches all receipts by paginating through all pages
+  Future<Either<Failure, List<Receipt>>> _getAllReceipts() async {
+    final allReceipts = <Receipt>[];
+    int currentPage = 1;
+    const int pageSize = 100;
+
+    while (true) {
+      final result = await repository.getReceipts(currentPage, pageSize);
+
+      // Check if this page request failed
+      if (result is Left) {
+        return result as Either<Failure, List<Receipt>>;
+      }
+
+      final response = (result as Right).value;
+      allReceipts.addAll(response.receipts);
+
+      // Check if we've received all receipts
+      // If we got fewer receipts than the page size, we're done
+      // Or if we've fetched all receipts based on total count
+      if (response.receipts.length < pageSize ||
+          allReceipts.length >= response.totalCount) {
+        break;
+      }
+
+      currentPage++;
+    }
+
+    return Right(allReceipts);
   }
 }

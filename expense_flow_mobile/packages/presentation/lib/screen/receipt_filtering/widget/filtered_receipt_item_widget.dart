@@ -66,10 +66,15 @@ class FilteredReceiptItemWidget extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                item.merchantName,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              Expanded(
+                child: Text(
+                  item.merchantName,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
                 ),
               ),
             ],
