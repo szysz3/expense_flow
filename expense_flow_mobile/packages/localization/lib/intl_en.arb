@@ -531,5 +531,45 @@
   "unprocessedReceiptCategoryNote": "Categories will be assigned when the receipt is fully processed",
   "@unprocessedReceiptCategoryNote": {
     "description": "Label for empty chat window"
+  },
+  "totalAmountLabel": "Total Amount",
+  "@totalAmountLabel": {
+    "description": "Label for total amount in filtered view"
+  },
+  "itemsFoundLabel": "{count, plural, =0{No items found} =1{1 item found} other{{count} items found}}",
+  "@itemsFoundLabel": {
+    "description": "Label showing number of items found with pluralization",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "showingAllReceiptsLabel": "Showing all receipts",
+  "@showingAllReceiptsLabel": {
+    "description": "Label indicating all receipts are being shown"
+  },
+  "totalReceiptsLabel": "{count, plural, =0{No receipts} =1{1 receipt} other{{count} receipts}}",
+  "@totalReceiptsLabel": {
+    "description": "Label showing total number of receipts with pluralization",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "noItemsMatchFiltersLabel": "No items match your filters",
+  "@noItemsMatchFiltersLabel": {
+    "description": "Message when no items match the applied filters"
+  },
+  "adjustFiltersHintLabel": "Try adjusting your filters",
+  "@adjustFiltersHintLabel": {
+    "description": "Hint to adjust filters when no results found"
+  },
+  "clearFiltersLabel": "Clear Filters",
+  "@clearFiltersLabel": {
+    "description": "Button text to clear applied filters"
   }
 }

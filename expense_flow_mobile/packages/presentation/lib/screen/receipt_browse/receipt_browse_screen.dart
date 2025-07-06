@@ -1,4 +1,3 @@
-import 'package:domain/model/receipt.dart';
 import 'package:domain/use_case/receipt/receipt_filter_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_get_use_case.dart';
 import 'package:flutter/material.dart';
@@ -7,20 +6,15 @@ import 'package:flutter_svg/svg.dart';
 import 'package:localization/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
-import 'package:presentation/core/utils/currency_text_formatter.dart';
-import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../core/error/error_utils.dart';
-import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
 import '../../di/di.dart';
-import '../receipt_details/receipt_details_screen.dart';
-import '../receipt_filtering/receipt_filtering_screen.dart';
-import '../receipt_filtering/widget/filtered_receipt_item_widget.dart';
 import 'bloc/receipt_browse_bloc.dart';
 import 'bloc/receipt_browse_event.dart';
 import 'bloc/receipt_browse_state.dart';
-import 'widget/receipt_header_widget.dart';
+import 'widget/receipt_browse_content.dart';
+import 'widget/receipt_browse_empty_states.dart';
 
 class ReceiptBrowseScreen extends StatelessWidget {
   const ReceiptBrowseScreen({super.key});
@@ -61,7 +55,7 @@ class ReceiptBrowseView extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context).receiptDeleted),
-              backgroundColor: ExpenseFlowColors.chartMutedGreen,
+              backgroundColor: Theme.of(context).colorScheme.primary,
             ),
           );
         }
@@ -83,356 +77,17 @@ class ReceiptBrowseView extends StatelessWidget {
         }
 
         if (!state.isFiltered && state.receipts.isEmpty) {
-          return _buildEmptyState(context, state);
+          return ReceiptBrowseEmptyState(state: state);
         }
 
         if (state.isFiltered &&
             state.filteredItems.isEmpty &&
             !state.isLoading) {
-          return _buildEmptyFilteredState(context, state);
+          return ReceiptBrowseEmptyFilteredState(state: state);
         }
 
-        return _buildMainContent(context, state);
+        return ReceiptBrowseContent(state: state);
       },
-    );
-  }
-
-  Widget _buildMainContent(BuildContext context, ReceiptBrowseState state) {
-    return Stack(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(
-              left: 16.0, right: 16.0, top: 16.0, bottom: 112),
-          child: state.isFiltered
-              ? _buildFilteredItemsList(context, state)
-              : _buildReceiptsList(context, state),
-        ),
-        _buildBottomPanel(context, state),
-        _buildSpeedDialMenu(context, state),
-      ],
-    );
-  }
-
-  Widget _buildBottomPanel(BuildContext context, ReceiptBrowseState state) {
-    final locale = Localizations.localeOf(context).toString();
-    final currencyFormatter = CurrencyTextFormatter(locale: locale);
-
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: 6,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(50),
-                  blurRadius: 8,
-                  spreadRadius: 2,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: 112,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha(50),
-              border: Border(
-                top: BorderSide(
-                  color: Theme.of(context).colorScheme.outline.withAlpha(50),
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 80, right: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (state.isFiltered) ...[
-                    Text(
-                      'Total Amount', // TODO: Add to localization
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.7),
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      currencyFormatter
-                          .formatCurrency(state.filteredTotalAmount),
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${state.filteredItems.length} items found',
-                      // TODO: Add to localization
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.5),
-                          ),
-                    ),
-                  ] else ...[
-                    Text(
-                      'Showing all receipts', // TODO: Add to localization
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${state.totalCount} receipts',
-                      // TODO: Add to localization
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.5),
-                          ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSpeedDialMenu(BuildContext context, ReceiptBrowseState state) {
-    return Positioned(
-      right: 24,
-      bottom: 24,
-      child: AnimatedSquareButton.square(
-        isProcessing: false,
-        onPressed: () async {
-          print('DEBUG: Filter button pressed');
-
-          final filterParams = await ReceiptFilteringScreen.show(
-            context,
-            initialParams: state.filterParams,
-          );
-
-          print('DEBUG: Received params: $filterParams');
-
-          if (filterParams != null && context.mounted) {
-            print(
-                'DEBUG: Has active filters: ${filterParams.hasActiveFilters}');
-            print('DEBUG: Categories: ${filterParams.categories}');
-            print(
-                'DEBUG: Date range: ${filterParams.startDate} to ${filterParams.endDate}');
-
-            if (filterParams.hasActiveFilters) {
-              context.read<ReceiptBrowseBloc>().add(
-                    ReceiptBrowseEvent.applyFilters(filterParams),
-                  );
-            } else {
-              context.read<ReceiptBrowseBloc>().add(
-                    const ReceiptBrowseEvent.clearFilters(),
-                  );
-            }
-          }
-        },
-        borderColor: state.isFiltered ? Colors.white : Colors.white,
-        backgroundColor: state.isFiltered ? Colors.white : Colors.black,
-        icon: SvgPicture.asset(
-          'packages/presentation/assets/icon_search.svg',
-          width: 40,
-          height: 40,
-          colorFilter: state.isFiltered
-              ? const ColorFilter.mode(Colors.black, BlendMode.srcIn)
-              : null,
-        ),
-        size: 64,
-        iconSize: 40,
-      ),
-    );
-  }
-
-  Widget _buildFilteredItemsList(
-      BuildContext context, ReceiptBrowseState state) {
-    return RefreshIndicator(
-      onRefresh: () => context.read<ReceiptBrowseBloc>().refresh(),
-      child: ListView.builder(
-        itemCount: state.filteredItems.length,
-        itemBuilder: (context, index) {
-          final item = state.filteredItems[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
-            child: FilteredReceiptItemWidget(item: item),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildReceiptsList(BuildContext context, ReceiptBrowseState state) {
-    return RefreshIndicator(
-      onRefresh: () => context.read<ReceiptBrowseBloc>().refresh(),
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification scrollInfo) {
-          if (scrollInfo.metrics.pixels >=
-                  scrollInfo.metrics.maxScrollExtent * 0.8 &&
-              !state.isLoadingMore &&
-              state.hasMoreReceipts) {
-            context
-                .read<ReceiptBrowseBloc>()
-                .add(const ReceiptBrowseEvent.loadMore());
-          }
-          return false;
-        },
-        child: ListView.builder(
-          itemCount: state.receipts.length + (state.isLoadingMore ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index == state.receipts.length) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-
-            final receipt = state.receipts[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: ReceiptHeaderWidget(
-                receipt: receipt,
-                onTap: () => _navigateToReceiptDetail(context, receipt),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  void _navigateToReceiptDetail(BuildContext context, Receipt receipt) {
-    ReceiptDetailScreen.show(context, receipt);
-  }
-
-  Widget _buildEmptyFilteredState(
-      BuildContext context, ReceiptBrowseState state) {
-    return Stack(
-      children: [
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.filter_list_off,
-                size: 64,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No items match your filters', // TODO: Add to localization
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Try adjusting your filters', // TODO: Add to localization
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                    ),
-              ),
-              const SizedBox(height: 24),
-              AnimatedSquareButton(
-                isProcessing: false,
-                onPressed: () {
-                  context.read<ReceiptBrowseBloc>().add(
-                        const ReceiptBrowseEvent.clearFilters(),
-                      );
-                },
-                width: 124.0,
-                height: 52.0,
-                iconSize: 20.0,
-                borderColor: Colors.white,
-                backgroundColor: Colors.black,
-                icon: Text(
-                  'Clear Filters', // TODO: Add to localization
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-        _buildBottomPanel(context, state),
-        _buildSpeedDialMenu(context, state),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context, ReceiptBrowseState state) {
-    return Stack(
-      children: [
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                'packages/presentation/assets/icon_scan.svg',
-                width: 64,
-                height: 64,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                AppLocalizations.of(context).appBarBrowseReceiptsTitle,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                AppLocalizations.of(context).noReceiptsFound,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                    ),
-              ),
-              const SizedBox(height: 24),
-              AnimatedSquareButton(
-                isProcessing: false,
-                onPressed: () {
-                  context.read<ReceiptBrowseBloc>().add(
-                        const ReceiptBrowseEvent.refresh(),
-                      );
-                },
-                width: 124.0,
-                height: 52.0,
-                iconSize: 20.0,
-                borderColor: Colors.white,
-                backgroundColor: Colors.black,
-                icon: Text(
-                  AppLocalizations.of(context).refresh,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-        _buildBottomPanel(context, state),
-        _buildSpeedDialMenu(context, state),
-      ],
     );
   }
 }

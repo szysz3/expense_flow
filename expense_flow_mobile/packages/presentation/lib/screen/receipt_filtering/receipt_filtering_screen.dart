@@ -14,7 +14,6 @@ import '../receipt_filtering/widget/receipt_filtering_action_buttons.dart';
 import '../receipt_filtering/widget/receipt_filtering_categories_section.dart';
 import '../receipt_filtering/widget/receipt_filtering_date_range_section.dart';
 import '../receipt_filtering/widget/receipt_filtering_modal_header.dart';
-import '../receipt_filtering/widget/receipt_filtering_search_section.dart';
 
 class ReceiptFilteringScreen extends StatelessWidget {
   final ReceiptFilterParams? initialParams;
@@ -114,8 +113,9 @@ class ReceiptFilteringScreen extends StatelessWidget {
           const ReceiptFilteringCategoriesSection(),
           const SizedBox(height: 24),
           const ReceiptFilteringDateRangeSection(),
-          const SizedBox(height: 24),
-          const ReceiptFilteringSearchSection(),
+          // TODO: Add search section, FTS not implemented yet
+          // const SizedBox(height: 24),
+          // const ReceiptFilteringSearchSection(),
           SizedBox(
             height: MediaQuery.of(context).viewInsets.bottom > 0 ? 200 : 0,
           ),
