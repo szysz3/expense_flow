@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ExpenseFlowColors {
   static const darkPrimary = Color(0xFFBD93F9);
   static const darkOnPrimary = Color(0xFF282A36);
-  static const darkSecondary = Color(0xFF50FA7B);
+  static const darkSecondary = Color(0xFF42D361);
   static const darkOnSecondary = Color(0xFF282A36);
   static const darkAccent = Color(0xFFFF79C6);
   static const darkBackground = Color(0xFF282A36);
