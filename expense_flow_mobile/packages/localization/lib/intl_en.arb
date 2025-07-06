@@ -571,5 +571,69 @@
   "clearFiltersLabel": "Clear Filters",
   "@clearFiltersLabel": {
     "description": "Button text to clear applied filters"
+  },
+  "filterReceiptsTitle": "Filter Receipts",
+  "@filterReceiptsTitle": {
+    "description": "Title for the receipt filtering screen"
+  },
+  "dateRangeLabel": "Date Range",
+  "@dateRangeLabel": {
+    "description": "Label for date range filtering section"
+  },
+  "fromDateLabel": "From",
+  "@fromDateLabel": {
+    "description": "Label for start date field"
+  },
+  "selectStartDateHint": "Select start date",
+  "@selectStartDateHint": {
+    "description": "Hint text for start date selection"
+  },
+  "toDateLabel": "To",
+  "@toDateLabel": {
+    "description": "Label for end date field"
+  },
+  "selectEndDateHint": "Select end date",
+  "@selectEndDateHint": {
+    "description": "Hint text for end date selection"
+  },
+  "thisMonthOption": "This Month",
+  "@thisMonthOption": {
+    "description": "Quick date range option for current month"
+  },
+  "lastMonthOption": "Last Month",
+  "@lastMonthOption": {
+    "description": "Quick date range option for previous month"
+  },
+  "last3MonthsOption": "Last 3 Months",
+  "@last3MonthsOption": {
+    "description": "Quick date range option for last 3 months"
+  },
+  "last6MonthsOption": "Last 6 Months",
+  "@last6MonthsOption": {
+    "description": "Quick date range option for last 6 months"
+  },
+  "categoriesFilterLabel": "Categories",
+  "@categoriesFilterLabel": {
+    "description": "Label for categories filtering section"
+  },
+  "clearAllFiltersButton": "Clear All",
+  "@clearAllFiltersButton": {
+    "description": "Button text to clear all applied filters"
+  },
+  "applyFiltersButton": "Apply Filters",
+  "@applyFiltersButton": {
+    "description": "Button text to apply selected filters"
+  },
+  "searchLabel": "Search",
+  "@searchLabel": {
+    "description": "Label for search filtering section"
+  },
+  "searchReceiptsHint": "Search receipts",
+  "@searchReceiptsHint": {
+    "description": "Hint text for search field"
+  },
+  "searchDescriptionHint": "Enter description or store name",
+  "@searchDescriptionHint": {
+    "description": "Detailed hint text for search field"
   }
 }

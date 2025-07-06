@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:localization/app_localizations.dart';
 
 import '../bloc/receipt_filtering_bloc.dart';
 import '../bloc/receipt_filtering_event.dart';
@@ -11,11 +12,13 @@ class ReceiptFilteringDateRangeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Date Range', // TODO: Add to localization
+          l10n.dateRangeLabel,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -36,10 +39,8 @@ class ReceiptFilteringDateRangeSection extends StatelessWidget {
                     children: [
                       Expanded(
                         child: DateField(
-                          label: 'From',
-                          // TODO: Add to localization
-                          hint: 'Select start date',
-                          // TODO: Add to localization
+                          label: l10n.fromDateLabel,
+                          hint: l10n.selectStartDateHint,
                           selectedDate: state.filterParams.startDate,
                           onTap: () => _selectDate(context,
                               isStartDate: true,
@@ -49,8 +50,8 @@ class ReceiptFilteringDateRangeSection extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: DateField(
-                          label: 'To', // TODO: Add to localization
-                          hint: 'Select end date', // TODO: Add to localization
+                          label: l10n.toDateLabel,
+                          hint: l10n.selectEndDateHint,
                           selectedDate: state.filterParams.endDate,
                           onTap: () => _selectDate(context,
                               isStartDate: false,
@@ -195,15 +196,13 @@ class QuickDateOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     final quickOptions = [
-      (QuickDateRangeType.thisMonth, 'This Month'),
-      // TODO: Add to localization
-      (QuickDateRangeType.lastMonth, 'Last Month'),
-      // TODO: Add to localization
-      (QuickDateRangeType.last3Months, 'Last 3 Months'),
-      // TODO: Add to localization
-      (QuickDateRangeType.last6Months, 'Last 6 Months'),
-      // TODO: Add to localization
+      (QuickDateRangeType.thisMonth, l10n.thisMonthOption),
+      (QuickDateRangeType.lastMonth, l10n.lastMonthOption),
+      (QuickDateRangeType.last3Months, l10n.last3MonthsOption),
+      (QuickDateRangeType.last6Months, l10n.last6MonthsOption),
     ];
 
     return Align(

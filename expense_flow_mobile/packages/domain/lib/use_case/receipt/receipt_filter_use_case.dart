@@ -28,14 +28,12 @@ class ReceiptFilterUseCase
           final filteredItems = <FilteredReceiptItem>[];
 
           for (final receipt in response.receipts) {
-            // Apply date filter on receipt level
             if (params.startDate != null &&
                 receipt.transactionDateTime.isBefore(params.startDate!)) {
               continue;
             }
 
             if (params.endDate != null) {
-              // Include the entire end date by checking if receipt is after end of end date
               final endOfEndDate = params.endDate!.add(const Duration(days: 1));
               if (receipt.transactionDateTime.isAfter(endOfEndDate) ||
                   receipt.transactionDateTime.isAtSameMomentAs(endOfEndDate)) {
@@ -43,16 +41,14 @@ class ReceiptFilterUseCase
               }
             }
 
-            // Filter items within the receipt
             for (final item in receipt.items) {
-              // Apply category filter
               if (params.categories.isNotEmpty &&
                   (item.category == null ||
                       !params.categories.contains(item.category))) {
                 continue;
               }
 
-              // Skip search filter for now as requested
+              // TODO: skip search filter for now as requested
 
               filteredItems.add(FilteredReceiptItem(
                 item: item,

@@ -1,12 +1,9 @@
 import 'package:domain/model/receipt_filter_params.dart';
-import 'package:domain/repository/receipt_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:localization/localization_service.dart';
-import 'package:logger/logger.dart';
+import 'package:localization/app_localizations.dart';
 
 import '../../core/error/error_utils.dart';
-import '../../di/di.dart';
 import '../receipt_filtering/bloc/receipt_filtering_bloc.dart';
 import '../receipt_filtering/bloc/receipt_filtering_event.dart';
 import '../receipt_filtering/bloc/receipt_filtering_state.dart';
@@ -40,11 +37,8 @@ class ReceiptFilteringScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-      create: (_) => ReceiptFilteringBloc(
-            getIt<ReceiptRepository>(),
-            getIt<Logger>(),
-            getIt<LocalizationService>(),
-          )..add(ReceiptFilteringEvent.init(initialParams: initialParams)),
+      create: (_) => ReceiptFilteringBloc()
+        ..add(ReceiptFilteringEvent.init(initialParams: initialParams)),
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Container(
@@ -81,13 +75,15 @@ class ReceiptFilteringScreen extends StatelessWidget {
         }
       },
       builder: (context, state) {
+        final l10n = AppLocalizations.of(context);
+
         return SizedBox(
           width: double.infinity,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Filter Receipts', // TODO: Add to localization
+                l10n.filterReceiptsTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 24),

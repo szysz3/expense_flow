@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/app_localizations.dart';
 
 import '../bloc/receipt_filtering_bloc.dart';
 import '../bloc/receipt_filtering_event.dart';
@@ -9,6 +10,8 @@ class ReceiptFilteringActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
       padding: const EdgeInsets.only(top: 16, bottom: 8),
@@ -31,7 +34,7 @@ class ReceiptFilteringActionButtons extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: Text(
-                'Clear All', // TODO: Add to localization
+                l10n.clearAllFiltersButton,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.9),
                 ),
@@ -55,9 +58,9 @@ class ReceiptFilteringActionButtons extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text(
-                'Apply Filters', // TODO: Add to localization
-                style: TextStyle(
+              child: Text(
+                l10n.applyFiltersButton,
+                style: const TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.w600,
                 ),

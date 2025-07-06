@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:localization/app_localizations.dart';
 
 class ReceiptFilteringSearchSection extends StatelessWidget {
   const ReceiptFilteringSearchSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Search', // TODO: Add to localization
+          l10n.searchLabel,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -26,6 +29,8 @@ class SearchTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -39,10 +44,8 @@ class SearchTextField extends StatelessWidget {
           FocusScope.of(context).unfocus();
         },
         decoration: InputDecoration(
-          labelText: 'Search receipts',
-          // TODO: Add to localization
-          hintText: 'Enter description or store name',
-          // TODO: Add to localization
+          labelText: l10n.searchReceiptsHint,
+          hintText: l10n.searchDescriptionHint,
           border: InputBorder.none,
           prefixIcon: Icon(
             Icons.search,

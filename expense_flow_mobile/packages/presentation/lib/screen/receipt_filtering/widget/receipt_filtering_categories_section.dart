@@ -1,6 +1,7 @@
 import 'package:domain/model/category.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localization/app_localizations.dart';
 import 'package:presentation/core/utils/category_utils.dart';
 
 import '../bloc/receipt_filtering_bloc.dart';
@@ -12,11 +13,13 @@ class ReceiptFilteringCategoriesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Categories', // TODO: Add to localization
+          l10n.categoriesFilterLabel,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),

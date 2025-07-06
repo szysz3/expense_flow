@@ -1,25 +1,14 @@
 import 'dart:async';
 
 import 'package:domain/model/receipt_filter_params.dart';
-import 'package:domain/repository/receipt_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:localization/localization_service.dart';
-import 'package:logger/logger.dart';
 
 import 'receipt_filtering_event.dart';
 import 'receipt_filtering_state.dart';
 
 class ReceiptFilteringBloc
     extends Bloc<ReceiptFilteringEvent, ReceiptFilteringState> {
-  final ReceiptRepository _repository;
-  final Logger _logger;
-  final LocalizationService _localizationService;
-
-  ReceiptFilteringBloc(
-    this._repository,
-    this._logger,
-    this._localizationService,
-  ) : super(const ReceiptFilteringState()) {
+  ReceiptFilteringBloc() : super(const ReceiptFilteringState()) {
     on<InitEvent>(_onInit);
     on<RefreshEvent>(_onRefresh);
     on<ToggleCategoryEvent>(_onToggleCategory);
@@ -37,7 +26,6 @@ class ReceiptFilteringBloc
   ) async {
     emit(state.copyWith(
       filterParams: event.initialParams ?? const ReceiptFilterParams(),
-      // Set selectedQuickRange based on initial params if applicable
       selectedQuickRange: _getQuickRangeFromDates(
         event.initialParams?.startDate,
         event.initialParams?.endDate,
@@ -74,8 +62,7 @@ class ReceiptFilteringBloc
   ) {
     emit(state.copyWith(
       filterParams: state.filterParams.copyWith(startDate: event.date),
-      selectedQuickRange:
-          null, // Clear quick range when custom date is selected
+      selectedQuickRange: null,
     ));
   }
 
@@ -85,8 +72,7 @@ class ReceiptFilteringBloc
   ) {
     emit(state.copyWith(
       filterParams: state.filterParams.copyWith(endDate: event.date),
-      selectedQuickRange:
-          null, // Clear quick range when custom date is selected
+      selectedQuickRange: null,
     ));
   }
 
@@ -160,7 +146,6 @@ class ReceiptFilteringBloc
 
     final now = DateTime.now();
 
-    // Check for "This Month"
     if (startDate.year == now.year &&
         startDate.month == now.month &&
         startDate.day == 1 &&
@@ -168,7 +153,6 @@ class ReceiptFilteringBloc
       return QuickDateRangeType.thisMonth;
     }
 
-    // Add other checks as needed
     return null;
   }
 
