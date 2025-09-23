@@ -148,6 +148,14 @@ class ReceiptHeaderWidget extends StatelessWidget {
     );
 
     if (receipt.merchant.name.isEmpty) {
+      if (receipt.items.isNotEmpty) {
+        return Text(
+          receipt.items.first.description,
+          style: textStyle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        );
+      }
       return Text(
         label,
         style: textStyle,
