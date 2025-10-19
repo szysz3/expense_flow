@@ -127,18 +127,6 @@ class UnprocessedReceiptRepositoryImpl implements UnprocessedReceiptRepository {
   }
 
   @override
-  Future<Either<Failure, UnprocessedReceipt>> getUnprocessedReceipt(
-      String id) async {
-    return _executeRequest(
-      () async {
-        final response = await _dio.get('/api/temp-receipts/$id');
-        return UnprocessedReceipt.fromJson(response.data);
-      },
-      context: 'getUnprocessedReceipt: $id',
-    );
-  }
-
-  @override
   Future<Either<Failure, UnprocessedReceiptsResponse>>
       getUnprocessedReceipts() async {
     return _executeRequest(
