@@ -1,6 +1,6 @@
 # <img src="https://github.com/user-attachments/assets/40f6c7b3-30d2-47df-8229-29fc836bf4e6" width="48" height="48"> expense_flow_backend
 
-Python backend with FastAPI and TinyDB.
+Python backend with FastAPI and SQLite (via SQLAlchemy).
 
 ## Setup
 
@@ -21,7 +21,16 @@ cd expense_flow/expense_flow_backend/scripts/setup
 ```
 docker-compose up -d
 ```
-6. Prepare backup media and run:
+6. Migrate any existing TinyDB data (one time only):
+```
+python -m scripts.migrate_tinydb_to_sqlite \
+  --receipts-tinydb .data/serve/receipts.db \
+  --receipts-sqlite .data/serve/receipts.sqlite3 \
+  --temp-tinydb .data/serve/temp_receipts.db \
+  --temp-sqlite .data/serve/temp_receipts.sqlite3
+```
+
+7. Prepare backup media and run:
 ```
 ./scripts/setup/setup-backup-cron.sh
 ```

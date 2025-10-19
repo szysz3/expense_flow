@@ -1,14 +1,19 @@
+from __future__ import annotations
+
+import asyncio
+import logging
 from typing import List
+
+from expense_flow.api.models import Receipt
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
 from expense_flow.services.vector_store_service import VectorStoreService
-from expense_flow.api.models import Receipt
-import logging
 
 logger = logging.getLogger("expense_flow")
 
+
 class DatabaseSyncService:
-    """Service for keeping TinyDB and vector database in sync"""
-    
+    """Service for keeping SQLite and vector database in sync."""
+
     def __init__(self, vector_store_service: VectorStoreService, receipt_repository: ReceiptRepository):
         """
         Initialize database sync service
@@ -19,32 +24,32 @@ class DatabaseSyncService:
         """
         self.vector_store = vector_store_service
         self.repository = receipt_repository
-    
-    def populate_vector_store(self):
-        """Populate vector store from TinyDB data"""
-        receipts = self.repository.get_all_receipts()
-        
+
+    async def populate_vector_store_async(self):
+        """Populate vector store from SQLite data."""
+        receipts = await self.repository.get_all_receipts()
+
         total_items = 0
         unique_items = set() 
-        
+
         for receipt in receipts:
             for item in receipt.items:
                 if not item.description.strip():
                     continue
-                    
+
                 item_data = {
                     "description": item.description,
                     "category": item.category.value,
                     "receipt_id": receipt.id
                 }
-                
+
                 self.vector_store.add_item_embedding(item_data)
                 total_items += 1
                 unique_items.add(item.description)
-                
+
         logger.info(f"Populated vector store with {total_items} items ({len(unique_items)} unique) from {len(receipts)} receipts")
-    
-    def sync_receipt_items(self, receipt: Receipt):
+
+    async def sync_receipt_items_async(self, receipt: Receipt):
         """
         Sync a receipt's items to the vector store
         
@@ -54,18 +59,18 @@ class DatabaseSyncService:
         for item in receipt.items:
             if not item.description.strip():
                 continue
-                
+
             item_data = {
                 "description": item.description,
                 "category": item.category.value,
                 "receipt_id": receipt.id
             }
-            
+
             self.vector_store.add_item_embedding(item_data)
-            
+
         logger.info(f"Synced receipt {receipt.id} items to vector store")
-    
-    def remove_receipt_items(self, receipt_id: str):
+
+    async def remove_receipt_items_async(self, receipt_id: str):
         """
         Remove all items for a specific receipt from the vector store
         
@@ -77,3 +82,16 @@ class DatabaseSyncService:
             logger.info(f"Removed items for receipt {receipt_id} from vector store")
         except Exception as e:
             logger.error(f"Error removing items for receipt {receipt_id}: {str(e)}")
+
+    # ------------------------------------------------------------------
+    # Backwards compatible helpers
+    # ------------------------------------------------------------------
+    def populate_vector_store(self):
+        """Sync helper for existing scripts."""
+        asyncio.run(self.populate_vector_store_async())
+
+    def sync_receipt_items(self, receipt: Receipt):
+        asyncio.run(self.sync_receipt_items_async(receipt))
+
+    def remove_receipt_items(self, receipt_id: str):
+        asyncio.run(self.remove_receipt_items_async(receipt_id))

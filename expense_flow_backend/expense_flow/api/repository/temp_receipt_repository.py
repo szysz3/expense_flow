@@ -1,202 +1,104 @@
-from typing import List, Optional, Dict, Any
-from datetime import datetime
-import uuid
-from fastapi.encoders import jsonable_encoder
-from tinydb import Query
+from __future__ import annotations
 
-from expense_flow.config import Config
+import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import delete, select, update
+
 from expense_flow.api.models import ReceiptStatus, TempReceipt
+from expense_flow.db.models import TempReceiptORM
 
 from .base_repository import BaseRepository, handle_db_errors
 
+
 class TempReceiptRepository(BaseRepository):
-    """
-    Repository for managing temporary receipts during processing
-    
-    Provides functionality for:
-    - Storing receipt data before processing
-    - Tracking receipt processing status
-    - Managing the lifecycle of temporary receipts
-    """
-    
-    def __init__(self, config: Config):
-        """
-        Initialize temporary receipt repository
-        
-        Args:
-            config: Application configuration
-        """
-        if not config.temp_db_path:
-            raise ValueError("Temporary database path not configured. "
-                             "Please set DATABASE_TEMP_DB_PATH in your .env file.")
-            
-        super().__init__(config.temp_db_path)
-        self.TEMP_RECEIPT_DATETIME_FIELDS = ['created_at']
+    """Repository for managing temporary receipts during background processing."""
+
+    def _map_temp_receipt(self, model: TempReceiptORM) -> TempReceipt:
+        return TempReceipt(
+            id=model.id,
+            raw_data=model.raw_data,
+            status=ReceiptStatus(model.status),
+            created_at=model.created_at,
+            error_message=model.error_message,
+        )
 
     @handle_db_errors
-    def insert_temp_receipt(self, receipt_data: Dict[str, Any]) -> str:
-        """
-        Store receipt data and return temp receipt ID
-        
-        Args:
-            receipt_data: Raw receipt data to store
-            
-        Returns:
-            Generated UUID for the temporary receipt
-        """
-        temp_receipt = TempReceipt(
-            id=str(uuid.uuid4()),
+    async def insert_temp_receipt(self, receipt_data: Dict[str, Any]) -> str:
+        receipt_id = str(uuid.uuid4())
+        model = TempReceiptORM(
+            id=receipt_id,
             raw_data=receipt_data,
-            status=ReceiptStatus.PENDING,
-            created_at=datetime.utcnow()
+            status=ReceiptStatus.PENDING.value,
+            created_at=datetime.utcnow(),
         )
-        
-        # Serialize the receipt for database storage
-        serialized_data = self.serialize(
-            jsonable_encoder(temp_receipt),
-            datetime_fields=self.TEMP_RECEIPT_DATETIME_FIELDS
+        self.session.add(model)
+        await self.session.commit()
+        return receipt_id
+
+    async def _fetch_by_status(self, statuses: List[ReceiptStatus]) -> List[TempReceipt]:
+        stmt = (
+            select(TempReceiptORM)
+            .where(TempReceiptORM.status.in_([status.value for status in statuses]))
+            .order_by(TempReceiptORM.created_at.asc())
         )
-        
-        self.db.insert(serialized_data)
-        return temp_receipt.id
+        result = await self.session.execute(stmt)
+        return [self._map_temp_receipt(model) for model in result.scalars().all()]
 
     @handle_db_errors
-    def _get_receipts_by_status(self, statuses: List[ReceiptStatus]) -> List[TempReceipt]:
-        """
-        Get receipts with specific statuses
-        
-        Args:
-            statuses: List of statuses to filter by
-            
-        Returns:
-            List of TempReceipt objects sorted by creation time
-        """
-        receipt_query = Query()
-        
-        status_queries = [receipt_query.status == status.value for status in statuses]
-        if not status_queries:
-            query = lambda _: True
-        else:
-            query = status_queries[0]
-            for status_query in status_queries[1:]:
-                query = query | status_query
-            
-        results = self.db.search(query)
-        
-        receipts = []
-        for r in results:
-            deserialized = self.deserialize(r, datetime_fields=self.TEMP_RECEIPT_DATETIME_FIELDS)
-            receipts.append(TempReceipt(**deserialized))
-            
-        return sorted(receipts, key=lambda x: x.created_at)
+    async def get_unprocessed_receipts(self) -> List[TempReceipt]:
+        statuses = [ReceiptStatus.PENDING, ReceiptStatus.PROCESSING, ReceiptStatus.ERROR]
+        return await self._fetch_by_status(statuses)
 
     @handle_db_errors
-    def get_unprocessed_receipts(self) -> List[TempReceipt]:
-        """
-        Get all receipts that aren't in COMPLETED status
-        
-        Returns:
-            List of TempReceipt objects that need processing
-        """
-        unprocessed_statuses = [
-            ReceiptStatus.PENDING,
-            ReceiptStatus.PROCESSING,
-            ReceiptStatus.ERROR
-        ]
-        return self._get_receipts_by_status(unprocessed_statuses)
+    async def get_pending_receipts(self) -> List[TempReceipt]:
+        return await self._fetch_by_status([ReceiptStatus.PENDING])
 
     @handle_db_errors
-    def get_pending_receipts(self) -> List[TempReceipt]:
-        """
-        Get receipts in PENDING status only
-        
-        Returns:
-            List of TempReceipt objects in PENDING status
-        """
-        return self._get_receipts_by_status([ReceiptStatus.PENDING])
-    
-    @handle_db_errors
-    def get_temp_receipt(self, receipt_id: str) -> Optional[TempReceipt]:
-        """
-        Retrieve a temporary receipt by ID
-        
-        Args:
-            receipt_id: UUID of the temporary receipt
-            
-        Returns:
-            TempReceipt object if found, None otherwise
-        """
-        receipt_query = Query()
-        result = self.db.get(receipt_query.id == receipt_id)
-        
-        if result:
-            deserialized_result = self.deserialize(result, datetime_fields=self.TEMP_RECEIPT_DATETIME_FIELDS)
-            return TempReceipt(**deserialized_result)
-        return None
+    async def get_temp_receipt(self, receipt_id: str) -> Optional[TempReceipt]:
+        stmt = select(TempReceiptORM).where(TempReceiptORM.id == receipt_id)
+        result = await self.session.execute(stmt)
+        model = result.scalar_one_or_none()
+        if not model:
+            return None
+        return self._map_temp_receipt(model)
 
     @handle_db_errors
-    def update_status(
-        self, 
-        receipt_id: str, 
-        status: ReceiptStatus, 
-        error_message: Optional[str] = None
+    async def update_status(
+        self,
+        receipt_id: str,
+        status: ReceiptStatus,
+        error_message: Optional[str] = None,
     ) -> bool:
-        """
-        Update receipt status and optional error message
-        
-        Args:
-            receipt_id: ID of the receipt to update
-            status: New status to set
-            error_message: Optional error message if status is ERROR
-            
-        Returns:
-            True if receipt was updated, False otherwise
-        """
-        receipt_query = Query()
-        update_data = {"status": status.value}
-        if error_message is not None:
-            update_data["error_message"] = error_message
-            
-        result = self.db.update(update_data, receipt_query.id == receipt_id)
-        return bool(result)
+        stmt = (
+            update(TempReceiptORM)
+            .where(TempReceiptORM.id == receipt_id)
+            .values(status=status.value, error_message=error_message)
+        )
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+        return result.rowcount > 0
 
     @handle_db_errors
-    def delete_receipt(self, receipt_id: str) -> bool:
-        """
-        Remove receipt from temp storage
-        
-        Args:
-            receipt_id: ID of the receipt to delete
-            
-        Returns:
-            True if receipt was deleted, False if not found
-        """
-        receipt_query = Query()
-        result = self.db.remove(receipt_query.id == receipt_id)
-        return len(result) > 0
-        
+    async def delete_receipt(self, receipt_id: str) -> bool:
+        stmt = delete(TempReceiptORM).where(TempReceiptORM.id == receipt_id)
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+        return result.rowcount > 0
+
     @handle_db_errors
-    def update_receipt(self, temp_receipt: TempReceipt) -> bool:
-        """
-        Update an existing temporary receipt
-        
-        Args:
-            temp_receipt: TempReceipt object with updated data
-            
-        Returns:
-            True if receipt was updated, False if receipt was not found
-        """
-        receipt_dict = temp_receipt.dict()
-        
-        serialized_data = self.serialize(
-            receipt_dict,
-            datetime_fields=self.TEMP_RECEIPT_DATETIME_FIELDS
+    async def update_receipt(self, temp_receipt: TempReceipt) -> bool:
+        stmt = (
+            update(TempReceiptORM)
+            .where(TempReceiptORM.id == temp_receipt.id)
+            .values(
+                raw_data=temp_receipt.raw_data,
+                status=temp_receipt.status.value,
+                created_at=temp_receipt.created_at,
+                error_message=temp_receipt.error_message,
+            )
         )
-        
-        receipt_query = Query()
-        result = self.db.update(
-            serialized_data,
-            receipt_query.id == temp_receipt.id
-        )
-        
-        return bool(result)
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+        return result.rowcount > 0

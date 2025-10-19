@@ -1,27 +1,42 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 import json
 from datetime import datetime
 import tempfile
 import os
 from decimal import Decimal
 
-from ..api.app import app, get_repository
-from ..api.models import Receipt, Category, LLMType
+from ..api.app import app, get_repository, get_temp_repository
+from ..api.models import Category, LLMType, Receipt, SearchResult, SearchResultItem
 from ..api.constants import ErrorMessages, FileTypes
 from .mock_data import MOCK_RECEIPTS
 
 pytestmark = pytest.mark.asyncio
 
-def get_test_repository():
-    """Test repository dependency override"""
-    return MagicMock()
 
 @pytest.fixture
-def test_client():
+def repo_mock():
+    mock = AsyncMock()
+    mock.get_receipt = AsyncMock()
+    mock.insert_receipt = AsyncMock()
+    mock.search_receipts = AsyncMock()
+    return mock
+
+
+@pytest.fixture
+def temp_repo_mock():
+    mock = AsyncMock()
+    mock.insert_temp_receipt = AsyncMock(return_value="temp-temp-id")
+    mock.get_unprocessed_receipts = AsyncMock(return_value=[])
+    return mock
+
+
+@pytest.fixture
+def test_client(repo_mock, temp_repo_mock):
     """Test client with overridden dependencies"""
-    app.dependency_overrides[get_repository] = get_test_repository
+    app.dependency_overrides[get_repository] = lambda: repo_mock
+    app.dependency_overrides[get_temp_repository] = lambda: temp_repo_mock
     client = TestClient(app)
     yield client
     app.dependency_overrides = {}
@@ -37,12 +52,12 @@ def api_headers(mock_api_key):
 @pytest.fixture(autouse=True)
 def mock_security():
     """Mock the security verification"""
-    with patch("api.security.verify_api_key", return_value="test_api_key"):
+    with patch("expense_flow.api.security.verify_api_key", return_value="test_api_key"):
         yield
 
 @pytest.fixture(autouse=True)
 def mock_security_config():
-    with patch("api.security.get_security_config") as mock:
+    with patch("expense_flow.api.security.get_security_config") as mock:
         mock.return_value = MagicMock(api_key="test_api_key")
         yield mock
 
@@ -108,18 +123,16 @@ def mock_env_vars():
 @pytest.mark.integration
 async def test_analyze_receipt_success(
     test_client,
-    api_headers
+    api_headers,
+    temp_repo_mock
 ):
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
         temp_file.write(b"fake image data")
         temp_file_path = temp_file.name
 
     try:
-        # Configure mock repository through dependency override
         receipt_data = MOCK_RECEIPTS["smazalnia_receipt"]
-        app.dependency_overrides[get_repository] = lambda: MagicMock(
-            insert_receipt=MagicMock(return_value=receipt_data["id"])
-        )
+        temp_repo_mock.insert_temp_receipt.return_value = "temp-id"
         
         with open(temp_file_path, "rb") as f:
             response = test_client.post(
@@ -167,14 +180,12 @@ async def test_analyze_receipt_invalid_file_type(
 @pytest.mark.integration
 async def test_get_receipt_success(
     test_client,
-    api_headers
+    api_headers,
+    repo_mock
 ):
     receipt_data = MOCK_RECEIPTS["rossmann_receipt"]
     
-    # Configure mock repository through dependency override
-    app.dependency_overrides[get_repository] = lambda: MagicMock(
-        get_receipt=MagicMock(return_value=Receipt(**receipt_data))
-    )
+    repo_mock.get_receipt.return_value = Receipt(**receipt_data)
     
     response = test_client.get(
         f"/api/receipts/{receipt_data['id']}",
@@ -189,12 +200,10 @@ async def test_get_receipt_success(
 @pytest.mark.integration
 async def test_get_receipt_not_found(
     test_client,
-    api_headers
+    api_headers,
+    repo_mock
 ):
-    # Configure mock repository through dependency override
-    app.dependency_overrides[get_repository] = lambda: MagicMock(
-        get_receipt=MagicMock(return_value=None)
-    )
+    repo_mock.get_receipt.return_value = None
     
     response = test_client.get(
         "/api/receipts/nonexistent-id",
@@ -208,23 +217,27 @@ async def test_get_receipt_not_found(
 @pytest.mark.integration
 async def test_search_receipts(
     test_client,
-    api_headers
+    api_headers,
+    repo_mock
 ):
     mock_items = []
     total = Decimal("0")
-    
+
     for receipt in MOCK_RECEIPTS.values():
         for item in receipt["items"]:
             if item["category"] == Category.ALCOHOLIC_BEVERAGES.value:
-                mock_items.append(item)
+                mock_items.append(
+                    SearchResultItem(
+                        description=item["description"],
+                        total_price=str(item["total_price"]),
+                        category=item["category"],
+                    )
+                )
                 total += Decimal(item["total_price"])
     
-    # Configure mock repository through dependency override
-    app.dependency_overrides[get_repository] = lambda: MagicMock(
-        search_receipts=MagicMock(return_value={
-            "items": mock_items,
-            "total": str(total)
-        })
+    repo_mock.search_receipts.return_value = SearchResult(
+        items=mock_items,
+        total=str(total)
     )
     
     response = test_client.post(
@@ -294,7 +307,8 @@ async def test_unauthorized_access(test_client):
 @pytest.mark.integration
 async def test_process_receipt_error_handling(
     test_client,
-    api_headers
+    api_headers,
+    temp_repo_mock
 ):
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
         temp_file.write(b"fake image data")
@@ -324,17 +338,12 @@ async def test_process_receipt_error_handling(
 @pytest.mark.integration
 async def test_database_error_handling(
     test_client,
-    api_headers
+    api_headers,
+    repo_mock
 ):
-    # Configure mock repository to raise a DatabaseError
-    from ..api.db import DatabaseError
-    
-    def mock_get_receipt(*args, **kwargs):
-        raise DatabaseError("Database error occurred")
-    
-    app.dependency_overrides[get_repository] = lambda: MagicMock(
-        get_receipt=MagicMock(side_effect=mock_get_receipt)
-    )
+    from expense_flow.api.repository.base_repository import DatabaseError
+
+    repo_mock.get_receipt.side_effect = DatabaseError("get receipt", "Database error occurred")
     
     response = test_client.get(
         "/api/receipts/some-id",

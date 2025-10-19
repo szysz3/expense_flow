@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import sqlite3
 from datetime import datetime
 import sys
 from pathlib import Path
@@ -18,44 +19,68 @@ def parse_args():
                       help='Maximum number of backups to keep (default: 14)')
     return parser.parse_args()
 
+def _backup_sqlite_file(source: Path, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with sqlite3.connect(source) as src_conn:
+        with sqlite3.connect(destination) as dest_conn:
+            src_conn.backup(dest_conn)
+
+
+def _copy_path(source: Path, destination: Path) -> None:
+    if source.is_dir():
+        shutil.copytree(source, destination)
+    else:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+
+
 def create_backup(source_dir, backup_dir, max_backups):
-    """Create a backup of the source directory"""
-    # Ensure source directory exists
-    if not os.path.isdir(source_dir):
+    """Create a consistent backup of the data directory"""
+    source_path = Path(source_dir)
+    if not source_path.is_dir():
         print(f"Error: Source directory not found: {source_dir}")
         return False
-    
-    # Create timestamp for backup folder
+
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_path = os.path.join(backup_dir, timestamp)
-    
+    backup_path = Path(backup_dir) / timestamp
+
     try:
-        # Create backup directory if it doesn't exist
-        Path(backup_dir).mkdir(parents=True, exist_ok=True)
-        
-        # Create directory for this backup
-        Path(backup_path).mkdir(parents=True, exist_ok=True)
-        
-        # Copy entire .data directory
+        backup_path.mkdir(parents=True, exist_ok=True)
         print(f"Starting backup from {source_dir} to {backup_path}")
-        shutil.copytree(source_dir, os.path.join(backup_path, '.data'))
-        
-        # Count and log total size
-        total_size = sum(
-            os.path.getsize(os.path.join(dirpath, filename))
-            for dirpath, _, filenames in os.walk(backup_path)
-            for filename in filenames
-        )
+
+        for root, _, files in os.walk(source_path):
+            root_path = Path(root)
+            relative_root = root_path.relative_to(source_path)
+            destination_root = backup_path / relative_root
+            destination_root.mkdir(parents=True, exist_ok=True)
+
+            for filename in files:
+                source_item = root_path / filename
+                destination = destination_root / filename
+
+                if source_item.name.endswith((".sqlite3", ".sqlite")):
+                    print(f"Backing up SQLite database {source_item} -> {destination}")
+                    _backup_sqlite_file(source_item, destination)
+                elif source_item.name.endswith((
+                    ".sqlite3-wal",
+                    ".sqlite3-shm",
+                    ".sqlite-wal",
+                    ".sqlite-shm",
+                )):
+                    # WAL/SHM sidecars copied verbatim for completeness
+                    _copy_path(source_item, destination)
+                else:
+                    _copy_path(source_item, destination)
+
+        total_size = sum(f.stat().st_size for f in backup_path.rglob("*"))
         print(f"Backup completed: {total_size / (1024 * 1024):.2f} MB")
-        
-        # Clean up old backups
+
         cleanup_old_backups(backup_dir, max_backups)
         return True
-        
+
     except Exception as e:
         print(f"Backup failed: {str(e)}")
-        # Try to remove failed backup
-        if os.path.exists(backup_path):
+        if backup_path.exists():
             try:
                 shutil.rmtree(backup_path)
             except Exception as cleanup_err:

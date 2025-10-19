@@ -21,6 +21,7 @@ from expense_flow.api.repository.receipt_repository import ReceiptRepository
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
 from expense_flow.services.vector_store_service import VectorStoreService
 from expense_flow.utils.retry import retry_async
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import (
     CategoryResponse, CreateReceiptRequest, CreateReceiptResponse, DailyExpense, LLMType, Merchant, MerchantResponse, MonthSummaryResponse, ProcessReceiptRequest, ProcessReceiptResponse, ErrorDetail,
@@ -33,6 +34,7 @@ from expense_flow.document_processor.azure_processor import AzureDocumentProcess
 from expense_flow.document_processor.image_processor import ImagePreprocessor
 from expense_flow.analyzers.local_llm_analyzer import LocalLLMAnalyzer
 from expense_flow.analyzers.chatgpt_analyzer import ChatGPTAnalyzer
+from expense_flow.db import get_async_session, init_db, session_scope
 
 setup_logging()
 logger = logging.getLogger("expense_flow")
@@ -43,25 +45,26 @@ class ProcessingError(Exception):
         self.retry_count = retry_count
         super().__init__(message)
 
-def get_repository():
-    """
-    Get receipt repository instance
-    
-    Returns:
-        ReceiptRepository instance
-    """
-    config = get_config()
-    return ReceiptRepository(db_path=config.db_path)
+async def get_db_session():
+    """FastAPI dependency yielding a session for the primary database."""
+    async for session in get_async_session():
+        yield session
 
-def get_temp_repository() -> TempReceiptRepository:
-    """
-    Get temporary receipt repository instance
-    
-    Returns:
-        TempReceiptRepository instance
-    """
+
+async def get_temp_db_session():
+    """FastAPI dependency yielding a session for the temporary receipts database."""
     config = get_config()
-    return TempReceiptRepository(config=config)
+    async for session in get_async_session(config.temp_db_path):
+        yield session
+
+async def get_repository(session: AsyncSession = Depends(get_db_session)) -> ReceiptRepository:
+    """FastAPI dependency yielding the receipt repository."""
+    return ReceiptRepository(session)
+
+
+async def get_temp_repository(session: AsyncSession = Depends(get_temp_db_session)) -> TempReceiptRepository:
+    """FastAPI dependency yielding the temporary receipt repository."""
+    return TempReceiptRepository(session)
 
 def get_analyzer(llm_type: LLMType):
     """
@@ -132,6 +135,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def on_startup():
+    """Initialise SQLite databases."""
+    config = get_config()
+    await init_db(config.db_path)
+    if config.temp_db_path != config.db_path:
+        await init_db(config.temp_db_path)
 
 async def process_receipt_with_retries(
     file_path: str,
@@ -234,7 +245,7 @@ async def analyze_receipt(
             receipt_data = doc_processor.preprocess_receipt(raw_data)
             
             # Store in temp database
-            temp_receipt_id = temp_repository.insert_temp_receipt(receipt_data)
+            temp_receipt_id = await temp_repository.insert_temp_receipt(receipt_data)
             
             return TempReceipt(
                 id=temp_receipt_id,
@@ -261,19 +272,13 @@ async def analyze_receipt(
 async def register_analyzer(
     background_tasks: BackgroundTasks,
     api_key: str = Depends(verify_api_key),
-    temp_repository: TempReceiptRepository = Depends(get_temp_repository),
-    receipt_repository: ReceiptRepository = Depends(get_repository)
 ):
     """
     Endpoint for Ollama PC to register its availability.
     Triggers processing of pending receipts.
     """
     # Start processing pending receipts in background
-    background_tasks.add_task(
-        process_pending_receipts,
-        temp_repository,
-        receipt_repository
-    )
+    background_tasks.add_task(process_pending_receipts)
     return {"status": "registered"}
 
 # Add endpoint to get unprocessed receipts
@@ -283,66 +288,70 @@ async def get_unprocessed_receipts(
     temp_repository: TempReceiptRepository = Depends(get_temp_repository)
 ):
     """Get all receipts that haven't been fully processed yet"""
-    unprocessed = temp_repository.get_unprocessed_receipts()
+    unprocessed = await temp_repository.get_unprocessed_receipts()
     return UnprocessedReceiptsResponse(
         receipts=unprocessed,
         total_count=len(unprocessed)
     )
 
 # Add background processing function
-async def process_pending_receipts(
-    temp_repository: TempReceiptRepository,
-    receipt_repository: ReceiptRepository
-):
+async def process_pending_receipts():
     """Process pending and failed receipts when Ollama is available"""
     config = get_config()
-    unprocessed_receipts = temp_repository.get_unprocessed_receipts()    
+    async with session_scope(config.temp_db_path) as temp_session:
+        temp_repository = TempReceiptRepository(temp_session)
+        unprocessed_receipts = await temp_repository.get_unprocessed_receipts()
 
-    for temp_receipt in unprocessed_receipts:
-        try:
-            if temp_receipt.status == ReceiptStatus.PROCESSING:
-                continue
-
-            # Update status to processing
-            temp_repository.update_status(
-                temp_receipt.id, 
-                ReceiptStatus.PROCESSING
-            )
-            
-            # First try with Local LLM (Ollama)
+        for temp_receipt in unprocessed_receipts:
             try:
-                logger.info(f"Processing receipt {temp_receipt.id} with LocalLLMAnalyzer")
-                analyzer = LocalLLMAnalyzer(config)
-                result = await analyzer.analyze(temp_receipt.raw_data)
-                logger.info(f"Successfully processed receipt {temp_receipt.id} with LocalLLMAnalyzer")
-            except Exception as local_llm_error:
-                # If Local LLM fails, fall back to ChatGPT
-                logger.warning(f"LocalLLMAnalyzer failed for receipt {temp_receipt.id}: {str(local_llm_error)}")
-                logger.info(f"Falling back to ChatGPTAnalyzer for receipt {temp_receipt.id}")
-                
+                if temp_receipt.status == ReceiptStatus.PROCESSING:
+                    continue
+
+                # Update status to processing
+                await temp_repository.update_status(
+                    temp_receipt.id,
+                    ReceiptStatus.PROCESSING
+                )
+
+                # First try with Local LLM (Ollama)
                 try:
-                    analyzer = ChatGPTAnalyzer(config)
+                    logger.info(f"Processing receipt {temp_receipt.id} with LocalLLMAnalyzer")
+                    analyzer = LocalLLMAnalyzer(config)
                     result = await analyzer.analyze(temp_receipt.raw_data)
-                    logger.info(f"Successfully processed receipt {temp_receipt.id} with ChatGPTAnalyzer fallback")
-                except Exception as chatgpt_error:
-                    # If both analyzers fail, raise the ChatGPT error
-                    logger.error(f"ChatGPTAnalyzer fallback failed for receipt {temp_receipt.id}: {str(chatgpt_error)}")
-                    raise Exception(f"Both LocalLLM and ChatGPT analyzers failed. LocalLLM error: {str(local_llm_error)}. ChatGPT error: {str(chatgpt_error)}")
-            
-            # Store final receipt
-            receipt = Receipt(**result)
-            receipt_id = receipt_repository.insert_receipt(receipt)
-            
-            # Remove from temp storage
-            temp_repository.delete_receipt(temp_receipt.id)
-            
-        except Exception as e:
-            logger.error(f"Error processing receipt {temp_receipt.id}: {str(e)}")
-            temp_repository.update_status(
-                temp_receipt.id,
-                ReceiptStatus.ERROR,
-                str(e)
-            )
+                    logger.info(f"Successfully processed receipt {temp_receipt.id} with LocalLLMAnalyzer")
+                except Exception as local_llm_error:
+                    # If Local LLM fails, fall back to ChatGPT
+                    logger.warning(f"LocalLLMAnalyzer failed for receipt {temp_receipt.id}: {str(local_llm_error)}")
+                    logger.info(f"Falling back to ChatGPTAnalyzer for receipt {temp_receipt.id}")
+
+                    try:
+                        analyzer = ChatGPTAnalyzer(config)
+                        result = await analyzer.analyze(temp_receipt.raw_data)
+                        logger.info(f"Successfully processed receipt {temp_receipt.id} with ChatGPTAnalyzer fallback")
+                    except Exception as chatgpt_error:
+                        # If both analyzers fail, raise the ChatGPT error
+                        logger.error(f"ChatGPTAnalyzer fallback failed for receipt {temp_receipt.id}: {str(chatgpt_error)}")
+                        raise Exception(
+                            f"Both LocalLLM and ChatGPT analyzers failed. "
+                            f"LocalLLM error: {str(local_llm_error)}. ChatGPT error: {str(chatgpt_error)}"
+                        )
+
+                # Store final receipt
+                receipt = Receipt(**result)
+                async with session_scope(config.db_path) as receipt_session:
+                    receipt_repository = ReceiptRepository(receipt_session)
+                    await receipt_repository.insert_receipt(receipt)
+
+                # Remove from temp storage
+                await temp_repository.delete_receipt(temp_receipt.id)
+
+            except Exception as e:
+                logger.error(f"Error processing receipt {temp_receipt.id}: {str(e)}")
+                await temp_repository.update_status(
+                    temp_receipt.id,
+                    ReceiptStatus.ERROR,
+                    str(e)
+                )
 
 @app.get(
     "/api/receipts/{receipt_id}",
@@ -359,7 +368,7 @@ async def get_receipt(
 ):
     """Retrieve a specific receipt by ID"""
     try:            
-        receipt = repository.get_receipt(receipt_id)
+        receipt = await repository.get_receipt(receipt_id)
         if not receipt:
             raise HTTPException(
                 status_code=404,
@@ -428,7 +437,7 @@ async def search_receipts(
 ):
     """Search receipts with various filters"""
     try:
-        receipts = repository.search_receipts(
+        receipts = await repository.search_receipts(
             merchant_name=query.merchant_name,
             start_date=query.start_date,
             end_date=query.end_date,
@@ -459,7 +468,7 @@ async def get_categories(
 ):
     """Get all categories with their actual items and spending from receipts"""
     try:
-        return repository.get_categories_with_items()
+        return await repository.get_categories_with_items()
         
     except DatabaseError as e:
         raise HTTPException(
@@ -483,7 +492,7 @@ async def get_months_summary(
 ):
     """Get spending summaries by month using actual receipt data"""
     try:
-        return repository.get_monthly_summaries()
+        return await repository.get_monthly_summaries()
         
     except DatabaseError as e:
         raise HTTPException(
@@ -522,7 +531,7 @@ async def create_receipt(
             added_datetime=datetime.utcnow()
         )
         
-        receipt_id = repository.insert_receipt(receipt)
+        receipt_id = await repository.insert_receipt(receipt)
         
         # Create response using response models
         receipt_response = ReceiptResponse(
@@ -572,7 +581,7 @@ async def get_daily_expenses(
 ):
     """Get daily expenses for a specific month"""
     try:
-        results = repository.get_daily_expenses(year, month)
+        results = await repository.get_daily_expenses(year, month)
         return results
     except DatabaseError as e:
         raise HTTPException(
@@ -598,8 +607,8 @@ async def get_receipts(
 ):
     """Get paginated receipts"""
     try:
-        receipts = repository.get_receipts(page, page_size)
-        total_count = repository.get_receipt_count()
+        receipts = await repository.get_receipts(page, page_size)
+        total_count = await repository.get_receipt_count()
         
         return {
             "receipts": receipts,
@@ -633,7 +642,7 @@ async def delete_receipt(
 ):
     """Delete a receipt by ID"""
     try:
-        receipt = repository.get_receipt(receipt_id)
+        receipt = await repository.get_receipt(receipt_id)
         if not receipt:
             raise HTTPException(
                 status_code=404,
@@ -643,7 +652,7 @@ async def delete_receipt(
                 }
             )
             
-        success = repository.delete_receipt(receipt_id)
+        success = await repository.delete_receipt(receipt_id)
         
         if not success:
             raise HTTPException(
@@ -694,7 +703,7 @@ async def update_receipt(
 ):
     """Update a receipt by ID"""
     try:
-        existing_receipt = repository.get_receipt(receipt_id)
+        existing_receipt = await repository.get_receipt(receipt_id)
         if not existing_receipt:
             raise HTTPException(
                 status_code=404,
@@ -708,7 +717,7 @@ async def update_receipt(
         if hasattr(existing_receipt, 'added_datetime'):
             receipt.added_datetime = existing_receipt.added_datetime
             
-        success = repository.update_receipt(receipt)
+        success = await repository.update_receipt(receipt)
         
         if not success:
             raise HTTPException(
@@ -755,7 +764,7 @@ async def delete_temp_receipt(
 ):
     """Delete a temporary receipt by ID"""
     try:
-        temp_receipt = temp_repository.get_temp_receipt(receipt_id)
+        temp_receipt = await temp_repository.get_temp_receipt(receipt_id)
         if not temp_receipt:
             raise HTTPException(
                 status_code=404,
@@ -765,7 +774,7 @@ async def delete_temp_receipt(
                 }
             )
             
-        success = temp_repository.delete_receipt(receipt_id)
+        success = await temp_repository.delete_receipt(receipt_id)
         
         if not success:
             raise HTTPException(
@@ -816,7 +825,7 @@ async def update_temp_receipt(
 ):
     """Update a temporary receipt by ID"""
     try:
-        existing_receipt = temp_repository.get_temp_receipt(receipt_id)
+        existing_receipt = await temp_repository.get_temp_receipt(receipt_id)
         if not existing_receipt:
             raise HTTPException(
                 status_code=404,
@@ -831,7 +840,7 @@ async def update_temp_receipt(
         if hasattr(existing_receipt, 'created_at'):
             temp_receipt.created_at = existing_receipt.created_at
             
-        success = temp_repository.update_receipt(temp_receipt)
+        success = await temp_repository.update_receipt(temp_receipt)
         
         if not success:
             raise HTTPException(
@@ -940,26 +949,3 @@ async def chat_endpoint(
             await websocket.send_json({"error": str(e)})
         except:
             pass
-
-@app.on_event("startup")
-async def startup_event():
-    """Ensure databases exist on startup"""
-    config = get_config()
-    
-    for db_path in [config.db_path, config.temp_db_path]:
-        if not db_path:
-            continue
-            
-        db_dir = os.path.dirname(db_path)
-        if db_dir:
-            logger.info(f"Ensuring database directory exists at: {db_dir}")
-            os.makedirs(db_dir, exist_ok=True)
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up database connections on shutdown"""
-    logger.info("Closing database connections")
-    receipt_repository = get_repository()
-    temp_repository = get_temp_repository()
-    receipt_repository.close()
-    temp_repository.close()

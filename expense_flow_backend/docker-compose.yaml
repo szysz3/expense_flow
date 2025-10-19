@@ -7,7 +7,7 @@ services:
       - "8000:8000"
     volumes:
       - ./.data:/app/.data
-      - /mnt/sdcard:/mnt/sdcard
+      # - /mnt/sdcard:/mnt/sdcard  # Temporarily disabled
     env_file:
       - ./.env
     environment:

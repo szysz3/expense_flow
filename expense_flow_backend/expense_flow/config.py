@@ -21,8 +21,8 @@ class Config:
     retry_delay: float = 1.0
     
     # Database paths
-    db_path: str = field(default_factory=lambda: str(Path(".data/serve/receipts.db")))
-    temp_db_path: str = field(default_factory=lambda: str(Path(".data/serve/temp_receipts.db")))
+    db_path: str = field(default_factory=lambda: str(Path(".data/serve/receipts.sqlite3")))
+    temp_db_path: str = field(default_factory=lambda: str(Path(".data/serve/temp_receipts.sqlite3")))
     
     # Azure Document Intelligence settings
     azure_endpoint: str = ""
