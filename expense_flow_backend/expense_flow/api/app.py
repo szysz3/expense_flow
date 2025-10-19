@@ -296,62 +296,82 @@ async def get_unprocessed_receipts(
 
 # Add background processing function
 async def process_pending_receipts():
-    """Process pending and failed receipts when Ollama is available"""
+    """Process pending and failed receipts when Ollama is available."""
     config = get_config()
-    async with session_scope(config.temp_db_path) as temp_session:
-        temp_repository = TempReceiptRepository(temp_session)
-        unprocessed_receipts = await temp_repository.get_unprocessed_receipts()
 
-        for temp_receipt in unprocessed_receipts:
+    async def fetch_unprocessed() -> List[TempReceipt]:
+        async with session_scope(config.temp_db_path) as session:
+            repository = TempReceiptRepository(session)
+            return await repository.get_unprocessed_receipts()
+
+    async def update_temp_status(receipt_id: str, status: ReceiptStatus, error: Optional[str] = None) -> bool:
+        async with session_scope(config.temp_db_path) as session:
+            repository = TempReceiptRepository(session)
+            return await repository.update_status(receipt_id, status, error)
+
+    async def delete_temp_receipt(receipt_id: str) -> bool:
+        async with session_scope(config.temp_db_path) as session:
+            repository = TempReceiptRepository(session)
+            return await repository.delete_receipt(receipt_id)
+
+    async def store_receipt(receipt: Receipt) -> None:
+        async with session_scope(config.db_path) as session:
+            repository = ReceiptRepository(session)
+            await repository.insert_receipt(receipt)
+
+    try:
+        unprocessed_receipts = await fetch_unprocessed()
+    except Exception as exc:  # noqa: BLE001
+        logger.error(f"Failed to fetch unprocessed receipts: {exc}", exc_info=True)
+        return
+
+    for temp_receipt in unprocessed_receipts:
+        if temp_receipt.status == ReceiptStatus.PROCESSING:
+            continue
+
+        status_updated = await update_temp_status(temp_receipt.id, ReceiptStatus.PROCESSING)
+        if not status_updated:
+            logger.info(
+                "Skipping temporary receipt %s because status update failed (likely processed elsewhere)",
+                temp_receipt.id,
+            )
+            continue
+
+        try:
             try:
-                if temp_receipt.status == ReceiptStatus.PROCESSING:
-                    continue
-
-                # Update status to processing
-                await temp_repository.update_status(
+                logger.info("Processing receipt %s with LocalLLMAnalyzer", temp_receipt.id)
+                result = await LocalLLMAnalyzer(config).analyze(temp_receipt.raw_data)
+                logger.info("Successfully processed receipt %s with LocalLLMAnalyzer", temp_receipt.id)
+            except Exception as local_llm_error:
+                logger.warning(
+                    "LocalLLMAnalyzer failed for receipt %s: %s. Falling back to ChatGPTAnalyzer.",
                     temp_receipt.id,
-                    ReceiptStatus.PROCESSING
+                    local_llm_error,
                 )
-
-                # First try with Local LLM (Ollama)
                 try:
-                    logger.info(f"Processing receipt {temp_receipt.id} with LocalLLMAnalyzer")
-                    analyzer = LocalLLMAnalyzer(config)
-                    result = await analyzer.analyze(temp_receipt.raw_data)
-                    logger.info(f"Successfully processed receipt {temp_receipt.id} with LocalLLMAnalyzer")
-                except Exception as local_llm_error:
-                    # If Local LLM fails, fall back to ChatGPT
-                    logger.warning(f"LocalLLMAnalyzer failed for receipt {temp_receipt.id}: {str(local_llm_error)}")
-                    logger.info(f"Falling back to ChatGPTAnalyzer for receipt {temp_receipt.id}")
+                    result = await ChatGPTAnalyzer(config).analyze(temp_receipt.raw_data)
+                    logger.info("Successfully processed receipt %s with ChatGPTAnalyzer fallback", temp_receipt.id)
+                except Exception as chatgpt_error:
+                    logger.error(
+                        "ChatGPTAnalyzer fallback failed for receipt %s: %s",
+                        temp_receipt.id,
+                        chatgpt_error,
+                    )
+                    raise Exception(
+                        "Both LocalLLM and ChatGPT analyzers failed. "
+                        f"LocalLLM error: {local_llm_error}. ChatGPT error: {chatgpt_error}"
+                    ) from chatgpt_error
 
-                    try:
-                        analyzer = ChatGPTAnalyzer(config)
-                        result = await analyzer.analyze(temp_receipt.raw_data)
-                        logger.info(f"Successfully processed receipt {temp_receipt.id} with ChatGPTAnalyzer fallback")
-                    except Exception as chatgpt_error:
-                        # If both analyzers fail, raise the ChatGPT error
-                        logger.error(f"ChatGPTAnalyzer fallback failed for receipt {temp_receipt.id}: {str(chatgpt_error)}")
-                        raise Exception(
-                            f"Both LocalLLM and ChatGPT analyzers failed. "
-                            f"LocalLLM error: {str(local_llm_error)}. ChatGPT error: {str(chatgpt_error)}"
-                        )
+            receipt = Receipt(**result)
+            await store_receipt(receipt)
+            deleted = await delete_temp_receipt(temp_receipt.id)
+            if not deleted:
+                logger.warning("Processed receipt %s but failed to delete temp copy", temp_receipt.id)
+                await update_temp_status(temp_receipt.id, ReceiptStatus.COMPLETED)
 
-                # Store final receipt
-                receipt = Receipt(**result)
-                async with session_scope(config.db_path) as receipt_session:
-                    receipt_repository = ReceiptRepository(receipt_session)
-                    await receipt_repository.insert_receipt(receipt)
-
-                # Remove from temp storage
-                await temp_repository.delete_receipt(temp_receipt.id)
-
-            except Exception as e:
-                logger.error(f"Error processing receipt {temp_receipt.id}: {str(e)}")
-                await temp_repository.update_status(
-                    temp_receipt.id,
-                    ReceiptStatus.ERROR,
-                    str(e)
-                )
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Error processing receipt %s: %s", temp_receipt.id, exc, exc_info=True)
+            await update_temp_status(temp_receipt.id, ReceiptStatus.ERROR, str(exc))
 
 @app.get(
     "/api/receipts/{receipt_id}",
