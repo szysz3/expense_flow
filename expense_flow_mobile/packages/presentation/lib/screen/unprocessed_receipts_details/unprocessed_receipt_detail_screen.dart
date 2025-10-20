@@ -81,13 +81,17 @@ class UnprocessedReceiptDetailScreen extends StatelessWidget {
             builder: (context, detailState) {
               final l10n = AppLocalizations.of(context);
 
+              final currentReceipt = editState.receipt ?? receipt;
+              final isProcessing = currentReceipt.status == UnprocessedReceiptStatus.processing;
+
               return BaseReceiptDetailScreen(
                 content: UnprocessedReceiptDetailsContent(
-                  receipt: editState.receipt ?? receipt,
+                  receipt: currentReceipt,
                   isEditMode: editState.isEditMode,
                 ),
                 actionButtons: ReceiptDetailsActionButtons(
                   isEditMode: editState.isEditMode,
+                  isDisabled: isProcessing,
                   deleteConfirmMessage:
                       l10n.deleteUnprocessedReceiptConfirmMessage,
                   onCancel: () =>

@@ -12,6 +12,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onSave;
   final String deleteConfirmMessage;
+  final bool isDisabled;
 
   const ReceiptDetailsActionButtons({
     super.key,
@@ -21,6 +22,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
     required this.onEdit,
     required this.onSave,
     required this.deleteConfirmMessage,
+    this.isDisabled = false,
   });
 
   @override
@@ -43,7 +45,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
 
   Widget _buildCancelButton(BuildContext context) {
     return AnimatedSquareButton(
-      isProcessing: false,
+      isProcessing: isDisabled,
       onPressed: onCancel,
       width: 36.0,
       height: 36.0,
@@ -61,7 +63,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
 
   Widget _buildDeleteButton(BuildContext context) {
     return AnimatedSquareButton(
-      isProcessing: false,
+      isProcessing: isDisabled,
       onPressed: () => _showDeleteConfirmation(context),
       width: 36.0,
       height: 36.0,
@@ -79,7 +81,7 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
 
   Widget _buildEditButton(BuildContext context) {
     return AnimatedSquareButton(
-      isProcessing: false,
+      isProcessing: isDisabled,
       onPressed: isEditMode ? onSave : onEdit,
       width: 36.0,
       height: 36.0,
