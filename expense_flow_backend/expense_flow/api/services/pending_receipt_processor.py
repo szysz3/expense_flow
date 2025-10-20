@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import List, Optional
 
@@ -14,6 +15,10 @@ from expense_flow.config import get_config
 from expense_flow.db import session_scope
 
 logger = logging.getLogger("expense_flow")
+
+
+_processing_task: asyncio.Task | None = None
+_reschedule_requested: bool = False
 
 
 class PendingReceiptProcessor:
@@ -120,3 +125,49 @@ class PendingReceiptProcessor:
 async def process_pending_receipts() -> None:
     """Convenience wrapper for background-task usage."""
     await PendingReceiptProcessor().run()
+
+
+def schedule_pending_receipt_processing() -> None:
+    """
+    Schedule background processing of pending receipts.
+
+    If a run is in-flight, record that another pass is required so newly added
+    receipts are processed immediately after the current cycle completes.
+    """
+    global _processing_task, _reschedule_requested
+
+    if _processing_task and not _processing_task.done():
+        _reschedule_requested = True
+        logger.debug("Pending receipt processor running; marked for follow-up run.")
+        return
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:  # pragma: no cover - fallback for sync contexts
+        loop = asyncio.get_event_loop()
+
+    _reschedule_requested = False
+
+    async def _runner() -> None:
+        try:
+            await process_pending_receipts()
+        except Exception:  # noqa: BLE001 - surfaced via callback
+            logger.exception("Pending receipt processor task failed.")
+            raise
+
+    _processing_task = loop.create_task(_runner())
+
+    def _cleanup(task: asyncio.Task) -> None:
+        global _processing_task, _reschedule_requested
+        try:
+            task.result()
+        except Exception:  # noqa: BLE001 - already logged in _runner
+            pass
+        finally:
+            _processing_task = None
+            if _reschedule_requested:
+                logger.debug("Scheduling follow-up pending receipt processing run.")
+                _reschedule_requested = False
+                schedule_pending_receipt_processing()
+
+    _processing_task.add_done_callback(_cleanup)

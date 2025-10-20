@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 
 from expense_flow.api.constants import ErrorMessages
@@ -14,7 +13,9 @@ from expense_flow.api.models import ReceiptStatus, TempReceipt
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
 from expense_flow.api.routes.responses import OperationResponse
 from expense_flow.api.security import verify_api_key
-from expense_flow.api.services.pending_receipt_processor import process_pending_receipts
+from expense_flow.api.services.pending_receipt_processor import (
+    schedule_pending_receipt_processing,
+)
 from expense_flow.api.services.receipt_ingestion_service import (
     AzureConfigurationError,
     ReceiptIngestionService,
@@ -58,6 +59,7 @@ async def analyze_receipt(
         ) from exc
 
     temp_receipt_id = await temp_repository.insert_temp_receipt(receipt_data)
+    schedule_pending_receipt_processing()
     return TempReceipt(
         id=temp_receipt_id,
         raw_data=receipt_data,
@@ -67,13 +69,12 @@ async def analyze_receipt(
 
 @router.post("/api/analyzer/register", response_model=OperationResponse)
 async def register_analyzer(
-    background_tasks: BackgroundTasks,
     _: str = Depends(verify_api_key),
 ) -> OperationResponse:
     """
     Notify the backend that an analyzer worker is available.
 
-    The background task will attempt to process any queued receipts.
+    Scheduling is idempotent; if processing is already running it will be left in place.
     """
-    background_tasks.add_task(process_pending_receipts)
+    schedule_pending_receipt_processing()
     return OperationResponse(status="registered")

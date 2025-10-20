@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Dict, Any, List
+import asyncio
 import json
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
@@ -92,7 +93,12 @@ class LLMService:
                     f"[cyan]Analyzing with {provider.name}..."
                 )
                 
-                response_text = provider.generate(prompt, json.dumps(data, indent=2))
+                payload = json.dumps(data, indent=2)
+                response_text = await asyncio.to_thread(
+                    provider.generate,
+                    prompt,
+                    payload,
+                )
                 
                 try:
                     if isinstance(response_text, str):
