@@ -50,13 +50,16 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
       width: 36.0,
       height: 36.0,
       iconSize: 18.0,
-      borderColor: Colors.grey,
-      backgroundColor: Colors.grey.withValues(alpha: 0.3),
+      borderColor: isDisabled ? Colors.grey.withValues(alpha: 0.3) : Colors.grey,
+      backgroundColor: Colors.grey.withValues(alpha: isDisabled ? 0.1 : 0.3),
       icon: SvgPicture.asset(
         'packages/presentation/assets/icon_close.svg',
         height: 18,
         width: 18,
-        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(
+          isDisabled ? Colors.grey.withValues(alpha: 0.5) : Colors.white,
+          BlendMode.srcIn,
+        ),
       ),
     );
   }
@@ -68,37 +71,48 @@ class ReceiptDetailsActionButtons extends StatelessWidget {
       width: 36.0,
       height: 36.0,
       iconSize: 18.0,
-      borderColor: ExpenseFlowColors.chartRed,
-      backgroundColor: Colors.red.withValues(alpha: 0.3),
+      borderColor: isDisabled ? Colors.grey.withValues(alpha: 0.3) : ExpenseFlowColors.chartRed,
+      backgroundColor: isDisabled ? Colors.grey.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.3),
       icon: SvgPicture.asset(
         'packages/presentation/assets/icon_delete.svg',
         height: 18,
         width: 18,
-        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(
+          isDisabled ? Colors.grey.withValues(alpha: 0.5) : Colors.white,
+          BlendMode.srcIn,
+        ),
       ),
     );
   }
 
   Widget _buildEditButton(BuildContext context) {
+    final Color activeBorderColor = isEditMode
+        ? ExpenseFlowColors.chartMutedGreen
+        : Theme.of(context).colorScheme.primary;
+    final Color activeBackgroundColor = isEditMode
+        ? ExpenseFlowColors.chartMutedGreen
+        : Theme.of(context).colorScheme.primary;
+
     return AnimatedSquareButton(
       isProcessing: isDisabled,
       onPressed: isEditMode ? onSave : onEdit,
       width: 36.0,
       height: 36.0,
       iconSize: 18.0,
-      borderColor: isEditMode
-          ? ExpenseFlowColors.chartMutedGreen
-          : Theme.of(context).colorScheme.primary,
-      backgroundColor: isEditMode
-          ? ExpenseFlowColors.chartMutedGreen.withValues(alpha: 0.3)
-          : Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+      borderColor: isDisabled ? Colors.grey.withValues(alpha: 0.3) : activeBorderColor,
+      backgroundColor: isDisabled
+          ? Colors.grey.withValues(alpha: 0.1)
+          : activeBackgroundColor.withValues(alpha: 0.3),
       icon: SvgPicture.asset(
         isEditMode
             ? 'packages/presentation/assets/icon_tick.svg'
             : 'packages/presentation/assets/icon_edit.svg',
         height: 18,
         width: 18,
-        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(
+          isDisabled ? Colors.grey.withValues(alpha: 0.5) : Colors.white,
+          BlendMode.srcIn,
+        ),
       ),
     );
   }
