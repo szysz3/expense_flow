@@ -6,6 +6,8 @@ import asyncio
 import logging
 from typing import List, Optional
 
+from ollama import Client
+
 from expense_flow.analyzers.chatgpt_analyzer import ChatGPTAnalyzer
 from expense_flow.analyzers.local_llm_analyzer import LocalLLMAnalyzer
 from expense_flow.api.models import Receipt, ReceiptStatus, TempReceipt
@@ -21,6 +23,13 @@ _processing_task: asyncio.Task | None = None
 _reschedule_requested: bool = False
 
 
+class OllamaUnavailableError(Exception):
+    """Raised when the Ollama host cannot be reached."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+
+
 class PendingReceiptProcessor:
     """Coordinates moving temporary receipts through LLM analysis and storage."""
 
@@ -34,6 +43,15 @@ class PendingReceiptProcessor:
         except Exception as exc:  # noqa: BLE001
             logger.error("Failed to fetch unprocessed receipts: %s", exc, exc_info=True)
             return
+
+        if receipts:
+            ollama_available = await self._is_ollama_available()
+            if not ollama_available:
+                logger.info(
+                    "Ollama host unavailable; keeping %s temporary receipts pending.",
+                    len(receipts),
+                )
+                return
 
         for temp_receipt in receipts:
             if temp_receipt.status == ReceiptStatus.PROCESSING:
@@ -62,6 +80,14 @@ class PendingReceiptProcessor:
                     await self._update_status(
                         temp_receipt.id, ReceiptStatus.COMPLETED
                     )
+            except OllamaUnavailableError as exc:
+                logger.info(
+                    "Deferring receipt %s because Ollama host is unavailable: %s",
+                    temp_receipt.id,
+                    exc,
+                )
+                await self._update_status(temp_receipt.id, ReceiptStatus.PENDING)
+                return
             except Exception as exc:  # noqa: BLE001
                 logger.error(
                     "Error processing receipt %s: %s",
@@ -82,6 +108,8 @@ class PendingReceiptProcessor:
                 temp_receipt.raw_data
             )
         except Exception as local_error:
+            if not await self._is_ollama_available(log_if_unavailable=False):
+                raise OllamaUnavailableError("Ollama host unavailable") from local_error
             logger.warning(
                 "LocalLLMAnalyzer failed for receipt %s: %s. Falling back to "
                 "ChatGPTAnalyzer.",
@@ -103,6 +131,32 @@ class PendingReceiptProcessor:
         async with session_scope(self.config.temp_db_path) as session:
             repository = TempReceiptRepository(session)
             return await repository.get_unprocessed_receipts()
+
+    async def _is_ollama_available(self, *, log_if_unavailable: bool = True) -> bool:
+        """Check whether the configured Ollama host is reachable."""
+        host = getattr(self.config, "ollama_host", None)
+        if not host:
+            if log_if_unavailable:
+                logger.warning(
+                    "LLM_OLLAMA_HOST is not configured; skipping local LLM analysis."
+                )
+            return False
+
+        def _probe_host() -> tuple[bool, Optional[str]]:
+            try:
+                Client(host=host).list()
+                return True, None
+            except Exception as exc:  # noqa: BLE001
+                return False, str(exc)
+
+        available, error = await asyncio.to_thread(_probe_host)
+        if not available and log_if_unavailable:
+            logger.warning(
+                "Unable to connect to Ollama host %s: %s. Local analysis deferred.",
+                host,
+                error,
+            )
+        return available
 
     async def _update_status(
         self, receipt_id: str, status: ReceiptStatus, error: Optional[str] = None
