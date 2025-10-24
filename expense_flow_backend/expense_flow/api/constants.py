@@ -9,6 +9,7 @@ class ErrorMessages:
     NOT_FOUND = "Not found"
     VALIDATION_ERROR = "Validation Error"
     INVALID_API_KEY = "Invalid or missing API Key"
+    DEVICE_NOT_REGISTERED = "Device not registered"
 
 class LogMessages:
     RECEIPT_PROCESSING_START = "Starting receipt processing with LLM type: {}"

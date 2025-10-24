@@ -39,6 +39,11 @@ class Config:
     vector_db_path: Path = field(default_factory=lambda: Path(".data/vector_db"))
     embedding_model: str = "all-MiniLM-L6-v2"
 
+    # Firebase Cloud Messaging
+    firebase_credentials_path: Optional[str] = None
+    firebase_credentials_json: Optional[str] = None
+    firebase_app_name: str = "expense_flow_fcm"
+
     @classmethod
     def from_env(cls, env_file: Optional[str] = None) -> 'Config':
         """
@@ -82,6 +87,11 @@ class Config:
             # Vector DB section
             'VECTOR_DB_PATH': ('vector_db_path', str),
             'VECTOR_DB_EMBEDDING_MODEL': ('embedding_model', str),
+
+            # Firebase section
+            'FIREBASE_CREDENTIALS_PATH': ('firebase_credentials_path', str),
+            'FIREBASE_CREDENTIALS_JSON': ('firebase_credentials_json', str),
+            'FIREBASE_APP_NAME': ('firebase_app_name', str),
         }
         
         for env_var, (attr_name, type_func) in mappings.items():
@@ -92,6 +102,8 @@ class Config:
             config.db_path = os.path.expanduser(config.db_path)
         if config.temp_db_path and '~' in config.temp_db_path:
             config.temp_db_path = os.path.expanduser(config.temp_db_path) 
+        if config.firebase_credentials_path and '~' in config.firebase_credentials_path:
+            config.firebase_credentials_path = os.path.expanduser(config.firebase_credentials_path)
             
         return config
 

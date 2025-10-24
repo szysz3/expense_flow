@@ -19,6 +19,7 @@ from expense_flow.db import init_db
 from .routes import (
     autocomplete,
     chat,
+    notifications,
     receipt_workflows,
     receipts,
     temp_receipts,
@@ -46,6 +47,7 @@ app.include_router(temp_receipts.router)
 app.include_router(receipts.router)
 app.include_router(autocomplete.router)
 app.include_router(chat.router)
+app.include_router(notifications.router)
 
 
 @app.on_event("startup")

@@ -11,10 +11,14 @@ from ollama import Client
 from expense_flow.analyzers.chatgpt_analyzer import ChatGPTAnalyzer
 from expense_flow.analyzers.local_llm_analyzer import LocalLLMAnalyzer
 from expense_flow.api.models import Receipt, ReceiptStatus, TempReceipt
+from expense_flow.api.repository.notification_device_repository import (
+    NotificationDeviceRepository,
+)
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
 from expense_flow.config import get_config
 from expense_flow.db import session_scope
+from expense_flow.services.notification_service import NotificationService
 
 logger = logging.getLogger("expense_flow")
 
@@ -173,7 +177,37 @@ class PendingReceiptProcessor:
     async def _store_receipt(self, receipt: Receipt) -> None:
         async with session_scope(self.config.db_path) as session:
             repository = ReceiptRepository(session)
-            await repository.insert_receipt(receipt)
+            receipt_id = await repository.insert_receipt(receipt)
+
+        stored_receipt = receipt.copy(update={"id": receipt_id})
+        await self._notify_receipt_processed(stored_receipt)
+
+    async def _notify_receipt_processed(self, receipt: Receipt) -> None:
+        """Send push notifications after a successful processing cycle."""
+        if not receipt.id:
+            return
+
+        merchant_name = receipt.merchant.name if receipt.merchant else None
+        total_as_str = None
+        if receipt.total is not None:
+            total_as_str = format(receipt.total, "f")
+
+        try:
+            async with session_scope(self.config.db_path) as session:
+                repository = NotificationDeviceRepository(session)
+                service = NotificationService(config=self.config, repository=repository)
+                await service.send_receipt_processed_notification(
+                    receipt_id=receipt.id,
+                    merchant_name=merchant_name,
+                    total=total_as_str,
+                )
+        except Exception as exc:  # noqa: BLE001
+            logger.error(
+                "Failed to dispatch notification for receipt %s: %s",
+                receipt.id,
+                exc,
+                exc_info=True,
+            )
 
 
 async def process_pending_receipts() -> None:

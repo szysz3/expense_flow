@@ -34,3 +34,26 @@ python -m scripts.migrate_tinydb_to_sqlite \
 ```
 ./scripts/setup/setup-backup-cron.sh
 ```
+
+## Firebase Cloud Messaging
+
+Enable push notifications by supplying Firebase service account credentials via either the `FIREBASE_CREDENTIALS_PATH` (path to a JSON file) or `FIREBASE_CREDENTIALS_JSON` (raw JSON payload) environment variables. Once configured, mobile clients can manage their registration tokens using:
+
+- `POST /api/notifications/devices` – register a device (`token`, `platform`=`ios|android`)
+- `DELETE /api/notifications/devices` – unregister a device (`token`)
+
+Completed receipt processing runs automatically trigger notifications to all registered devices.
+
+## End-to-end verification
+
+After installing the project dependencies (particularly `uvicorn`), you can exercise the HTTP API against the seeded `.data/serve` SQLite database. The script uses real `curl` calls to cover every REST endpoint (create/update/delete receipts, analytics summaries, autocomplete, temp receipt flows, etc.) and compares the responses with the live SQLite contents:
+
+```
+python3 scripts/tests/run_receipts_e2e.py
+```
+
+If you already have the API running, reuse it instead of launching a new server:
+
+```
+python3 scripts/tests/run_receipts_e2e.py --reuse-server --api-key <your-api-key>
+```

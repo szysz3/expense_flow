@@ -87,3 +87,36 @@ class TempReceiptORM(Base):
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
+class NotificationDeviceORM(Base):
+    """Registered mobile client eligible for push notifications."""
+
+    __tablename__ = "notification_devices"
+    __table_args__ = (
+        Index("ix_notification_devices_platform", "platform"),
+    )
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    token: Mapped[str] = mapped_column(String(512), unique=True, nullable=False)
+    platform: Mapped[str] = mapped_column(String(16), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False),
+        nullable=False,
+        default=datetime.utcnow,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False),
+        nullable=False,
+        default=datetime.utcnow,
+    )
+
+
+@event.listens_for(NotificationDeviceORM, "before_update", propagate=True)
+def _set_notification_device_updated_at(  # pragma: no cover - SQLAlchemy hook
+    mapper,
+    connection,
+    target,
+) -> None:
+    """Ensure `updated_at` reflects the latest modification timestamp."""
+    target.updated_at = datetime.utcnow()

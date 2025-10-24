@@ -10,11 +10,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from expense_flow.analyzers.chatgpt_analyzer import ChatGPTAnalyzer
 from expense_flow.analyzers.local_llm_analyzer import LocalLLMAnalyzer
 from expense_flow.api.models import LLMType
+from expense_flow.api.repository.notification_device_repository import (
+    NotificationDeviceRepository,
+)
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
 from expense_flow.config import get_config
 from expense_flow.db import get_async_session
 from expense_flow.services.chat_service import ChatService
+from expense_flow.services.notification_service import NotificationService
 from expense_flow.services.vector_store_service import VectorStoreService
 
 
@@ -36,6 +40,13 @@ async def get_receipt_repository(
 ) -> ReceiptRepository:
     """Provide a receipt repository instance."""
     return ReceiptRepository(session)
+
+
+async def get_notification_device_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> NotificationDeviceRepository:
+    """Provide a repository for managing push notification registrations."""
+    return NotificationDeviceRepository(session)
 
 
 async def get_temp_receipt_repository(
@@ -74,3 +85,12 @@ def get_analyzer_factory() -> Callable[[LLMType], LocalLLMAnalyzer | ChatGPTAnal
         return analyzer_class(config)
 
     return factory
+
+
+def get_notification_service(
+    repository: NotificationDeviceRepository = Depends(
+        get_notification_device_repository
+    ),
+) -> NotificationService:
+    """Create a notification service bound to current configuration."""
+    return NotificationService(config=get_config(), repository=repository)

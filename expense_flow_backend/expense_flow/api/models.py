@@ -32,6 +32,17 @@ class Merchant(BaseModel):
     class Config:
         json_schema_extra = {"example": {"name": "", "address": ""}}
 
+class DevicePlatform(str, Enum):
+    IOS = "ios"
+    ANDROID = "android"
+
+class RegisterDeviceRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=512)
+    platform: DevicePlatform
+
+class UnregisterDeviceRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=512)
+
 class ReceiptItem(BaseModel):
     description: str
     quantity: float
