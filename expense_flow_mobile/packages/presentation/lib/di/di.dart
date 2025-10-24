@@ -1,12 +1,14 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:data/repository/chat/chat_repository_config.dart';
 import 'package:data/repository/chat/chat_repository_impl.dart';
+import 'package:data/repository/notification/notification_repository_impl.dart';
 import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/repository/receipt/receipt_repository_impl.dart';
 import 'package:data/repository/settings_repository_impl.dart';
 import 'package:data/repository/unprocessed_receipt/unprocessed_receipt_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/repository/chat_repository.dart';
+import 'package:domain/repository/notification_repository.dart';
 import 'package:domain/repository/receipt_repository.dart';
 import 'package:domain/repository/settings_repository.dart';
 import 'package:domain/repository/unprocessed_receipt_repository.dart';
@@ -21,6 +23,8 @@ import 'package:domain/use_case/get_autocomplete_suggestions_use_case.dart';
 import 'package:domain/use_case/get_categories_use_case.dart';
 import 'package:domain/use_case/get_daily_expenses_use_case.dart';
 import 'package:domain/use_case/get_months_summary_use_case.dart';
+import 'package:domain/use_case/notification/notification_register_device_use_case.dart';
+import 'package:domain/use_case/notification/notification_unregister_device_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_analyze_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_create_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_delete_use_case.dart';
@@ -32,6 +36,7 @@ import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
 import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
 import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_delete_use_case.dart';
 import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_update_use_case.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:localization/localization_service.dart';
@@ -40,6 +45,8 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/env_config.dart';
+import '../core/service/notification/notification_service.dart';
+import '../core/service/notification/notification_service_impl.dart';
 import './di.config.dart';
 
 final getIt = GetIt.instance;
@@ -66,9 +73,13 @@ Future<void> configureDependencies() async {
     LocalizationService.fromLocaleName("en"),
   );
 
+  getIt.registerLazySingleton(() => FirebaseMessaging.instance);
+
   _registerRepositories();
 
   _registerUseCases();
+
+  _registerServices();
 }
 
 _registerRepositories() {
@@ -108,6 +119,18 @@ _registerRepositories() {
           baseUrl: EnvConfig.baseUrl,
           apiKey: EnvConfig.apiKey,
         )),
+  );
+
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(
+      dio: _getDio(),
+      config: RepositoryConfig(
+        baseUrl: EnvConfig.baseUrl,
+        apiKey: EnvConfig.apiKey,
+      ),
+      errorLogger: getIt<Logger>(),
+      connectivity: getIt<Connectivity>(),
+    ),
   );
 }
 
@@ -197,6 +220,25 @@ _registerUseCases() {
 
   getIt.registerLazySingleton(() =>
       UnprocessedReceiptUpdateUseCase(getIt<UnprocessedReceiptRepository>()));
+
+  getIt.registerLazySingleton(
+    () => NotificationRegisterDeviceUseCase(getIt<NotificationRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => NotificationUnregisterDeviceUseCase(getIt<NotificationRepository>()),
+  );
+}
+
+_registerServices() {
+  getIt.registerLazySingleton<NotificationService>(
+    () => NotificationServiceImpl(
+      messaging: getIt<FirebaseMessaging>(),
+      registerDeviceUseCase: getIt<NotificationRegisterDeviceUseCase>(),
+      unregisterDeviceUseCase: getIt<NotificationUnregisterDeviceUseCase>(),
+      logger: getIt<Logger>(),
+    ),
+  );
 }
 
 Future<void> _loadEnv() async {

@@ -1,10 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:logger/logger.dart';
 import 'package:presentation/config/flavor_config.dart';
+import 'package:presentation/core/service/notification/notification_service.dart';
 import 'package:presentation/di/di.dart';
 import 'package:presentation/screen/main/main_screen.dart';
 import 'package:presentation/theme/expense_flow_theme.dart';
+
+import 'notification_handler.dart';
 
 Future<void> main() async {
   if (FlavorConfig.appFlavor == null) {
@@ -17,7 +23,25 @@ Future<void> main() async {
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
+
   await configureDependencies();
+
+  final logger = getIt<Logger>();
+
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+    final notificationService = getIt<NotificationService>();
+    await notificationService.initialize();
+  } catch (e, stackTrace) {
+    logger.e(
+      'Failed to initialize notifications - app will continue without push notifications',
+      error: e,
+      stackTrace: stackTrace,
+    );
+  }
+
   runApp(const ExpenseFlowApp());
 }
 
