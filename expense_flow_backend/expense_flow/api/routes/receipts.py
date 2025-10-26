@@ -25,6 +25,7 @@ from expense_flow.api.models import (
     ReceiptQuery,
     ReceiptResponse,
     SearchResult,
+    SimpleSuccessResponse,
 )
 from expense_flow.api.repository.base_repository import DatabaseError
 from expense_flow.api.repository.receipt_repository import ReceiptRepository
@@ -249,12 +250,12 @@ async def update_receipt(
         ) from exc
 
 
-@router.delete("/receipts/{receipt_id}", response_model=Dict[str, str])
+@router.delete("/receipts/{receipt_id}", response_model=SimpleSuccessResponse)
 async def delete_receipt(
     receipt_id: str,
     _: str = Depends(verify_api_key),
     repository: ReceiptRepository = Depends(get_receipt_repository),
-) -> Dict[str, str]:
+) -> SimpleSuccessResponse:
     """Delete a receipt by ID."""
     try:
         receipt = await repository.get_receipt(receipt_id)
@@ -277,10 +278,10 @@ async def delete_receipt(
                 },
             )
 
-        return {
-            "success": True,
-            "message": f"Receipt {receipt_id} deleted successfully",
-        }
+        return SimpleSuccessResponse(
+            success=True,
+            message=f"Receipt {receipt_id} deleted successfully",
+        )
     except DatabaseError as error:
         raise _handle_database_error(error) from error
     except Exception as exc:  # noqa: BLE001

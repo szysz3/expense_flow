@@ -79,6 +79,10 @@ class ProcessReceiptResponse(BaseModel):
     receipt_id: str
     receipt: Receipt
     
+class SimpleSuccessResponse(BaseModel):
+    success: bool
+    message: str
+    
 class ReceiptQuery(BaseModel):
     merchant_name: Optional[str] = Field(None, description="Name of the merchant to search for")
     start_date: Optional[datetime] = Field(None, description="Start date for the search range")
