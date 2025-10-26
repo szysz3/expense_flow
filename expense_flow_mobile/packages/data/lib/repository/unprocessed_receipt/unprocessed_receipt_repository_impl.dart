@@ -1,6 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dartz/dartz.dart';
-import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/model/failure/failures.dart';
 import 'package:domain/model/unprocessed_receipt.dart';
@@ -14,32 +13,16 @@ import '../../remote/exception/exceptions.dart';
 
 class UnprocessedReceiptRepositoryImpl implements UnprocessedReceiptRepository {
   final Dio _dio;
-  final RepositoryConfig _config;
-  final Logger _errorLogger;
+  final Logger _logger;
   final Connectivity _connectivity;
 
   UnprocessedReceiptRepositoryImpl({
     required Dio dio,
-    required RepositoryConfig config,
-    required Logger errorLogger,
+    required Logger logger,
     required Connectivity connectivity,
   })  : _dio = dio,
-        _config = config,
-        _errorLogger = errorLogger,
-        _connectivity = connectivity {
-    _configureDio();
-  }
-
-  void _configureDio() {
-    _dio.options
-      ..baseUrl = _config.baseUrl
-      ..headers = {
-        HttpConstants.apiKeyHeader: _config.apiKey,
-        HttpConstants.acceptHeader: HttpConstants.acceptValue,
-      }
-      ..sendTimeout = _config.timeout
-      ..receiveTimeout = _config.timeout;
-  }
+        _logger = logger,
+        _connectivity = connectivity;
 
   Future<Either<Failure, bool>> _checkConnectivity() async {
     try {
@@ -49,7 +32,7 @@ class UnprocessedReceiptRepositoryImpl implements UnprocessedReceiptRepository {
       }
       return const Right(true);
     } catch (e) {
-      _errorLogger.w('Failed to check connectivity', error: e);
+      _logger.w('Failed to check connectivity', error: e);
       return const Right(true);
     }
   }
@@ -68,14 +51,14 @@ class UnprocessedReceiptRepositoryImpl implements UnprocessedReceiptRepository {
       final result = await request();
       return Right(result);
     } on DioException catch (e, stackTrace) {
-      _errorLogger.e(
+      _logger.e(
         'API error in unprocessed receipt repository',
         error: e,
         stackTrace: stackTrace,
       );
       return Left(_handleDioError(e));
     } catch (e, stackTrace) {
-      _errorLogger.e(
+      _logger.e(
         'Exception in unprocessed receipt repository',
         error: e,
         stackTrace: stackTrace,

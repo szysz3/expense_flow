@@ -6,38 +6,20 @@ import 'package:domain/model/failure/failures.dart';
 import 'package:domain/repository/notification_repository.dart';
 import 'package:logger/logger.dart';
 
-import '../../consts/http_constants.dart';
 import '../../remote/api_endpoints.dart';
-import '../receipt/receipt_repository_config.dart';
 
 class NotificationRepositoryImpl implements NotificationRepository {
   final Dio _dio;
-  final RepositoryConfig _config;
-  final Logger _errorLogger;
+  final Logger _logger;
   final Connectivity _connectivity;
 
   NotificationRepositoryImpl({
     required Dio dio,
-    required RepositoryConfig config,
-    required Logger errorLogger,
+    required Logger logger,
     required Connectivity connectivity,
   })  : _dio = dio,
-        _config = config,
-        _errorLogger = errorLogger,
-        _connectivity = connectivity {
-    _configureDio();
-  }
-
-  void _configureDio() {
-    _dio.options
-      ..baseUrl = _config.baseUrl
-      ..headers = {
-        HttpConstants.apiKeyHeader: _config.apiKey,
-        HttpConstants.acceptHeader: HttpConstants.acceptValue,
-      }
-      ..sendTimeout = _config.timeout
-      ..receiveTimeout = _config.timeout;
-  }
+        _logger = logger,
+        _connectivity = connectivity;
 
   Future<Either<Failure, bool>> _checkConnectivity() async {
     try {
@@ -47,7 +29,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
       }
       return const Right(true);
     } catch (e) {
-      _errorLogger.w('Failed to check connectivity', error: e);
+      _logger.w('Failed to check connectivity', error: e);
       return const Right(true);
     }
   }
@@ -72,17 +54,17 @@ class NotificationRepositoryImpl implements NotificationRepository {
         },
       );
 
-      _errorLogger.i('Device registered for notifications: $platform');
+      _logger.i('Device registered for notifications: $platform');
       return const Right(null);
     } on DioException catch (e) {
-      _errorLogger.e(
+      _logger.e(
         'Failed to register device',
         error: e,
         stackTrace: e.stackTrace,
       );
       return Left(_handleDioError(e));
     } catch (e, stackTrace) {
-      _errorLogger.e(
+      _logger.e(
         'Unexpected error registering device',
         error: e,
         stackTrace: stackTrace,
@@ -107,17 +89,17 @@ class NotificationRepositoryImpl implements NotificationRepository {
         },
       );
 
-      _errorLogger.i('Device unregistered from notifications');
+      _logger.i('Device unregistered from notifications');
       return const Right(null);
     } on DioException catch (e) {
-      _errorLogger.e(
+      _logger.e(
         'Failed to unregister device',
         error: e,
         stackTrace: e.stackTrace,
       );
       return Left(_handleDioError(e));
     } catch (e, stackTrace) {
-      _errorLogger.e(
+      _logger.e(
         'Unexpected error unregistering device',
         error: e,
         stackTrace: stackTrace,

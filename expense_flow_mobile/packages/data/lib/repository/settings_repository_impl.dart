@@ -11,13 +11,13 @@ const String _settingsKey = 'expense_flow_settings';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   final SharedPreferences _sharedPreferences;
-  final Logger _errorLogger;
+  final Logger _logger;
 
   SettingsRepositoryImpl({
     required SharedPreferences sharedPreferences,
-    required Logger errorLogger,
+    required Logger logger,
   })  : _sharedPreferences = sharedPreferences,
-        _errorLogger = errorLogger;
+        _logger = logger;
 
   @override
   Future<Either<Failure, Settings>> getSettings() async {
@@ -34,7 +34,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
       return Right(settings);
     } catch (e, stackTrace) {
-      _errorLogger.e(
+      _logger.e(
         'Failed to get settings',
         error: e,
         stackTrace: stackTrace,
@@ -57,7 +57,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         return Left(ServerFailure('Failed to save settings'));
       }
     } catch (e, stackTrace) {
-      _errorLogger.e(
+      _logger.e(
         'Failed to save settings',
         error: e,
         stackTrace: stackTrace,

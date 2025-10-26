@@ -1,10 +1,8 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
-import 'package:injectable/injectable.dart';
 
 import 'camera_service.dart';
 
-@LazySingleton(as: CameraService)
 class CameraServiceImpl implements CameraService {
   CameraController? _controller;
   bool _isInitializing = false;

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:domain/model/device_platform.dart';
 import 'package:domain/use_case/notification/notification_register_device_use_case.dart';
 import 'package:domain/use_case/notification/notification_unregister_device_use_case.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:logger/logger.dart';
 
@@ -17,6 +18,9 @@ class NotificationServiceImpl implements NotificationService {
 
   String? _currentToken;
   bool _isInitialized = false;
+
+  String? _lastRegisteredToken;
+  Future<void>? _registrationInProgress;
 
   // Stream subscriptions to be canceled on dispose
   StreamSubscription<String>? _tokenRefreshSubscription;
@@ -50,32 +54,29 @@ class NotificationServiceImpl implements NotificationService {
         return;
       }
 
-      // Get and store the token
-      _currentToken = await _messaging.getToken();
-      if (_currentToken != null) {
-        _logger.i('FCM Token obtained: ${_currentToken!.substring(0, 20)}...');
-      } else {
-        _logger.w('Failed to obtain FCM token');
-        return;
+      await _messaging.setAutoInitEnabled(true);
+
+      if (Platform.isIOS) {
+        final apnsToken = await _messaging.getAPNSToken();
+        if (apnsToken != null && apnsToken.isNotEmpty) {
+          _logger.i('APNS token obtained: $apnsToken');
+        } else {
+          _logger.i(
+              'APNS token not yet available; waiting for FirebaseMessaging callback');
+        }
       }
 
-      // Register device with backend
-      await registerDevice();
-
-      // Set up token refresh handler
-      _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
-        (newToken) async {
-          _logger.i('FCM Token refreshed');
-          _currentToken = newToken;
-          await registerDevice();
-        },
-        onError: (error) {
-          _logger.e('Token refresh error', error: error);
-        },
-      );
+      _setupTokenRefreshListener();
+      await _fetchAndRegisterToken();
 
       _isInitialized = true;
-      _logger.i('Notification service initialized successfully');
+      if (_currentToken != null) {
+        _logger.i('Notification service initialized successfully');
+      } else {
+        _logger.i(
+          'Notification service initialized; awaiting APNS/FCM token assignment',
+        );
+      }
     } catch (e, stackTrace) {
       _logger.e(
         'Failed to initialize notification service',
@@ -98,10 +99,12 @@ class NotificationServiceImpl implements NotificationService {
         sound: true,
       );
 
-      final granted = settings.authorizationStatus == AuthorizationStatus.authorized ||
-          settings.authorizationStatus == AuthorizationStatus.provisional;
+      final granted =
+          settings.authorizationStatus == AuthorizationStatus.authorized ||
+              settings.authorizationStatus == AuthorizationStatus.provisional;
 
-      _logger.i('Notification permission status: ${settings.authorizationStatus}');
+      _logger
+          .i('Notification permission status: ${settings.authorizationStatus}');
       return granted;
     } catch (e, stackTrace) {
       _logger.e(
@@ -116,7 +119,29 @@ class NotificationServiceImpl implements NotificationService {
   @override
   Future<String?> getToken() async {
     try {
-      return _currentToken ?? await _messaging.getToken();
+      if (_currentToken != null) {
+        return _currentToken;
+      }
+
+      final token = await _messaging.getToken();
+      if (token != null) {
+        _currentToken = token;
+      }
+      return token;
+    } on FirebaseException catch (e, stackTrace) {
+      if (e.code == 'apns-token-not-set') {
+        _logger.w(
+          'APNS token not available yet when requesting FCM token',
+        );
+        return null;
+      }
+
+      _logger.e(
+        'Firebase error while getting FCM token',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return null;
     } catch (e, stackTrace) {
       _logger.e(
         'Failed to get FCM token',
@@ -129,35 +154,53 @@ class NotificationServiceImpl implements NotificationService {
 
   @override
   Future<void> registerDevice() async {
+    if (_registrationInProgress != null) {
+      _logger
+          .i('Device registration already in progress, waiting for completion');
+      await _registrationInProgress;
+      return;
+    }
+
+    // Get current token
     final token = _currentToken ?? await getToken();
     if (token == null) {
       _logger.w('Cannot register device: no FCM token available');
       return;
     }
 
-    try {
-      final platform = Platform.isIOS ? DevicePlatform.ios : DevicePlatform.android;
-      final params = NotificationRegisterDeviceParams(
-        token: token,
-        platform: platform,
-      );
-
-      final result = await _registerDeviceUseCase(params);
-      result.fold(
-        (failure) {
-          _logger.e('Failed to register device: ${failure.message}');
-        },
-        (_) {
-          _logger.i('Device registered successfully');
-        },
-      );
-    } catch (e, stackTrace) {
-      _logger.e(
-        'Unexpected error registering device',
-        error: e,
-        stackTrace: stackTrace,
-      );
+    if (token == _lastRegisteredToken) {
+      _logger.i('Device already registered with current token, skipping');
+      return;
     }
+
+    _logger.i(
+        'Starting device registration for token: ${token.substring(0, 20)}...');
+    _registrationInProgress = _performRegistration(token);
+
+    try {
+      await _registrationInProgress;
+      _lastRegisteredToken = token;
+    } finally {
+      _registrationInProgress = null;
+    }
+  }
+
+  Future<void> _performRegistration(String token) async {
+    final platform =
+        Platform.isIOS ? DevicePlatform.ios : DevicePlatform.android;
+    final params = NotificationRegisterDeviceParams(
+      token: token,
+      platform: platform,
+    );
+
+    final result = await _registerDeviceUseCase(params);
+    result.fold(
+      (failure) {
+        _logger.e('Failed to register device: ${failure.message}');
+        throw Exception('Registration failed: ${failure.message}');
+      },
+      (_) => _logger.i('Device registered successfully'),
+    );
   }
 
   @override
@@ -177,6 +220,7 @@ class NotificationServiceImpl implements NotificationService {
         (_) {
           _logger.i('Device unregistered successfully');
           _currentToken = null;
+          _lastRegisteredToken = null;
         },
       );
     } catch (e, stackTrace) {
@@ -212,7 +256,8 @@ class NotificationServiceImpl implements NotificationService {
     // Handle notification taps (when app is in background)
     _backgroundOpenedSubscription = FirebaseMessaging.onMessageOpenedApp.listen(
       (RemoteMessage message) {
-        _logger.i('Notification tapped (app in background): ${message.messageId}');
+        _logger
+            .i('Notification tapped (app in background): ${message.messageId}');
         _logMessageDetails(message);
         onMessageOpenedApp(message);
       },
@@ -243,6 +288,56 @@ class NotificationServiceImpl implements NotificationService {
     _foregroundSubscription = null;
     _backgroundOpenedSubscription = null;
 
+    _lastRegisteredToken = null;
+    _registrationInProgress = null;
+
     _isInitialized = false;
+  }
+
+  void _setupTokenRefreshListener() {
+    _tokenRefreshSubscription ??= _messaging.onTokenRefresh.listen(
+      (newToken) async {
+        _logger.i('FCM token refreshed: $newToken');
+        _currentToken = newToken;
+        await registerDevice();
+      },
+      onError: (error) {
+        _logger.e('Token refresh error', error: error);
+      },
+    );
+  }
+
+  Future<void> _fetchAndRegisterToken() async {
+    try {
+      final token = await _messaging.getToken();
+      if (token == null || token.isEmpty) {
+        _logger.w(
+            'FCM token not yet available; waiting for onTokenRefresh callback');
+        return;
+      }
+
+      _currentToken = token;
+      _logger.i('FCM token obtained: $token');
+      await registerDevice();
+    } on FirebaseException catch (e, stackTrace) {
+      if (e.code == 'apns-token-not-set') {
+        _logger.w(
+          'Firebase did not provide an FCM token yet because APNS token is missing; waiting for token refresh',
+        );
+        return;
+      }
+
+      _logger.e(
+        'Firebase error while fetching FCM token',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Unexpected error while fetching FCM token',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

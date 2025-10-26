@@ -1,12 +1,22 @@
+// External packages
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:get_it/get_it.dart';
+import 'package:localization/localization_service.dart';
+import 'package:logger/logger.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Data layer
 import 'package:data/repository/chat/chat_repository_config.dart';
 import 'package:data/repository/chat/chat_repository_impl.dart';
 import 'package:data/repository/notification/notification_repository_impl.dart';
-import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/repository/receipt/receipt_repository_impl.dart';
 import 'package:data/repository/settings_repository_impl.dart';
 import 'package:data/repository/unprocessed_receipt/unprocessed_receipt_repository_impl.dart';
-import 'package:dio/dio.dart';
+
+// Domain layer
 import 'package:domain/repository/chat_repository.dart';
 import 'package:domain/repository/notification_repository.dart';
 import 'package:domain/repository/receipt_repository.dart';
@@ -36,61 +46,77 @@ import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
 import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
 import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_delete_use_case.dart';
 import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_update_use_case.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:get_it/get_it.dart';
-import 'package:injectable/injectable.dart';
-import 'package:localization/localization_service.dart';
-import 'package:logger/logger.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+// Presentation layer
 import '../config/env_config.dart';
+import '../core/service/camera/camera_service.dart';
+import '../core/service/camera/camera_service_impl.dart';
 import '../core/service/notification/notification_service.dart';
 import '../core/service/notification/notification_service_impl.dart';
-import './di.config.dart';
 
 final getIt = GetIt.instance;
 
-@InjectableInit(
-  initializerName: 'init',
-  preferRelativeImports: true,
-  asExtension: true,
-)
 Future<void> configureDependencies() async {
   await _loadEnv();
 
-  getIt.init();
+  await _registerInfrastructure();
+  _registerRepositories();
+  _registerUseCases();
+  _registerServices();
+}
 
+Future<void> _registerInfrastructure() async {
   final sharedPreferences = await SharedPreferences.getInstance();
-  getIt.registerLazySingleton(() => sharedPreferences);
 
-  final logger = Logger(printer: PrettyPrinter());
-  getIt.registerLazySingleton(() => logger);
+  getIt.registerSingleton<SharedPreferences>(sharedPreferences);
 
-  getIt.registerLazySingleton(() => Connectivity());
+  getIt.registerLazySingleton<Logger>(
+    () => Logger(printer: PrettyPrinter()),
+  );
+
+  getIt.registerLazySingleton<Connectivity>(
+    () => Connectivity(),
+  );
+
+  getIt.registerLazySingleton<Dio>(() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: EnvConfig.baseUrl,
+        headers: {
+          'X-API-Key': EnvConfig.apiKey,
+          'accept': 'application/json',
+        },
+        sendTimeout: const Duration(seconds: 600),
+        receiveTimeout: const Duration(seconds: 600),
+      ),
+    );
+
+    dio.interceptors.add(PrettyDioLogger(
+      request: true,
+      requestHeader: true,
+      requestBody: true,
+      responseHeader: true,
+      responseBody: true,
+      error: true,
+    ));
+
+    return dio;
+  });
 
   getIt.registerSingleton<LocalizationService>(
     LocalizationService.fromLocaleName("en"),
   );
 
-  getIt.registerLazySingleton(() => FirebaseMessaging.instance);
-
-  _registerRepositories();
-
-  _registerUseCases();
-
-  _registerServices();
+  getIt.registerLazySingleton<FirebaseMessaging>(
+    () => FirebaseMessaging.instance,
+  );
 }
 
-_registerRepositories() {
+void _registerRepositories() {
   getIt.registerLazySingleton<ReceiptRepository>(
     () => ReceiptRepositoryImpl(
-      dio: _getDio(),
-      config: RepositoryConfig(
-        baseUrl: EnvConfig.baseUrl,
-        apiKey: EnvConfig.apiKey,
-      ),
-      errorLogger: getIt<Logger>(),
+      dio: getIt<Dio>(),
+      logger: getIt<Logger>(),
       connectivity: getIt<Connectivity>(),
     ),
   );
@@ -98,43 +124,65 @@ _registerRepositories() {
   getIt.registerLazySingleton<SettingsRepository>(
     () => SettingsRepositoryImpl(
       sharedPreferences: getIt<SharedPreferences>(),
-      errorLogger: getIt<Logger>(),
+      logger: getIt<Logger>(),
     ),
   );
 
   getIt.registerLazySingleton<ChatRepository>(
     () => ChatRepositoryImpl(
-        logger: getIt<Logger>(),
-        connectivity: getIt<Connectivity>(),
-        config: ChatRepositoryConfig(
-            webSocketUrl: EnvConfig.webSocketUrl, apiKey: EnvConfig.apiKey)),
+      config: ChatRepositoryConfig(
+        webSocketUrl: EnvConfig.webSocketUrl,
+        apiKey: EnvConfig.apiKey,
+      ),
+      logger: getIt<Logger>(),
+      connectivity: getIt<Connectivity>(),
+    ),
   );
 
   getIt.registerLazySingleton<UnprocessedReceiptRepository>(
     () => UnprocessedReceiptRepositoryImpl(
-        dio: _getDio(),
-        errorLogger: getIt<Logger>(),
-        connectivity: getIt<Connectivity>(),
-        config: RepositoryConfig(
-          baseUrl: EnvConfig.baseUrl,
-          apiKey: EnvConfig.apiKey,
-        )),
+      dio: getIt<Dio>(),
+      logger: getIt<Logger>(),
+      connectivity: getIt<Connectivity>(),
+    ),
   );
 
   getIt.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(
-      dio: _getDio(),
-      config: RepositoryConfig(
-        baseUrl: EnvConfig.baseUrl,
-        apiKey: EnvConfig.apiKey,
-      ),
-      errorLogger: getIt<Logger>(),
+      dio: getIt<Dio>(),
+      logger: getIt<Logger>(),
       connectivity: getIt<Connectivity>(),
     ),
   );
 }
 
-_registerUseCases() {
+void _registerUseCases() {
+  // Receipt
+  getIt.registerLazySingleton(
+    () => ReceiptAnalyzeUseCase(getIt<ReceiptRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => ReceiptCreateUseCase(getIt<ReceiptRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => ReceiptGetUseCase(getIt<ReceiptRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => ReceiptUpdateUseCase(getIt<ReceiptRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => ReceiptDeleteUseCase(getIt<ReceiptRepository>()),
+  );
+
+  // Factory: new instance per call
+  getIt.registerFactory<ReceiptFilterUseCase>(
+    () => ReceiptFilterUseCase(getIt<ReceiptRepository>()),
+  );
+
   getIt.registerLazySingleton(
     () => GetCategoriesUseCase(getIt<ReceiptRepository>()),
   );
@@ -144,13 +192,14 @@ _registerUseCases() {
   );
 
   getIt.registerLazySingleton(
-    () => ReceiptAnalyzeUseCase(getIt<ReceiptRepository>()),
+    () => GetDailyExpensesUseCase(getIt<ReceiptRepository>()),
   );
 
   getIt.registerLazySingleton(
-    () => ReceiptCreateUseCase(getIt<ReceiptRepository>()),
+    () => GetAutocompleteSuggestionsUseCase(getIt<ReceiptRepository>()),
   );
 
+  // Settings
   getIt.registerLazySingleton(
     () => SettingsGetSavingsUseCase(getIt<SettingsRepository>()),
   );
@@ -164,27 +213,16 @@ _registerUseCases() {
   );
 
   getIt.registerLazySingleton(
-    () => GetDailyExpensesUseCase(getIt<ReceiptRepository>()),
+    () => CalculateTotalSavingsUseCase(),
   );
 
-  getIt.registerLazySingleton(
-    () => ReceiptGetUseCase(getIt<ReceiptRepository>()),
-  );
-
-  getIt.registerLazySingleton(
-    () => ReceiptDeleteUseCase(getIt<ReceiptRepository>()),
-  );
-
-  getIt.registerLazySingleton(
-    () => ReceiptUpdateUseCase(getIt<ReceiptRepository>()),
-  );
-
-  getIt.registerLazySingleton(
-    () => GetAutocompleteSuggestionsUseCase(getIt<ReceiptRepository>()),
-  );
-
+  // Chat
   getIt.registerLazySingleton(
     () => ChatConnectUseCase(getIt<ChatRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => ChatDisconnectUseCase(getIt<ChatRepository>()),
   );
 
   getIt.registerLazySingleton(
@@ -196,10 +234,6 @@ _registerUseCases() {
   );
 
   getIt.registerLazySingleton(
-    () => ChatDisconnectUseCase(getIt<ChatRepository>()),
-  );
-
-  getIt.registerLazySingleton(
     () => ChatProcessMessageUseCase(),
   );
 
@@ -207,20 +241,18 @@ _registerUseCases() {
     () => ChatCreateUserMessageUseCase(),
   );
 
+  // Unprocessed Receipt
   getIt.registerLazySingleton(
-    () => CalculateTotalSavingsUseCase(),
+    () =>
+        UnprocessedReceiptDeleteUseCase(getIt<UnprocessedReceiptRepository>()),
   );
 
-  getIt.registerFactory<ReceiptFilterUseCase>(
-    () => ReceiptFilterUseCase(getIt<ReceiptRepository>()),
+  getIt.registerLazySingleton(
+    () =>
+        UnprocessedReceiptUpdateUseCase(getIt<UnprocessedReceiptRepository>()),
   );
 
-  getIt.registerLazySingleton(() =>
-      UnprocessedReceiptDeleteUseCase(getIt<UnprocessedReceiptRepository>()));
-
-  getIt.registerLazySingleton(() =>
-      UnprocessedReceiptUpdateUseCase(getIt<UnprocessedReceiptRepository>()));
-
+  // Notification
   getIt.registerLazySingleton(
     () => NotificationRegisterDeviceUseCase(getIt<NotificationRepository>()),
   );
@@ -230,7 +262,11 @@ _registerUseCases() {
   );
 }
 
-_registerServices() {
+void _registerServices() {
+  getIt.registerLazySingleton<CameraService>(
+    () => CameraServiceImpl(),
+  );
+
   getIt.registerLazySingleton<NotificationService>(
     () => NotificationServiceImpl(
       messaging: getIt<FirebaseMessaging>(),
@@ -244,18 +280,4 @@ _registerServices() {
 Future<void> _loadEnv() async {
   await EnvConfig.load();
   EnvConfig.validate();
-}
-
-Dio _getDio() {
-  final dio = Dio();
-  dio.interceptors.add(PrettyDioLogger(
-    request: true,
-    requestHeader: true,
-    requestBody: true,
-    responseHeader: true,
-    responseBody: true,
-    error: true,
-  ));
-
-  return dio;
 }

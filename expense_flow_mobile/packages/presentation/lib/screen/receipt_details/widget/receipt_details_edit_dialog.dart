@@ -142,7 +142,7 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
     final theme = Theme.of(context);
 
     return DropdownButtonFormField<String>(
-      value: _selectedCategory,
+      initialValue: _selectedCategory,
       decoration: InputDecoration(
         labelText: l10n.category,
         enabledBorder: UnderlineInputBorder(

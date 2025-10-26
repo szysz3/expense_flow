@@ -67,3 +67,7 @@ app.*.map.json
 .env.demo
 .env.prod
 .env
+
+# certs
+*.p8
+GoogleService-Info.plist

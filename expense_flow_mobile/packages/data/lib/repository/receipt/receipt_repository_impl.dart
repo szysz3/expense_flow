@@ -1,6 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dartz/dartz.dart';
-import 'package:data/repository/receipt/receipt_repository_config.dart';
 import 'package:data/utils/content_type_resolver_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/model/autocomplete_suggestion.dart';
@@ -19,43 +18,27 @@ import 'package:logger/logger.dart';
 
 import '../../consts/error_messages.dart';
 import '../../consts/http_constants.dart';
-import '../../consts/receipt_constants.dart' hide FormDataConstants;
+import '../../consts/receipt_constants.dart';
 import '../../remote/api_endpoints.dart';
 import '../../remote/exception/exceptions.dart';
 import '../../utils/content_type_resolver.dart';
 
 class ReceiptRepositoryImpl implements ReceiptRepository {
   final Dio _dio;
-  final RepositoryConfig _config;
   final ContentTypeResolver _contentTypeResolver;
-  final Logger _errorLogger;
+  final Logger _logger;
   final Connectivity _connectivity;
 
   ReceiptRepositoryImpl({
     required Dio dio,
-    required RepositoryConfig config,
-    required Logger errorLogger,
+    required Logger logger,
     required Connectivity connectivity,
     ContentTypeResolver? contentTypeResolver,
   })  : _dio = dio,
-        _config = config,
-        _errorLogger = errorLogger,
+        _logger = logger,
         _connectivity = connectivity,
         _contentTypeResolver =
-            contentTypeResolver ?? ContentTypeResolverImpl() {
-    _configureDio();
-  }
-
-  void _configureDio() {
-    _dio.options
-      ..baseUrl = _config.baseUrl
-      ..headers = {
-        HttpConstants.apiKeyHeader: _config.apiKey,
-        HttpConstants.acceptHeader: HttpConstants.acceptValue,
-      }
-      ..sendTimeout = _config.timeout
-      ..receiveTimeout = _config.timeout;
-  }
+            contentTypeResolver ?? ContentTypeResolverImpl();
 
   Future<Either<Failure, bool>> _checkConnectivity() async {
     try {
@@ -66,7 +49,7 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
       }
       return const Right(true);
     } catch (e) {
-      _errorLogger.w('Failed to check connectivity', error: e);
+      _logger.w('Failed to check connectivity', error: e);
       return const Right(true);
     }
   }
@@ -104,11 +87,11 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
 
       return Right(Receipt.fromJson(transformedData));
     } on DioException catch (e, stackTrace) {
-      _errorLogger.e('API error during receipt analysis',
+      _logger.e('API error during receipt analysis',
           error: e, stackTrace: stackTrace);
       return Left(_handleDioError(e));
     } catch (e) {
-      _errorLogger.e('Exception during receipt analysis', error: e);
+      _logger.e('Exception during receipt analysis', error: e);
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -129,11 +112,11 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
 
       return Right(Receipt.fromJson(response.data));
     } on DioException catch (e, stackTrace) {
-      _errorLogger.e('API error during receipt update',
+      _logger.e('API error during receipt update',
           error: e, stackTrace: stackTrace);
       return Left(_handleDioError(e));
     } catch (e) {
-      _errorLogger.e('Exception during receipt update', error: e);
+      _logger.e('Exception during receipt update', error: e);
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -166,14 +149,14 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
       final result = await request();
       return Right(result);
     } on DioException catch (e, stackTrace) {
-      _errorLogger.e(
+      _logger.e(
         'API error in repository',
         error: e,
         stackTrace: stackTrace,
       );
       return Left(_handleDioError(e));
     } catch (e, stackTrace) {
-      _errorLogger.e(
+      _logger.e(
         'Exception in repository',
         error: e,
         stackTrace: stackTrace,
