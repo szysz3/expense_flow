@@ -7,17 +7,9 @@ import threading
 from dataclasses import dataclass
 from typing import List, Optional
 
-try:
-    import firebase_admin
-    from firebase_admin import credentials, initialize_app, messaging
-    from firebase_admin.exceptions import FirebaseError
-except ImportError as exc:  # pragma: no cover - gracefully handle optional dependency
-    firebase_admin = None  # type: ignore[assignment]
-    credentials = initialize_app = messaging = None  # type: ignore[assignment]
-    FirebaseError = Exception  # type: ignore[assignment]
-    _IMPORT_ERROR = exc
-else:
-    _IMPORT_ERROR = None
+import firebase_admin
+from firebase_admin import credentials, initialize_app, messaging
+from firebase_admin.exceptions import FirebaseError
 
 from expense_flow.api.models import DevicePlatform
 from expense_flow.api.repository.notification_device_repository import (
@@ -61,10 +53,6 @@ class FCMClient:
             or self._config.firebase_credentials_json
         )
     
-    @property
-    def is_available(self) -> bool:
-        return firebase_admin is not None
-
     def _ensure_app(self):
         if self._app is not None:
             return self._app
@@ -72,11 +60,6 @@ class FCMClient:
         with self._lock:
             if self._app is not None:
                 return self._app
-
-            if firebase_admin is None:
-                raise FirebaseNotAvailableError(
-                    "firebase-admin package is not installed."
-                ) from _IMPORT_ERROR
 
             if not self.is_configured:
                 raise FirebaseConfigurationError(
@@ -133,15 +116,15 @@ class FCMClient:
             return NotificationDispatchResult(total=0, successes=0, failures=0, invalid_tokens=[])
 
         app = self._ensure_app()
-        message = messaging.MulticastMessage(
+        payload = messaging.MulticastMessage(
             tokens=tokens,
             notification=messaging.Notification(title=title, body=body),
             data=data or {},
         )
 
         batch_response = await asyncio.to_thread(
-            messaging.send_multicast,
-            message,
+            messaging.send_each_for_multicast,
+            payload,
             app=app,
         )
 
@@ -179,10 +162,7 @@ class NotificationService:
 
     @property
     def enabled(self) -> bool:
-        return (
-            self._client.is_configured
-            and self._client.is_available
-        )
+        return self._client.is_configured
 
     async def register_device(
         self,
