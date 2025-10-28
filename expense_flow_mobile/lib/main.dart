@@ -32,11 +32,19 @@ Future<void> main() async {
     await Firebase.initializeApp();
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
+    // Initialize notifications in background without blocking app startup
+    // Token registration will complete asynchronously while app is already usable
     final notificationService = getIt<NotificationService>();
-    await notificationService.initialize();
+    notificationService.initialize().catchError((e, stackTrace) {
+      logger.e(
+        'Failed to initialize notifications - app will continue without push notifications',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    });
   } catch (e, stackTrace) {
     logger.e(
-      'Failed to initialize notifications - app will continue without push notifications',
+      'Failed to initialize Firebase',
       error: e,
       stackTrace: stackTrace,
     );
