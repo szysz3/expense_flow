@@ -322,6 +322,117 @@
   "@incomeHint": {
     "description": "Income hint field"
   },
+  "settingsAddPeriod": "Add period",
+  "@settingsAddPeriod": {
+    "description": "Button label to add a new savings period"
+  },
+  "settingsPeriodTitle": "Period {periodNumber}",
+  "@settingsPeriodTitle": {
+    "description": "Title for a savings period card",
+    "placeholders": {
+      "periodNumber": {}
+    }
+  },
+  "settingsPeriodRangeLabel": "Period range",
+  "@settingsPeriodRangeLabel": {
+    "description": "Label for the range section in a savings period card"
+  },
+  "settingsStartDateLabel": "Start",
+  "@settingsStartDateLabel": {
+    "description": "Label for start date selector"
+  },
+  "settingsEndDateLabel": "End",
+  "@settingsEndDateLabel": {
+    "description": "Label for end date selector"
+  },
+  "settingsSelectDate": "Select month",
+  "@settingsSelectDate": {
+    "description": "Title for the month selection dialog"
+  },
+  "settingsStartMonthLabel": "Start month",
+  "@settingsStartMonthLabel": {
+    "description": "Label for the start month selector"
+  },
+  "settingsStartYearLabel": "Start year",
+  "@settingsStartYearLabel": {
+    "description": "Label for the start year selector"
+  },
+  "settingsEndMonthLabel": "End month",
+  "@settingsEndMonthLabel": {
+    "description": "Label for the end month selector"
+  },
+  "settingsEndYearLabel": "End year",
+  "@settingsEndYearLabel": {
+    "description": "Label for the end year selector"
+  },
+  "settingsOpenEnded": "Open-ended",
+  "@settingsOpenEnded": {
+    "description": "Label for the open-ended switch"
+  },
+  "settingsOpenEndedLabel": "Continues",
+  "@settingsOpenEndedLabel": {
+    "description": "Label displayed when a period is open-ended"
+  },
+  "settingsCloseOpenPeriodFirst": "Close the current open-ended period before adding a new one.",
+  "@settingsCloseOpenPeriodFirst": {
+    "description": "Validation message when attempting to add a new period while another is open-ended"
+  },
+  "settingsOnlyLastOpenEnded": "Only the last period can be open-ended.",
+  "@settingsOnlyLastOpenEnded": {
+    "description": "Validation message when attempting to make a non-last period open-ended"
+  },
+  "settingsValidationGeneric": "Check the period details and try again.",
+  "@settingsValidationGeneric": {
+    "description": "Generic validation message for savings period errors"
+  },
+  "monthJanuary": "January",
+  "@monthJanuary": {
+    "description": "Month name January"
+  },
+  "monthFebruary": "February",
+  "@monthFebruary": {
+    "description": "Month name February"
+  },
+  "monthMarch": "March",
+  "@monthMarch": {
+    "description": "Month name March"
+  },
+  "monthApril": "April",
+  "@monthApril": {
+    "description": "Month name April"
+  },
+  "monthMay": "May",
+  "@monthMay": {
+    "description": "Month name May"
+  },
+  "monthJune": "June",
+  "@monthJune": {
+    "description": "Month name June"
+  },
+  "monthJuly": "July",
+  "@monthJuly": {
+    "description": "Month name July"
+  },
+  "monthAugust": "August",
+  "@monthAugust": {
+    "description": "Month name August"
+  },
+  "monthSeptember": "September",
+  "@monthSeptember": {
+    "description": "Month name September"
+  },
+  "monthOctober": "October",
+  "@monthOctober": {
+    "description": "Month name October"
+  },
+  "monthNovember": "November",
+  "@monthNovember": {
+    "description": "Month name November"
+  },
+  "monthDecember": "December",
+  "@monthDecember": {
+    "description": "Month name December"
+  },
   "balance": "To spend",
   "@balance": {
     "description": "Balance between expenses and savings. Amount available to spend."

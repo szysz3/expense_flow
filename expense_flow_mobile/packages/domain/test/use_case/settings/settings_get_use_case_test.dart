@@ -218,8 +218,10 @@ void main() {
               final actual = actualSettings.savingsSettings![i];
               final expected = originalSettings.savingsSettings![i];
 
-              expect(actual.month, expected.month);
-              expect(actual.year, expected.year);
+              expect(actual.startMonth, expected.startMonth);
+              expect(actual.startYear, expected.startYear);
+              expect(actual.endMonth, expected.endMonth);
+              expect(actual.endYear, expected.endYear);
               expect(actual.savingsAmount, expected.savingsAmount);
               expect(actual.income, expected.income);
             }

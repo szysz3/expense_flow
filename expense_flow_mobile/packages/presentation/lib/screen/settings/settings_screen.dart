@@ -1,4 +1,4 @@
-import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
+import 'package:domain/use_case/settings/settings_get_all_periods_use_case.dart';
 import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,11 +10,13 @@ import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
-import '../../core/widget/input_widget.dart';
 import '../../di/di.dart';
 import 'bloc/settings_bloc.dart';
 import 'bloc/settings_event.dart';
 import 'bloc/settings_state.dart';
+import 'widget/settings_modal_header.dart';
+import 'widget/settings_period_card.dart';
+import 'widget/settings_validation_banner.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -33,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
         create: (_) => SettingsBloc(
           getIt<Logger>(),
           getIt<LocalizationService>(),
-          getIt<SettingsGetSavingsUseCase>(),
+          getIt<SettingsGetAllPeriodsUseCase>(),
           getIt<SettingsSaveSavingsUseCase>(),
         )..add(const SettingsEvent.init()),
         child: GestureDetector(
@@ -43,7 +45,7 @@ class SettingsScreen extends StatelessWidget {
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.6,
+              height: MediaQuery.of(context).size.height * 0.95,
               decoration: BoxDecoration(
                 color: Theme.of(context)
                     .colorScheme
@@ -54,10 +56,10 @@ class SettingsScreen extends StatelessWidget {
                   topRight: Radius.circular(16),
                 ),
               ),
-              child: Column(
+              child: const Column(
                 children: [
-                  _buildModalHeader(context),
-                  const Expanded(
+                  SettingsModalHeader(),
+                  Expanded(
                     child: Padding(
                       padding: EdgeInsets.all(16.0),
                       child: SettingsScreenView(),
@@ -69,28 +71,6 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       );
-
-  Widget _buildModalHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 40,
-            height: 5,
-            decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class SettingsScreenView extends StatefulWidget {
@@ -101,14 +81,21 @@ class SettingsScreenView extends StatefulWidget {
 }
 
 class _SettingsScreenViewState extends State<SettingsScreenView> {
-  final _savingsAmountController = TextEditingController();
-  final _incomeController = TextEditingController();
   final _numberFormat = NumberFormat.decimalPattern();
+  final Map<String, TextEditingController> _incomeControllers = {};
+  final Map<String, TextEditingController> _savingsControllers = {};
+  final Map<String, double> _incomeValues = {};
+  final Map<String, double> _savingsValues = {};
+  bool _shouldCloseOnSave = false;
 
   @override
   void dispose() {
-    _savingsAmountController.dispose();
-    _incomeController.dispose();
+    for (final controller in _incomeControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in _savingsControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -116,28 +103,34 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
   Widget build(BuildContext context) {
     return BlocConsumer<SettingsBloc, SettingsState>(
       listenWhen: (previous, current) {
-        return current.error != null ||
-            (previous.isLoading && !current.isLoading);
+        if (previous.isSaving && !current.isSaving) {
+          _shouldCloseOnSave = current.error == null &&
+              current.validationMessage == null &&
+              current.periods.isNotEmpty;
+          return true;
+        }
+
+        if (current.error != null && current.error != previous.error) {
+          _shouldCloseOnSave = false;
+          return true;
+        }
+
+        return false;
       },
       listener: (context, state) {
         if (state.error != null) {
           ErrorUtils.showErrorSnackBar(context, state.error!);
+          return;
         }
 
-        if (!state.isLoading &&
-            state.savingsAmount > 0 &&
-            _savingsAmountController.text.isEmpty) {
-          _savingsAmountController.text =
-              _numberFormat.format(state.savingsAmount);
-        }
-
-        if (!state.isLoading &&
-            state.income > 0 &&
-            _incomeController.text.isEmpty) {
-          _incomeController.text = _numberFormat.format(state.income);
+        if (_shouldCloseOnSave) {
+          Navigator.of(context).pop();
+          _shouldCloseOnSave = false;
         }
       },
       builder: (context, state) {
+        _syncControllersWithState(state);
+
         if (state.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -150,69 +143,212 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
   Widget _buildSettingsContent(BuildContext context, SettingsState state) {
     final l10n = AppLocalizations.of(context);
 
-    return Stack(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.settings,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 24),
-            InputWidget(
-              controller: _savingsAmountController,
-              onDescriptionChanged: (value) {
-                context.read<SettingsBloc>().add(
-                      SettingsEvent.savingsAmountChanged(
-                          _parseNumberInput(value)),
-                    );
-              },
-              labelText: l10n.savingsAmount,
-              hintText: l10n.savingsAmountHint,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            const SizedBox(height: 24),
-            InputWidget(
-              controller: _incomeController,
-              onDescriptionChanged: (value) {
-                context.read<SettingsBloc>().add(
-                      SettingsEvent.incomeChanged(_parseNumberInput(value)),
-                    );
-              },
-              labelText: l10n.income,
-              hintText: l10n.incomeHint,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-          ],
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 30,
-          child: Center(
-            child: AnimatedSquareButton(
-              isProcessing: state.isSaving,
-              onPressed: () {
-                context.read<SettingsBloc>().add(
-                      const SettingsEvent.saveSettings(),
-                    );
-                Navigator.of(context).pop();
-              },
-              icon: SvgPicture.asset(
-                'packages/presentation/assets/icon_tick.svg',
-                width: 40,
-                height: 40,
-              ),
+    return SafeArea(
+      top: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.settings,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 12),
+                if (state.validationMessage != null) ...[
+                  SettingsValidationBanner(message: state.validationMessage!),
+                  const SizedBox(height: 12),
+                ],
+                Row(
+                  children: [
+                    _buildAddPeriodButton(context, l10n),
+                    const SizedBox(width: 12),
+                    const Spacer(),
+                    AnimatedSquareButton(
+                      width: 42,
+                      height: 42,
+                      isProcessing: state.isSaving,
+                      onPressed: () {
+                        context
+                            .read<SettingsBloc>()
+                            .add(const SettingsEvent.saveSettings());
+                      },
+                      icon: SvgPicture.asset(
+                        'packages/presentation/assets/icon_tick.svg',
+                        width: 24,
+                        height: 24,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.only(top: 8, bottom: 16),
+                    itemBuilder: (context, index) {
+                      final period = state.periods.reversed.toList()[index];
+                      return SettingsPeriodCard(
+                        period: period,
+                        incomeController: _incomeControllers[period.id]!,
+                        savingsController: _savingsControllers[period.id]!,
+                        formatMonthYear: _formatMonthYear,
+                        parseNumberInput: _parseNumberInput,
+                        onStartDatePress: () => _selectStartDate(context, period),
+                        onEndDatePress: () => _selectEndDate(context, period),
+                      );
+                    },
+                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    itemCount: state.periods.length,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
+  }
+
+  Widget _buildAddPeriodButton(BuildContext context, AppLocalizations l10n) {
+    return OutlinedButton.icon(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Theme.of(context).colorScheme.primary,
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      icon: const Icon(Icons.add),
+      label: Text(l10n.settingsAddPeriod),
+      onPressed: () {
+        context.read<SettingsBloc>().add(const SettingsEvent.periodAdded());
+      },
+    );
+  }
+
+  Future<void> _selectStartDate(
+    BuildContext context,
+    SettingsPeriodForm period,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final initialDate = DateTime(period.startYear, period.startMonth, 1);
+    final firstDate = DateTime(2000, 1, 1);
+    final lastDate = DateTime(DateTime.now().year + 5, 12, 31);
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      helpText: l10n.settingsSelectDate,
+    );
+
+    if (picked != null && mounted) {
+      this.context.read<SettingsBloc>().add(
+            SettingsEvent.periodStartChanged(
+              id: period.id,
+              month: picked.month,
+              year: picked.year,
+            ),
+          );
+    }
+  }
+
+  Future<void> _selectEndDate(
+    BuildContext context,
+    SettingsPeriodForm period,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final initialDate = DateTime(
+      period.endYear ?? period.startYear,
+      period.endMonth ?? period.startMonth,
+      1,
+    );
+    final firstDate = DateTime(period.startYear, period.startMonth, 1);
+    final lastDate = DateTime(DateTime.now().year + 5, 12, 31);
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      helpText: l10n.settingsSelectDate,
+    );
+
+    if (picked != null && mounted) {
+      this.context.read<SettingsBloc>().add(
+            SettingsEvent.periodEndChanged(
+              id: period.id,
+              month: picked.month,
+              year: picked.year,
+            ),
+          );
+    }
+  }
+
+  String _formatMonthYear(BuildContext context, int month, int year) {
+    return '${_shortMonthLabel(context, month)} $year';
+  }
+
+  void _syncControllersWithState(SettingsState state) {
+    final periodIds = state.periods.map((period) => period.id).toSet();
+
+    final removedIncomeIds =
+        _incomeControllers.keys.where((id) => !periodIds.contains(id)).toList();
+    for (final id in removedIncomeIds) {
+      _incomeControllers.remove(id)?.dispose();
+      _incomeValues.remove(id);
+    }
+
+    final removedSavingsIds = _savingsControllers.keys
+        .where((id) => !periodIds.contains(id))
+        .toList();
+    for (final id in removedSavingsIds) {
+      _savingsControllers.remove(id)?.dispose();
+      _savingsValues.remove(id);
+    }
+
+    for (final period in state.periods) {
+      final incomeController = _incomeControllers.putIfAbsent(
+        period.id,
+        () => TextEditingController(),
+      );
+      final savingsController = _savingsControllers.putIfAbsent(
+        period.id,
+        () => TextEditingController(),
+      );
+
+      final incomeValue = period.income;
+      final lastIncomeValue = _incomeValues[period.id];
+      if (lastIncomeValue != incomeValue) {
+        _incomeValues[period.id] = incomeValue;
+        final text = incomeValue > 0 ? _numberFormat.format(incomeValue) : '';
+        if (incomeController.text != text) {
+          incomeController
+            ..text = text
+            ..selection = TextSelection.fromPosition(
+              TextPosition(offset: incomeController.text.length),
+            );
+        }
+      }
+
+      final savingsValue = period.savingsAmount;
+      final lastSavingsValue = _savingsValues[period.id];
+      if (lastSavingsValue != savingsValue) {
+        _savingsValues[period.id] = savingsValue;
+        final text = savingsValue > 0 ? _numberFormat.format(savingsValue) : '';
+        if (savingsController.text != text) {
+          savingsController
+            ..text = text
+            ..selection = TextSelection.fromPosition(
+              TextPosition(offset: savingsController.text.length),
+            );
+        }
+      }
+    }
   }
 
   String _parseNumberInput(String value) {
@@ -229,3 +365,27 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
     return normalizedValue;
   }
 }
+  String _shortMonthLabel(BuildContext context, int month) {
+    final full = _monthLabel(context, month);
+    return full.length <= 3 ? full : full.substring(0, 3);
+  }
+
+  String _monthLabel(BuildContext context, int month) {
+    final l10n = AppLocalizations.of(context);
+    final monthNames = [
+      l10n.monthJanuary,
+      l10n.monthFebruary,
+      l10n.monthMarch,
+      l10n.monthApril,
+      l10n.monthMay,
+      l10n.monthJune,
+      l10n.monthJuly,
+      l10n.monthAugust,
+      l10n.monthSeptember,
+      l10n.monthOctober,
+      l10n.monthNovember,
+      l10n.monthDecember,
+    ];
+
+    return monthNames[month - 1];
+  }

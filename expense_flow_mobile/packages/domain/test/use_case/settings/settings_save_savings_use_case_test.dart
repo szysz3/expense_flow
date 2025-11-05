@@ -14,351 +14,179 @@ import 'settings_save_savings_use_case_test.mocks.dart';
 @GenerateMocks([SettingsRepository])
 void main() {
   late SettingsSaveSavingsUseCase useCase;
-  late MockSettingsRepository mockRepository;
+  late MockSettingsRepository repository;
 
   setUp(() {
-    mockRepository = MockSettingsRepository();
-    useCase = SettingsSaveSavingsUseCase(mockRepository);
+    repository = MockSettingsRepository();
+    useCase = SettingsSaveSavingsUseCase(repository);
   });
 
-  group('SettingsSaveSavingsUseCase', () {
-    test(
-        'should add new savings settings when month/year combination does not exist',
-        () async {
-      final existingSettings = TestDataFactory.createSettings();
-      final newSavingsSettings = TestDataFactory.createSavingsSettings(
-        month: 4,
-        year: 2023,
-        income: 3500.0,
-        savingsAmount: 700.0,
-      );
-      final expectedUpdatedSettings = Settings(
-        savingsSettings: [
-          ...existingSettings.savingsSettings!,
-          newSavingsSettings,
-        ],
-      );
+  test('saves sorted periods and sets current version', () async {
+    final inputPeriods = [
+      TestDataFactory.createSavingsSettings(month: 5, year: 2024, income: 4000),
+      TestDataFactory.createSavingsSettings(month: 2, year: 2023, income: 3200),
+      TestDataFactory.createSavingsSettings(
+          month: 12, year: 2023, income: 3800),
+    ];
 
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
-      when(mockRepository.saveSettings(any)).thenAnswer(
-          (_) async => Right<Failure, Settings>(expectedUpdatedSettings));
+    when(repository.getSettings()).thenAnswer(
+      (_) async => Right(TestDataFactory.createSettings()),
+    );
 
-      final result = await useCase(newSavingsSettings);
-
-      expect(result.isRight(), true);
-      verify(mockRepository.getSettings());
-      verify(mockRepository.saveSettings(argThat(predicate<Settings>(
-          (settings) =>
-              settings.savingsSettings?.length == 3 &&
-              settings.savingsSettings?.last == newSavingsSettings))));
-      verifyNoMoreInteractions(mockRepository);
+    Settings? captured;
+    when(repository.saveSettings(any)).thenAnswer((invocation) async {
+      captured = invocation.positionalArguments.first as Settings;
+      return Right(captured!);
     });
 
-    test(
-        'should update existing savings settings when month/year combination exists',
-        () async {
-      final existingSettings = TestDataFactory.createSettings();
-      final updatedSavingsSettings = TestDataFactory.createSavingsSettings(
+    final result = await useCase(inputPeriods);
+
+    expect(result.isRight(), true);
+    verify(repository.getSettings()).called(1);
+    verify(repository.saveSettings(any)).called(1);
+    expect(captured, isNotNull);
+    final savedPeriods = captured!.savingsSettings!;
+    expect(savedPeriods.length, 3);
+    expect(savedPeriods.first.startYear, 2023);
+    expect(savedPeriods.first.startMonth, 2);
+    expect(savedPeriods.last.startYear, 2024);
+    expect(captured!.version, settingsCurrentVersion);
+  });
+
+  test('allows saving an empty list of periods', () async {
+    when(repository.getSettings()).thenAnswer(
+      (_) async => Right(TestDataFactory.createSettings()),
+    );
+
+    Settings? captured;
+    when(repository.saveSettings(any)).thenAnswer((invocation) async {
+      captured = invocation.positionalArguments.first as Settings;
+      return Right(captured!);
+    });
+
+    final result = await useCase(const []);
+
+    expect(result.isRight(), true);
+    verify(repository.getSettings()).called(1);
+    verify(repository.saveSettings(any)).called(1);
+    expect(captured?.savingsSettings, isEmpty);
+  });
+
+  test('returns validation failure when periods overlap', () async {
+    final overlapping = [
+      TestDataFactory.createSavingsSettings(
         month: 1,
-        year: 2023,
-        income: 3500.0,
-        savingsAmount: 800.0,
-      );
-      final expectedUpdatedSettings = Settings(
-        savingsSettings: [
-          updatedSavingsSettings,
-          SavingsSettings(
-              month: 2, year: 2023, income: 3200.0, savingsAmount: 600.0),
-        ],
-      );
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
-      when(mockRepository.saveSettings(any)).thenAnswer(
-          (_) async => Right<Failure, Settings>(expectedUpdatedSettings));
-
-      final result = await useCase(updatedSavingsSettings);
-
-      expect(result.isRight(), true);
-      verify(mockRepository.getSettings());
-      verify(mockRepository.saveSettings(argThat(predicate<Settings>(
-          (settings) =>
-              settings.savingsSettings?.length == 2 &&
-              settings.savingsSettings?.first == updatedSavingsSettings))));
-      verifyNoMoreInteractions(mockRepository);
-    });
-
-    test('should handle settings with null savingsSettings list', () async {
-      final settingsWithNullSavings =
-          TestDataFactory.createSettingsWithNullSavings();
-      final newSavingsSettings = TestDataFactory.createSavingsSettings(
-        month: 1,
-        year: 2023,
-        income: 2500.0,
-        savingsAmount: 400.0,
-      );
-      final expectedUpdatedSettings = Settings(
-        savingsSettings: [newSavingsSettings],
-      );
-
-      when(mockRepository.getSettings()).thenAnswer(
-          (_) async => Right<Failure, Settings>(settingsWithNullSavings));
-      when(mockRepository.saveSettings(any)).thenAnswer(
-          (_) async => Right<Failure, Settings>(expectedUpdatedSettings));
-
-      final result = await useCase(newSavingsSettings);
-
-      expect(result.isRight(), true);
-      verify(mockRepository.getSettings());
-      verify(mockRepository.saveSettings(argThat(predicate<Settings>(
-          (settings) =>
-              settings.savingsSettings?.length == 1 &&
-              settings.savingsSettings?.first == newSavingsSettings))));
-      verifyNoMoreInteractions(mockRepository);
-    });
-
-    test('should handle empty savingsSettings list', () async {
-      final emptySettings = TestDataFactory.createEmptySettings();
-      final newSavingsSettings = TestDataFactory.createSavingsSettings(
+        year: 2024,
+        endMonth: 6,
+        endYear: 2024,
+      ),
+      TestDataFactory.createSavingsSettings(
         month: 5,
-        year: 2023,
-        income: 4000.0,
-        savingsAmount: 900.0,
-      );
-      final expectedUpdatedSettings = Settings(
-        savingsSettings: [newSavingsSettings],
-      );
+        year: 2024,
+      ),
+    ];
 
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right<Failure, Settings>(emptySettings));
-      when(mockRepository.saveSettings(any)).thenAnswer(
-          (_) async => Right<Failure, Settings>(expectedUpdatedSettings));
+    final result = await useCase(overlapping);
 
-      final result = await useCase(newSavingsSettings);
+    expect(result.isLeft(), true);
+    result.fold((failure) {
+      expect(failure, isA<ValidationFailure>());
+    }, (_) => fail('Expected validation failure'));
+    verifyNever(repository.getSettings());
+    verifyNever(repository.saveSettings(any));
+  });
 
-      expect(result.isRight(), true);
-      verify(mockRepository.getSettings());
-      verify(mockRepository.saveSettings(argThat(predicate<Settings>(
-          (settings) =>
-              settings.savingsSettings?.length == 1 &&
-              settings.savingsSettings?.first == newSavingsSettings))));
-      verifyNoMoreInteractions(mockRepository);
-    });
+  test('returns validation failure when non-last period is open-ended',
+      () async {
+    final periods = [
+      TestDataFactory.createSavingsSettings(
+        month: 1,
+        year: 2024,
+        openEnded: true,
+      ),
+      TestDataFactory.createSavingsSettings(
+        month: 3,
+        year: 2024,
+      ),
+    ];
 
-    test('should handle multiple savings settings for different years',
-        () async {
-      final existingSettings = Settings(
-        savingsSettings: [
-          SavingsSettings(
-              month: 12, year: 2022, income: 2800.0, savingsAmount: 300.0),
-          SavingsSettings(
-              month: 1, year: 2023, income: 3000.0, savingsAmount: 500.0),
-        ],
-      );
-      final newSavingsSettings = TestDataFactory.createSavingsSettings(
-        month: 12,
-        year: 2023,
-        income: 3800.0,
-        savingsAmount: 1000.0,
-      );
+    final result = await useCase(periods);
 
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
-      when(mockRepository.saveSettings(any))
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
+    expect(result.isLeft(), true);
+    result.fold((failure) {
+      expect(failure, isA<ValidationFailure>());
+    }, (_) => fail('Expected validation failure'));
+    verifyNever(repository.getSettings());
+    verifyNever(repository.saveSettings(any));
+  });
 
-      final result = await useCase(newSavingsSettings);
+  test('returns validation failure for invalid month values', () async {
+    final periods = [
+      TestDataFactory.createSavingsSettings(month: 13, year: 2024),
+    ];
 
-      expect(result.isRight(), true);
-      verify(mockRepository.getSettings());
-      verify(mockRepository.saveSettings(argThat(predicate<Settings>(
-          (settings) =>
-              settings.savingsSettings?.length == 3 &&
-              settings.savingsSettings
-                      ?.any((s) => s.month == 12 && s.year == 2023) ==
-                  true))));
-      verifyNoMoreInteractions(mockRepository);
-    });
+    final result = await useCase(periods);
 
-    test(
-        'should update existing savings settings with same month but different year',
-        () async {
-      final existingSettings = Settings(
-        savingsSettings: [
-          SavingsSettings(
-              month: 6, year: 2022, income: 2500.0, savingsAmount: 200.0),
-          SavingsSettings(
-              month: 6, year: 2023, income: 3000.0, savingsAmount: 500.0),
-        ],
-      );
-      final updatedSavingsSettings = TestDataFactory.createSavingsSettings(
-        month: 6,
-        year: 2023,
-        income: 3200.0,
-        savingsAmount: 600.0,
-      );
+    expect(result.isLeft(), true);
+    result.fold((failure) {
+      expect(failure, isA<ValidationFailure>());
+    }, (_) => fail('Expected validation failure'));
+    verifyNever(repository.getSettings());
+    verifyNever(repository.saveSettings(any));
+  });
 
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
-      when(mockRepository.saveSettings(any))
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
+  test('returns validation failure for negative values', () async {
+    final periods = [
+      TestDataFactory.createSavingsSettings(
+        month: 1,
+        year: 2024,
+        income: -10,
+      ),
+    ];
 
-      final result = await useCase(updatedSavingsSettings);
+    final result = await useCase(periods);
 
-      expect(result.isRight(), true);
-      verify(mockRepository.getSettings());
-      verify(
-          mockRepository.saveSettings(argThat(predicate<Settings>((settings) {
-        final june2023Setting = settings.savingsSettings?.firstWhere(
-          (s) => s.month == 6 && s.year == 2023,
-        );
-        return settings.savingsSettings?.length == 2 &&
-            june2023Setting?.income == 3200.0 &&
-            june2023Setting?.savingsAmount == 600.0;
-      }))));
-      verifyNoMoreInteractions(mockRepository);
-    });
+    expect(result.isLeft(), true);
+    result.fold((failure) {
+      expect(failure, isA<ValidationFailure>());
+    }, (_) => fail('Expected validation failure'));
+    verifyNever(repository.getSettings());
+    verifyNever(repository.saveSettings(any));
+  });
 
-    test('should preserve original list when creating updated settings',
-        () async {
-      final originalSavingsList = TestDataFactory.createSavingsSettingsList();
-      final existingSettings = Settings(savingsSettings: originalSavingsList);
-      final newSavingsSettings = TestDataFactory.createSavingsSettings(
-        month: 4,
-        year: 2023,
-        income: 3300.0,
-        savingsAmount: 650.0,
-      );
+  test('forwards repository failure when getSettings fails', () async {
+    when(repository.getSettings()).thenAnswer(
+      (_) async => const Left(ServerFailure('failure')),
+    );
 
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
-      when(mockRepository.saveSettings(any))
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
+    final result = await useCase([TestDataFactory.createSavingsSettings()]);
 
-      await useCase(newSavingsSettings);
+    expect(result.isLeft(), true);
+    expect(
+      result.swap().getOrElse(() => const ServerFailure('failure')),
+      const ServerFailure('failure'),
+    );
+    verify(repository.getSettings()).called(1);
+    verifyNever(repository.saveSettings(any));
+  });
 
-      // Verify original list is not modified
-      expect(originalSavingsList.length, 3);
-      expect(originalSavingsList.any((s) => s.month == 4), false);
+  test('forwards repository failure when saveSettings fails', () async {
+    when(repository.getSettings()).thenAnswer(
+      (_) async => Right(TestDataFactory.createSettings()),
+    );
 
-      verify(mockRepository.saveSettings(argThat(predicate<Settings>(
-          (settings) => settings.savingsSettings?.length == 4))));
-    });
+    when(repository.saveSettings(any)).thenAnswer(
+      (_) async => const Left(ServerFailure('save failed')),
+    );
 
-    test('should return failure when getSettings fails', () async {
-      const failure = ServerFailure('Failed to get settings');
-      final newSavingsSettings = TestDataFactory.createSavingsSettings();
+    final result = await useCase([TestDataFactory.createSavingsSettings()]);
 
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => const Left<Failure, Settings>(failure));
-
-      final result = await useCase(newSavingsSettings);
-
-      expect(result.isLeft(), true);
-      expect(result.fold((l) => l, (r) => null), failure);
-      verify(mockRepository.getSettings());
-      verifyNever(mockRepository.saveSettings(any));
-      verifyNoMoreInteractions(mockRepository);
-    });
-
-    test('should return failure when saveSettings fails', () async {
-      final existingSettings = TestDataFactory.createSettings();
-      const failure = ServerFailure('Failed to save settings');
-      final newSavingsSettings = TestDataFactory.createSavingsSettings();
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
-      when(mockRepository.saveSettings(any))
-          .thenAnswer((_) async => const Left<Failure, Settings>(failure));
-
-      final result = await useCase(newSavingsSettings);
-
-      expect(result.isLeft(), true);
-      expect(result.fold((l) => l, (r) => null), failure);
-      verify(mockRepository.getSettings());
-      verify(mockRepository.saveSettings(any));
-      verifyNoMoreInteractions(mockRepository);
-    });
-
-    test(
-        'should return ConnectionFailure when getSettings returns ConnectionFailure',
-        () async {
-      const failure = ConnectionFailure();
-      final newSavingsSettings = TestDataFactory.createSavingsSettings();
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => const Left<Failure, Settings>(failure));
-
-      final result = await useCase(newSavingsSettings);
-
-      expect(result.isLeft(), true);
-      expect(result.fold((l) => l, (r) => null), failure);
-      verify(mockRepository.getSettings());
-      verifyNever(mockRepository.saveSettings(any));
-      verifyNoMoreInteractions(mockRepository);
-    });
-
-    test(
-        'should return UnauthorizedFailure when saveSettings returns UnauthorizedFailure',
-        () async {
-      final existingSettings = TestDataFactory.createSettings();
-      const failure = UnauthorizedFailure();
-      final newSavingsSettings = TestDataFactory.createSavingsSettings();
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
-      when(mockRepository.saveSettings(any))
-          .thenAnswer((_) async => const Left<Failure, Settings>(failure));
-
-      final result = await useCase(newSavingsSettings);
-
-      expect(result.isLeft(), true);
-      expect(result.fold((l) => l, (r) => null), failure);
-      verify(mockRepository.getSettings());
-      verify(mockRepository.saveSettings(any));
-      verifyNoMoreInteractions(mockRepository);
-    });
-
-    test(
-        'should return NotFoundFailure when getSettings returns NotFoundFailure',
-        () async {
-      const failure = NotFoundFailure();
-      final newSavingsSettings = TestDataFactory.createSavingsSettings();
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => const Left<Failure, Settings>(failure));
-
-      final result = await useCase(newSavingsSettings);
-
-      expect(result.isLeft(), true);
-      expect(result.fold((l) => l, (r) => null), failure);
-      verify(mockRepository.getSettings());
-      verifyNever(mockRepository.saveSettings(any));
-      verifyNoMoreInteractions(mockRepository);
-    });
-
-    test(
-        'should return ValidationFailure when saveSettings returns ValidationFailure',
-        () async {
-      final existingSettings = TestDataFactory.createSettings();
-      const failure = ValidationFailure([
-        {'field': 'savingsSettings', 'message': 'Invalid data'}
-      ]);
-      final newSavingsSettings = TestDataFactory.createSavingsSettings();
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right<Failure, Settings>(existingSettings));
-      when(mockRepository.saveSettings(any))
-          .thenAnswer((_) async => const Left<Failure, Settings>(failure));
-
-      final result = await useCase(newSavingsSettings);
-
-      expect(result.isLeft(), true);
-      expect(result.fold((l) => l, (r) => null), failure);
-      verify(mockRepository.getSettings());
-      verify(mockRepository.saveSettings(any));
-      verifyNoMoreInteractions(mockRepository);
-    });
+    expect(result.isLeft(), true);
+    expect(
+      result.swap().getOrElse(() => const ServerFailure('save failed')),
+      const ServerFailure('save failed'),
+    );
+    verify(repository.getSettings()).called(1);
+    verify(repository.saveSettings(any)).called(1);
   });
 }

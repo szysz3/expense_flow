@@ -208,12 +208,17 @@ class TestDataFactory {
   static SavingsSettings createSavingsSettings({
     int month = _defaultMonth,
     int year = _defaultYear,
+    int? endMonth,
+    int? endYear,
     double savingsAmount = _defaultSavingsAmount,
     double income = _defaultIncome,
+    bool openEnded = false,
   }) =>
       SavingsSettings(
-        month: month,
-        year: year,
+        startMonth: month,
+        startYear: year,
+        endMonth: openEnded ? null : (endMonth ?? month),
+        endYear: openEnded ? null : (endYear ?? year),
         savingsAmount: savingsAmount,
         income: income,
       );
@@ -328,6 +333,7 @@ class TestDataFactory {
 
   static Settings createSettings({List<SavingsSettings>? savingsSettings}) =>
       Settings(
+        version: settingsCurrentVersion,
         savingsSettings: savingsSettings ??
             [
               createSavingsSettings(
@@ -337,10 +343,11 @@ class TestDataFactory {
             ],
       );
 
-  static Settings createEmptySettings() => const Settings(savingsSettings: []);
+  static Settings createEmptySettings() =>
+      const Settings(version: settingsCurrentVersion, savingsSettings: []);
 
   static Settings createSettingsWithNullSavings() =>
-      const Settings(savingsSettings: null);
+      const Settings(version: settingsCurrentVersion, savingsSettings: null);
 
   static DailyExpense createSingleDailyExpense({
     int day = 1,

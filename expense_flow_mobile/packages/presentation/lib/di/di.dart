@@ -43,6 +43,7 @@ import 'package:domain/use_case/receipt/receipt_get_use_case.dart';
 import 'package:domain/use_case/receipt/receipt_update_use_case.dart';
 import 'package:domain/use_case/settings/settings_get_month_savings_use_case.dart';
 import 'package:domain/use_case/settings/settings_get_savings_use_case.dart';
+import 'package:domain/use_case/settings/settings_get_all_periods_use_case.dart';
 import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
 import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_delete_use_case.dart';
 import 'package:domain/use_case/unprocessed_receipt/unprocessed_receipt_update_use_case.dart';
@@ -202,6 +203,10 @@ void _registerUseCases() {
   // Settings
   getIt.registerLazySingleton(
     () => SettingsGetSavingsUseCase(getIt<SettingsRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => SettingsGetAllPeriodsUseCase(getIt<SettingsRepository>()),
   );
 
   getIt.registerLazySingleton(

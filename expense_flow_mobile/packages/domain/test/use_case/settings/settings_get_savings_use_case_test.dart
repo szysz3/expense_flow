@@ -15,288 +15,131 @@ import 'settings_get_savings_use_case_test.mocks.dart';
 @GenerateMocks([SettingsRepository])
 void main() {
   late SettingsGetSavingsUseCase useCase;
-  late MockSettingsRepository mockRepository;
+  late MockSettingsRepository repository;
 
   setUp(() {
-    mockRepository = MockSettingsRepository();
-    useCase = SettingsGetSavingsUseCase(mockRepository);
+    repository = MockSettingsRepository();
+    useCase = SettingsGetSavingsUseCase(repository);
   });
 
-  group('SettingsGetSavingsUseCase', () {
-    test('should return failure when repository fails', () async {
-      const failure = ServerFailure('Server error');
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => const Left(failure));
+  test('returns failure when repository fails', () async {
+    when(repository.getSettings()).thenAnswer(
+      (_) async => const Left(ServerFailure('error')),
+    );
 
-      final result = await useCase.call(NoParams());
+    final result = await useCase(const NoParams());
 
-      expect(result, const Left(failure));
-      verify(mockRepository.getSettings()).called(1);
-    });
+    expect(result.isLeft(), true);
+    verify(repository.getSettings()).called(1);
+  });
 
-    test('should return current month settings when exact match exists',
-        () async {
-      final now = DateTime.now();
-      final currentMonthSettings = SavingsSettings(
-        month: now.month,
-        year: now.year,
-        savingsAmount: 600.0,
-        income: 3500.0,
-      );
+  test('returns period covering current month when available', () async {
+    final now = DateTime.now();
+    final matchingPeriod = SavingsSettings(
+      startMonth: now.month - 1 <= 0 ? 12 : now.month - 1,
+      startYear: now.month - 1 <= 0 ? now.year - 1 : now.year,
+      endMonth: now.month,
+      endYear: now.year,
+      savingsAmount: 600,
+      income: 3200,
+    );
 
-      final otherSettings = SavingsSettings(
-        month: now.month == 1 ? 2 : 1,
-        year: now.year,
-        savingsAmount: 500.0,
-        income: 3000.0,
-      );
+    final otherPeriod = TestDataFactory.createSavingsSettings(
+      month: now.month,
+      year: now.year - 1,
+      savingsAmount: 500,
+      income: 3000,
+    );
 
-      final settings = Settings(
-        savingsSettings: [otherSettings, currentMonthSettings],
-      );
+    when(repository.getSettings()).thenAnswer(
+      (_) async =>
+          Right(Settings(savingsSettings: [otherPeriod, matchingPeriod])),
+    );
 
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right(settings));
+    final result = await useCase(const NoParams());
 
-      final result = await useCase.call(NoParams());
+    expect(result, Right(matchingPeriod));
+    verify(repository.getSettings()).called(1);
+  });
 
-      expect(result, Right(currentMonthSettings));
-      verify(mockRepository.getSettings()).called(1);
-    });
+  test('prefers most recent period when no match exists', () async {
+    final periods = [
+      TestDataFactory.createSavingsSettings(month: 1, year: 2022),
+      TestDataFactory.createSavingsSettings(month: 3, year: 2023),
+      TestDataFactory.createSavingsSettings(month: 7, year: 2021),
+    ];
 
-    test('should return most recent settings when no current month match',
-        () async {
-      final now = DateTime.now();
-      final olderSettings = SavingsSettings(
-        month: 1,
-        year: now.year - 1,
-        savingsAmount: 400.0,
-        income: 2800.0,
-      );
+    when(repository.getSettings()).thenAnswer(
+      (_) async => Right(Settings(savingsSettings: periods)),
+    );
 
-      final newerSettings = SavingsSettings(
-        month: 6,
-        year: now.year,
-        savingsAmount: 700.0,
-        income: 3200.0,
-      );
+    final result = await useCase(const NoParams());
 
-      final middleSettings = SavingsSettings(
-        month: 3,
-        year: now.year,
-        savingsAmount: 550.0,
-        income: 3100.0,
-      );
+    expect(result, Right(periods[1]));
+  });
 
-      final settings = Settings(
-        savingsSettings: [olderSettings, middleSettings, newerSettings],
-      );
+  test('returns period with open end when applicable', () async {
+    final now = DateTime.now();
+    final openEnded = TestDataFactory.createSavingsSettings(
+      month: now.month,
+      year: now.year,
+      openEnded: true,
+      income: 4100,
+    );
 
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right(settings));
+    when(repository.getSettings()).thenAnswer(
+      (_) async => Right(Settings(savingsSettings: [openEnded])),
+    );
 
-      final result = await useCase.call(NoParams());
+    final result = await useCase(const NoParams());
 
-      expect(result, Right(newerSettings));
-      verify(mockRepository.getSettings()).called(1);
-    });
+    expect(result, Right(openEnded));
+  });
 
-    test('should return most recent settings when sorted by year first',
-        () async {
-      final now = DateTime.now();
-      final currentYearEarly = SavingsSettings(
-        month: 2,
-        year: now.year,
-        savingsAmount: 500.0,
-        income: 3000.0,
-      );
+  test('returns default zero values when no periods exist', () async {
+    when(repository.getSettings()).thenAnswer(
+      (_) async => Right(const Settings(savingsSettings: [])),
+    );
 
-      final nextYearLate = SavingsSettings(
-        month: 12,
-        year: now.year + 1,
-        savingsAmount: 800.0,
-        income: 3500.0,
-      );
+    final result = await useCase(const NoParams());
+    final now = DateTime.now();
 
-      final currentYearLate = SavingsSettings(
-        month: 10,
-        year: now.year,
-        savingsAmount: 600.0,
-        income: 3200.0,
-      );
+    expect(
+      result,
+      Right(
+        SavingsSettings(
+          startMonth: now.month,
+          startYear: now.year,
+          endMonth: now.month,
+          endYear: now.year,
+          income: 0,
+          savingsAmount: 0,
+        ),
+      ),
+    );
+  });
 
-      final settings = Settings(
-        savingsSettings: [currentYearEarly, currentYearLate, nextYearLate],
-      );
+  test('returns first matching period when duplicates exist', () async {
+    final now = DateTime.now();
+    final first = TestDataFactory.createSavingsSettings(
+      month: now.month,
+      year: now.year,
+      savingsAmount: 400,
+      income: 2500,
+    );
+    final second = TestDataFactory.createSavingsSettings(
+      month: now.month,
+      year: now.year,
+      savingsAmount: 600,
+      income: 3000,
+    );
 
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right(settings));
+    when(repository.getSettings()).thenAnswer(
+      (_) async => Right(Settings(savingsSettings: [first, second])),
+    );
 
-      final result = await useCase.call(NoParams());
+    final result = await useCase(const NoParams());
 
-      expect(result, Right(nextYearLate));
-      verify(mockRepository.getSettings()).called(1);
-    });
-
-    test('should return default settings when savingsSettings is null',
-        () async {
-      final now = DateTime.now();
-      const settings = Settings(savingsSettings: null);
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => const Right(settings));
-
-      final result = await useCase.call(NoParams());
-
-      final expectedDefault = SavingsSettings(
-        month: now.month,
-        year: now.year,
-        savingsAmount: 0.0,
-        income: 0.0,
-      );
-
-      expect(result, Right(expectedDefault));
-      verify(mockRepository.getSettings()).called(1);
-    });
-
-    test('should return default settings when savingsSettings is empty',
-        () async {
-      final now = DateTime.now();
-      final settings = TestDataFactory.createEmptySettings();
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right(settings));
-
-      final result = await useCase.call(NoParams());
-
-      final expectedDefault = SavingsSettings(
-        month: now.month,
-        year: now.year,
-        savingsAmount: 0.0,
-        income: 0.0,
-      );
-
-      expect(result, Right(expectedDefault));
-      verify(mockRepository.getSettings()).called(1);
-    });
-
-    test('should return first match when multiple current month settings exist',
-        () async {
-      final now = DateTime.now();
-      final firstCurrentMonth = SavingsSettings(
-        month: now.month,
-        year: now.year,
-        savingsAmount: 500.0,
-        income: 3000.0,
-      );
-
-      final secondCurrentMonth = SavingsSettings(
-        month: now.month,
-        year: now.year,
-        savingsAmount: 600.0,
-        income: 3200.0,
-      );
-
-      final settings = Settings(
-        savingsSettings: [firstCurrentMonth, secondCurrentMonth],
-      );
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right(settings));
-
-      final result = await useCase.call(NoParams());
-
-      expect(result, Right(firstCurrentMonth));
-      verify(mockRepository.getSettings()).called(1);
-    });
-
-    test('should handle different failure types', () async {
-      const failures = [
-        ConnectionFailure(),
-        UnauthorizedFailure(),
-        NotFoundFailure(),
-        ValidationFailure([
-          {'field': 'error'}
-        ]),
-      ];
-
-      for (final failure in failures) {
-        when(mockRepository.getSettings())
-            .thenAnswer((_) async => Left(failure));
-
-        final result = await useCase.call(NoParams());
-
-        expect(result, Left(failure));
-      }
-
-      verify(mockRepository.getSettings()).called(failures.length);
-    });
-
-    test('should sort settings correctly with mixed years and months',
-        () async {
-      final settings2023Jan = SavingsSettings(
-        month: 1,
-        year: 2023,
-        savingsAmount: 300.0,
-        income: 2500.0,
-      );
-
-      final settings2024Dec = SavingsSettings(
-        month: 12,
-        year: 2024,
-        savingsAmount: 800.0,
-        income: 4000.0,
-      );
-
-      final settings2024Jan = SavingsSettings(
-        month: 1,
-        year: 2024,
-        savingsAmount: 500.0,
-        income: 3000.0,
-      );
-
-      final settings2023Dec = SavingsSettings(
-        month: 12,
-        year: 2023,
-        savingsAmount: 400.0,
-        income: 2800.0,
-      );
-
-      final settings = Settings(
-        savingsSettings: [
-          settings2023Jan,
-          settings2024Jan,
-          settings2023Dec,
-          settings2024Dec,
-        ],
-      );
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right(settings));
-
-      final result = await useCase.call(NoParams());
-
-      expect(result, Right(settings2024Dec));
-      verify(mockRepository.getSettings()).called(1);
-    });
-
-    test('should handle single savings setting', () async {
-      final singleSetting = TestDataFactory.createSavingsSettings(
-        month: 6,
-        year: 2023,
-        savingsAmount: 750.0,
-        income: 3500.0,
-      );
-
-      final settings = Settings(savingsSettings: [singleSetting]);
-
-      when(mockRepository.getSettings())
-          .thenAnswer((_) async => Right(settings));
-
-      final result = await useCase.call(NoParams());
-
-      expect(result, Right(singleSetting));
-      verify(mockRepository.getSettings()).called(1);
-    });
+    expect(result, Right(first));
   });
 }

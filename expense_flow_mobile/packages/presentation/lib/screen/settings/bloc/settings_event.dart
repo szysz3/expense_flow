@@ -6,10 +6,33 @@ part 'settings_event.freezed.dart';
 class SettingsEvent with _$SettingsEvent {
   const factory SettingsEvent.init() = InitEvent;
 
-  const factory SettingsEvent.savingsAmountChanged(String amount) =
-      SavingsAmountChangedEvent;
+  const factory SettingsEvent.periodAdded() = PeriodAddedEvent;
 
-  const factory SettingsEvent.incomeChanged(String income) = IncomeChangedEvent;
+  const factory SettingsEvent.periodRemoved(String id) = PeriodRemovedEvent;
+
+  const factory SettingsEvent.periodStartChanged({
+    required String id,
+    required int month,
+    required int year,
+  }) = PeriodStartChangedEvent;
+
+  const factory SettingsEvent.periodEndChanged({
+    required String id,
+    int? month,
+    int? year,
+  }) = PeriodEndChangedEvent;
+
+  const factory SettingsEvent.periodIncomeChanged({
+    required String id,
+    required String income,
+  }) = PeriodIncomeChangedEvent;
+
+  const factory SettingsEvent.periodSavingsChanged({
+    required String id,
+    required String savings,
+  }) = PeriodSavingsChangedEvent;
+
+  const factory SettingsEvent.toggleOpenEnded(String id) = ToggleOpenEndedEvent;
 
   const factory SettingsEvent.saveSettings() = SaveSettingsEvent;
 }

@@ -26,12 +26,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
       if (settingsJson == null) {
         // Return default settings if none found
-        return const Right(Settings());
+        return Right(
+          const Settings(version: settingsCurrentVersion, savingsSettings: []),
+        );
       }
 
       final Map<String, dynamic> decodedJson = jsonDecode(settingsJson);
       final settings = Settings.fromJson(decodedJson);
-
       return Right(settings);
     } catch (e, stackTrace) {
       _logger.e(
