@@ -1,5 +1,6 @@
 import 'package:domain/use_case/base/base_use_case.dart';
 import 'package:domain/model/failure/failures.dart';
+import 'package:domain/model/month_year.dart';
 import 'package:domain/use_case/settings/settings_get_all_periods_use_case.dart';
 import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -218,6 +219,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       return;
     }
 
+    // Only the last period can be open-ended
     if (index != periods.length - 1) {
       emit(state.copyWith(
         validationMessage:
@@ -226,18 +228,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       return;
     }
 
-    final hasOtherOpenEnded = periods.any(
-      (period) => period.id != event.id && period.isOpenEnded,
-    );
-
-    if (hasOtherOpenEnded) {
-      emit(state.copyWith(
-        validationMessage:
-            _localizationService.localizations.settingsOnlyLastOpenEnded,
-      ));
-      return;
-    }
-
+    // At this point, we know we're dealing with the last period
     final target = periods[index];
     final updated = target.isOpenEnded
         ? target.copyWith(
@@ -274,10 +265,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           _logger.e('Failed to save savings periods', error: failure);
 
           if (failure is ValidationFailure) {
-            final message = failure.details.isNotEmpty &&
-                    failure.details.first.containsKey('msg')
-                ? failure.details.first['msg'] as String
-                : _localizationService.localizations.settingsValidationGeneric;
+            final message = _getValidationMessage(failure);
 
             emit(state.copyWith(
               isSaving: false,
@@ -297,6 +285,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         (settings) {
           emit(state.copyWith(
             isSaving: false,
+            saveSuccessful: true,
             periods: state.periods,
             validationMessage: null,
           ));
@@ -336,24 +325,17 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     var nextMonth = last.endMonth ?? last.startMonth;
     var nextYear = last.endYear ?? last.startYear;
 
-    final incremented = _incrementMonth(nextMonth, nextYear);
+    final incremented = MonthYear(nextMonth, nextYear).increment();
 
     return SettingsPeriodForm(
       id: _generateId(),
-      startMonth: incremented.$1,
-      startYear: incremented.$2,
-      endMonth: incremented.$1,
-      endYear: incremented.$2,
+      startMonth: incremented.month,
+      startYear: incremented.year,
+      endMonth: incremented.month,
+      endYear: incremented.year,
       income: last.income,
       savingsAmount: last.savingsAmount,
     );
-  }
-
-  (int, int) _incrementMonth(int month, int year) {
-    if (month == 12) {
-      return (1, year + 1);
-    }
-    return (month + 1, year);
   }
 
   bool _isEndBeforeStart(
@@ -371,8 +353,44 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     return false;
   }
 
+  /// Generates a temporary UI-only ID for period forms.
+  /// These IDs are ephemeral and only used for tracking periods in the UI state.
+  /// They are NOT persisted and will be regenerated on each bloc initialization.
   String _generateId() {
     _idCounter += 1;
     return _idCounter.toString();
+  }
+
+  /// Maps validation error codes to localized messages.
+  String _getValidationMessage(ValidationFailure failure) {
+    if (failure.details.isEmpty || !failure.details.first.containsKey('code')) {
+      return _localizationService.localizations.settingsValidationGeneric;
+    }
+
+    final code = failure.details.first['code'] as String;
+    final l10n = _localizationService.localizations;
+
+    switch (code) {
+      case 'INVALID_START_MONTH':
+        return l10n.settingsValidationInvalidStartMonth;
+      case 'INVALID_START_YEAR':
+        return l10n.settingsValidationInvalidStartYear;
+      case 'PARTIAL_END_DATE':
+        return l10n.settingsValidationPartialEndDate;
+      case 'INVALID_END_MONTH':
+        return l10n.settingsValidationInvalidEndMonth;
+      case 'END_BEFORE_START_YEAR':
+        return l10n.settingsValidationEndBeforeStartYear;
+      case 'END_BEFORE_START_MONTH':
+        return l10n.settingsValidationEndBeforeStartMonth;
+      case 'NEGATIVE_VALUES':
+        return l10n.settingsValidationNegativeValues;
+      case 'ONLY_LAST_OPEN_ENDED':
+        return l10n.settingsOnlyLastOpenEnded;
+      case 'PERIODS_OVERLAP':
+        return l10n.settingsValidationPeriodsOverlap;
+      default:
+        return l10n.settingsValidationGeneric;
+    }
   }
 }

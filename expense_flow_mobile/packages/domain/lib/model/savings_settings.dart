@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../util/date_comparison_utils.dart';
+
 part 'savings_settings.freezed.dart';
 part 'savings_settings.g.dart';
 
@@ -19,48 +21,29 @@ class SavingsSettings with _$SavingsSettings {
 
   const SavingsSettings._();
 
+  /// Checks if this savings period contains the specified month and year.
   bool containsMonth(int month, int year) {
-    final startsBeforeOrEqual =
-        _isSameOrBefore(startYear, startMonth, year, month);
+    final startsBeforeOrEqual = DateComparisonUtils.isSameOrBefore(
+      startYear,
+      startMonth,
+      year,
+      month,
+    );
 
     if (!startsBeforeOrEqual) {
       return false;
     }
 
+    // If period is open-ended, it contains all months after start
     if (endMonth == null || endYear == null) {
       return true;
     }
 
-    return _isSameOrAfter(endYear!, endMonth!, year, month);
-  }
-
-  bool _isSameOrBefore(
-    int leftYear,
-    int leftMonth,
-    int rightYear,
-    int rightMonth,
-  ) {
-    if (leftYear < rightYear) {
-      return true;
-    }
-    if (leftYear > rightYear) {
-      return false;
-    }
-    return leftMonth <= rightMonth;
-  }
-
-  bool _isSameOrAfter(
-    int leftYear,
-    int leftMonth,
-    int rightYear,
-    int rightMonth,
-  ) {
-    if (leftYear > rightYear) {
-      return true;
-    }
-    if (leftYear < rightYear) {
-      return false;
-    }
-    return leftMonth >= rightMonth;
+    return DateComparisonUtils.isSameOrAfter(
+      endYear!,
+      endMonth!,
+      year,
+      month,
+    );
   }
 }

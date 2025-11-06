@@ -16,6 +16,7 @@ class SettingsPeriodCard extends StatelessWidget {
   final String Function(String) parseNumberInput;
   final VoidCallback onStartDatePress;
   final VoidCallback onEndDatePress;
+  final bool canBeOpenEnded;
 
   const SettingsPeriodCard({
     super.key,
@@ -26,6 +27,7 @@ class SettingsPeriodCard extends StatelessWidget {
     required this.parseNumberInput,
     required this.onStartDatePress,
     required this.onEndDatePress,
+    required this.canBeOpenEnded,
   });
 
   @override
@@ -88,27 +90,29 @@ class SettingsPeriodCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Text(
-                l10n.settingsOpenEnded,
-                style: theme.textTheme.bodyMedium,
-              ),
-              const Spacer(),
-              Switch(
-                value: period.isOpenEnded,
-                onChanged: (_) {
-                  context
-                      .read<SettingsBloc>()
-                      .add(SettingsEvent.toggleOpenEnded(period.id));
-                },
-                activeColor: theme.colorScheme.primary,
-                activeTrackColor:
-                    theme.colorScheme.primary.withValues(alpha: 0.5),
-              ),
-            ],
-          ),
+          if (canBeOpenEnded) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Text(
+                  l10n.settingsOpenEnded,
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const Spacer(),
+                Switch(
+                  value: period.isOpenEnded,
+                  onChanged: (_) {
+                    context
+                        .read<SettingsBloc>()
+                        .add(SettingsEvent.toggleOpenEnded(period.id));
+                  },
+                  activeColor: theme.colorScheme.primary,
+                  activeTrackColor:
+                      theme.colorScheme.primary.withValues(alpha: 0.5),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,

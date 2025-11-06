@@ -49,49 +49,46 @@ class SettingsSaveSavingsUseCase
 
       if (period.startMonth < 1 || period.startMonth > 12) {
         return ValidationFailure([
-          {'field': 'startMonth', 'msg': 'Start month must be between 1 and 12'}
+          {'code': 'INVALID_START_MONTH'}
         ]);
       }
 
       if (period.startYear < 2000) {
         return ValidationFailure([
-          {'field': 'startYear', 'msg': 'Start year must be 2000 or later'}
+          {'code': 'INVALID_START_YEAR'}
         ]);
       }
 
       if (hasPartialEnd) {
         return ValidationFailure([
-          {'field': 'end', 'msg': 'End month and year must both be provided'}
+          {'code': 'PARTIAL_END_DATE'}
         ]);
       }
 
       if (!isOpenEnded) {
         if (period.endMonth! < 1 || period.endMonth! > 12) {
           return ValidationFailure([
-            {'field': 'endMonth', 'msg': 'End month must be between 1 and 12'}
+            {'code': 'INVALID_END_MONTH'}
           ]);
         }
 
         if (period.endYear! < period.startYear) {
           return ValidationFailure([
-            {'field': 'endYear', 'msg': 'End year cannot be before start year'}
+            {'code': 'END_BEFORE_START_YEAR'}
           ]);
         }
 
         if (period.endYear == period.startYear &&
             period.endMonth! < period.startMonth) {
           return ValidationFailure([
-            {
-              'field': 'endMonth',
-              'msg': 'End month cannot be before start month'
-            }
+            {'code': 'END_BEFORE_START_MONTH'}
           ]);
         }
       }
 
       if (period.income < 0 || period.savingsAmount < 0) {
         return ValidationFailure([
-          {'field': 'values', 'msg': 'Income and savings must be non-negative'}
+          {'code': 'NEGATIVE_VALUES'}
         ]);
       }
     }
@@ -106,7 +103,7 @@ class SettingsSaveSavingsUseCase
           current.endMonth == null && current.endYear == null;
       if (currentOpenEnded) {
         return ValidationFailure([
-          {'field': 'end', 'msg': 'Only the last period may be open-ended'}
+          {'code': 'ONLY_LAST_OPEN_ENDED'}
         ]);
       }
 
@@ -119,7 +116,7 @@ class SettingsSaveSavingsUseCase
 
       if (!endsBefore) {
         return ValidationFailure([
-          {'field': 'range', 'msg': 'Periods may not overlap'}
+          {'code': 'PERIODS_OVERLAP'}
         ]);
       }
     }

@@ -10,6 +10,7 @@ import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
+import '../../core/widget/scroll_boundary_indicator.dart';
 import '../../di/di.dart';
 import 'bloc/settings_bloc.dart';
 import 'bloc/settings_event.dart';
@@ -60,10 +61,7 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   SettingsModalHeader(),
                   Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: SettingsScreenView(),
-                    ),
+                    child: SettingsScreenView(),
                   ),
                 ],
               ),
@@ -86,7 +84,10 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
   final Map<String, TextEditingController> _savingsControllers = {};
   final Map<String, double> _incomeValues = {};
   final Map<String, double> _savingsValues = {};
-  bool _shouldCloseOnSave = false;
+
+  // Cached number format for parsing user input
+  NumberFormat? _cachedParseFormat;
+  String? _cachedLocale;
 
   @override
   void dispose() {
@@ -102,30 +103,14 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SettingsBloc, SettingsState>(
-      listenWhen: (previous, current) {
-        if (previous.isSaving && !current.isSaving) {
-          _shouldCloseOnSave = current.error == null &&
-              current.validationMessage == null &&
-              current.periods.isNotEmpty;
-          return true;
-        }
-
-        if (current.error != null && current.error != previous.error) {
-          _shouldCloseOnSave = false;
-          return true;
-        }
-
-        return false;
-      },
       listener: (context, state) {
         if (state.error != null) {
           ErrorUtils.showErrorSnackBar(context, state.error!);
           return;
         }
 
-        if (_shouldCloseOnSave) {
+        if (state.saveSuccessful) {
           Navigator.of(context).pop();
-          _shouldCloseOnSave = false;
         }
       },
       builder: (context, state) {
@@ -143,71 +128,91 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
   Widget _buildSettingsContent(BuildContext context, SettingsState state) {
     final l10n = AppLocalizations.of(context);
 
-    return SafeArea(
-      top: false,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.settings,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.settings,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 12),
+              if (state.validationMessage != null) ...[
+                SettingsValidationBanner(message: state.validationMessage!),
                 const SizedBox(height: 12),
-                if (state.validationMessage != null) ...[
-                  SettingsValidationBanner(message: state.validationMessage!),
-                  const SizedBox(height: 12),
-                ],
-                Row(
-                  children: [
-                    _buildAddPeriodButton(context, l10n),
-                    const SizedBox(width: 12),
-                    const Spacer(),
-                    AnimatedSquareButton(
-                      width: 42,
-                      height: 42,
-                      isProcessing: state.isSaving,
-                      onPressed: () {
-                        context
-                            .read<SettingsBloc>()
-                            .add(const SettingsEvent.saveSettings());
-                      },
-                      icon: SvgPicture.asset(
-                        'packages/presentation/assets/icon_tick.svg',
-                        width: 24,
-                        height: 24,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.only(top: 8, bottom: 16),
-                    itemBuilder: (context, index) {
-                      final period = state.periods.reversed.toList()[index];
-                      return SettingsPeriodCard(
-                        period: period,
-                        incomeController: _incomeControllers[period.id]!,
-                        savingsController: _savingsControllers[period.id]!,
-                        formatMonthYear: _formatMonthYear,
-                        parseNumberInput: _parseNumberInput,
-                        onStartDatePress: () => _selectStartDate(context, period),
-                        onEndDatePress: () => _selectEndDate(context, period),
-                      );
-                    },
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
-                    itemCount: state.periods.length,
-                  ),
-                ),
               ],
-            ),
+              Row(
+                children: [
+                  _buildAddPeriodButton(context, l10n),
+                  const SizedBox(width: 12),
+                  const Spacer(),
+                  AnimatedSquareButton(
+                    width: 42,
+                    height: 42,
+                    isProcessing: state.isSaving,
+                    onPressed: () {
+                      context
+                          .read<SettingsBloc>()
+                          .add(const SettingsEvent.saveSettings());
+                    },
+                    icon: SvgPicture.asset(
+                      'packages/presentation/assets/icon_tick.svg',
+                      width: 24,
+                      height: 24,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: Stack(
+            children: [
+              ListView.separated(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
+                itemBuilder: (context, index) {
+                  final period = state.periods.reversed.toList()[index];
+                  // Only the last (most recent) period can be open-ended.
+                  // Since the list is reversed, index 0 represents the last period.
+                  final canBeOpenEnded = index == 0;
+                  return SettingsPeriodCard(
+                    period: period,
+                    incomeController: _incomeControllers[period.id]!,
+                    savingsController: _savingsControllers[period.id]!,
+                    formatMonthYear: _formatMonthYear,
+                    parseNumberInput: _parseNumberInput,
+                    onStartDatePress: () => _selectStartDate(context, period),
+                    onEndDatePress: () => _selectEndDate(context, period),
+                    canBeOpenEnded: canBeOpenEnded,
+                  );
+                },
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemCount: state.periods.length,
+              ),
+              // Top shadow and border
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: ScrollBoundaryIndicator.top(),
+              ),
+              // Bottom shadow and border
+              const Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: ScrollBoundaryIndicator.bottom(),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -352,8 +357,15 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
   }
 
   String _parseNumberInput(String value) {
-    final locale = Localizations.localeOf(context);
-    final format = NumberFormat.decimalPattern(locale.toString());
+    final locale = Localizations.localeOf(context).toString();
+
+    // Cache the format to avoid recreation on every keystroke
+    if (_cachedParseFormat == null || _cachedLocale != locale) {
+      _cachedLocale = locale;
+      _cachedParseFormat = NumberFormat.decimalPattern(locale);
+    }
+
+    final format = _cachedParseFormat!;
     final decimalSeparator = format.symbols.DECIMAL_SEP;
     final groupSeparator = format.symbols.GROUP_SEP;
 
@@ -364,7 +376,7 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
 
     return normalizedValue;
   }
-}
+
   String _shortMonthLabel(BuildContext context, int month) {
     final full = _monthLabel(context, month);
     return full.length <= 3 ? full : full.substring(0, 3);
@@ -389,3 +401,4 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
 
     return monthNames[month - 1];
   }
+}

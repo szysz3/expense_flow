@@ -385,6 +385,38 @@
   "@settingsValidationGeneric": {
     "description": "Generic validation message for savings period errors"
   },
+  "settingsValidationInvalidStartMonth": "Start month must be between 1 and 12.",
+  "@settingsValidationInvalidStartMonth": {
+    "description": "Validation error when start month is out of range"
+  },
+  "settingsValidationInvalidStartYear": "Start year must be 2000 or later.",
+  "@settingsValidationInvalidStartYear": {
+    "description": "Validation error when start year is before 2000"
+  },
+  "settingsValidationPartialEndDate": "End month and year must both be provided.",
+  "@settingsValidationPartialEndDate": {
+    "description": "Validation error when only one of end month/year is set"
+  },
+  "settingsValidationInvalidEndMonth": "End month must be between 1 and 12.",
+  "@settingsValidationInvalidEndMonth": {
+    "description": "Validation error when end month is out of range"
+  },
+  "settingsValidationEndBeforeStartYear": "End year cannot be before start year.",
+  "@settingsValidationEndBeforeStartYear": {
+    "description": "Validation error when end year is before start year"
+  },
+  "settingsValidationEndBeforeStartMonth": "End month cannot be before start month.",
+  "@settingsValidationEndBeforeStartMonth": {
+    "description": "Validation error when end month is before start month in same year"
+  },
+  "settingsValidationNegativeValues": "Income and savings must be non-negative.",
+  "@settingsValidationNegativeValues": {
+    "description": "Validation error when income or savings is negative"
+  },
+  "settingsValidationPeriodsOverlap": "Periods cannot overlap.",
+  "@settingsValidationPeriodsOverlap": {
+    "description": "Validation error when two periods overlap"
+  },
   "monthJanuary": "January",
   "@monthJanuary": {
     "description": "Month name January"

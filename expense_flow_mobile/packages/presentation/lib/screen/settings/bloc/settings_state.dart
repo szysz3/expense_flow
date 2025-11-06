@@ -10,6 +10,7 @@ class SettingsState with _$SettingsState {
   const factory SettingsState({
     @Default(false) bool isLoading,
     @Default(false) bool isSaving,
+    @Default(false) bool saveSuccessful,
     @Default([]) List<SettingsPeriodForm> periods,
     String? validationMessage,
     AppError? error,
