@@ -5,11 +5,12 @@ from __future__ import annotations
 import logging
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from pydantic import ValidationError
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 
 from expense_flow.api.constants import ErrorMessages
 from expense_flow.api.dependencies import get_temp_receipt_repository
-from expense_flow.api.models import ReceiptStatus, TempReceipt
+from expense_flow.api.models import ReceiptStatus, TempReceipt, TempReceiptPayload
 from expense_flow.api.repository.temp_receipt_repository import TempReceiptRepository
 from expense_flow.api.routes.responses import OperationResponse
 from expense_flow.api.security import verify_api_key
@@ -56,6 +57,19 @@ async def analyze_receipt(
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": str(exc)},
+        ) from exc
+
+    try:
+        TempReceiptPayload.model_validate(receipt_data)
+    except ValidationError as exc:
+        logger.warning("Invalid OCR payload rejected: %s", exc)
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail={
+                "error": ErrorMessages.VALIDATION_ERROR,
+                "detail": "OCR output failed validation",
+                "issues": exc.errors(),
+            },
         ) from exc
 
     temp_receipt_id = await temp_repository.insert_temp_receipt(receipt_data)

@@ -10,6 +10,7 @@ from decimal import Decimal
 from ..api.app import app, get_repository, get_temp_repository
 from ..api.models import Category, LLMType, Receipt, SearchResult, SearchResultItem
 from ..api.constants import ErrorMessages, FileTypes
+from ..api.services.receipt_ingestion_service import ReceiptIngestionService
 from .mock_data import MOCK_RECEIPTS
 
 pytestmark = pytest.mark.asyncio
@@ -173,6 +174,44 @@ async def test_analyze_receipt_invalid_file_type(
         data = response.json()
         assert data["detail"]["error"] == ErrorMessages.INVALID_FILE_TYPE
         
+    finally:
+        if os.path.exists(temp_file_path):
+            os.unlink(temp_file_path)
+
+@pytest.mark.integration
+async def test_analyze_receipt_invalid_ocr_payload(
+    test_client,
+    api_headers,
+    temp_repo_mock,
+):
+    invalid_receipt_data = {
+        "merchant": {"name": "", "address": ""},
+        "items": [],
+        "total": -1,
+        "transaction_datetime": "not-a-date",
+    }
+
+    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
+        temp_file.write(b"fake image data")
+        temp_file_path = temp_file.name
+
+    try:
+        with patch.object(
+            ReceiptIngestionService,
+            "ingest",
+            return_value=invalid_receipt_data,
+        ):
+            with open(temp_file_path, "rb") as f:
+                response = test_client.post(
+                    "/api/receipts/analyze",
+                    headers=api_headers,
+                    files={"file": ("test.jpg", f, FileTypes.JPEG)},
+                )
+
+        assert response.status_code == 400
+        payload = response.json()
+        assert payload["detail"]["error"] == ErrorMessages.VALIDATION_ERROR
+        temp_repo_mock.insert_temp_receipt.assert_not_called()
     finally:
         if os.path.exists(temp_file_path):
             os.unlink(temp_file_path)

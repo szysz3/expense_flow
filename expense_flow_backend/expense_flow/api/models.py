@@ -1,10 +1,10 @@
 from enum import Enum
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, model_validator, validator
+from pydantic import BaseModel, Field, field_validator, model_validator, validator
 from decimal import Decimal
 import uuid
-from pydantic import BaseModel, Field
+import math
 
 class LLMType(str, Enum):
     LOCAL = "local"
@@ -234,6 +234,69 @@ class ReceiptStatus(str, Enum):
     PROCESSING = "processing"
     COMPLETED = "completed"
     ERROR = "error"
+
+
+class TempReceiptMerchant(BaseModel):
+    name: str
+    address: str
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        if not value or not value.strip():
+            raise ValueError("merchant.name must not be empty")
+        return value
+
+    @field_validator("address")
+    @classmethod
+    def validate_address(cls, value: str) -> str:
+        if not value or not value.strip():
+            raise ValueError("merchant.address must not be empty")
+        return value
+
+
+class TempReceiptItemPayload(BaseModel):
+    description: str
+    quantity: Decimal = Field(..., ge=0)
+    total_price: Decimal = Field(..., ge=0)
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str) -> str:
+        if not value or not value.strip():
+            raise ValueError("items[].description must not be empty")
+        return value
+
+    @field_validator("quantity", "total_price", mode="before")
+    @classmethod
+    def ensure_numeric(cls, value: Decimal) -> Decimal:
+        if value is None:
+            raise ValueError("numeric values must not be null")
+        if isinstance(value, float) and math.isnan(value):
+            raise ValueError("numeric values must be finite")
+        return value
+
+
+class TempReceiptPayload(BaseModel):
+    merchant: TempReceiptMerchant
+    items: List[TempReceiptItemPayload]
+    total: Decimal = Field(..., ge=0)
+    transaction_datetime: datetime
+
+    @field_validator("total", mode="before")
+    @classmethod
+    def validate_total(cls, value: Decimal) -> Decimal:
+        if value is None:
+            raise ValueError("total must not be null")
+        if isinstance(value, float) and math.isnan(value):
+            raise ValueError("total must be finite")
+        return value
+
+    @model_validator(mode="after")
+    def check_items(self) -> "TempReceiptPayload":
+        if not self.items:
+            raise ValueError("at least one item is required")
+        return self
 
 class TempReceipt(BaseModel):
     id: str
