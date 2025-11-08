@@ -7,6 +7,7 @@ class HttpConstants {
   static const String contentTypePng = 'image/png';
   static const String contentTypePdf = 'application/pdf';
 
+  static const int statusBadRequest = 400;
   static const int statusUnauthorized = 403;
   static const int statusNotFound = 404;
   static const int statusValidationError = 422;

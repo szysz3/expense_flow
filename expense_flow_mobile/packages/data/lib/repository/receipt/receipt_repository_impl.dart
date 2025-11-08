@@ -172,6 +172,49 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
           return UnauthorizedFailure();
         case HttpConstants.statusNotFound:
           return NotFoundFailure();
+        case HttpConstants.statusBadRequest:
+          try {
+            final responseData = e.response!.data;
+            if (responseData is Map<String, dynamic>) {
+              final detail = responseData['detail'];
+
+              if (detail is Map<String, dynamic>) {
+                final issues = detail['issues'];
+                if (issues is List &&
+                    issues.every((issue) => issue is Map<String, dynamic>)) {
+                  return ValidationFailure(
+                    issues.cast<Map<String, dynamic>>(),
+                  );
+                }
+
+                final errorMessage = detail['error'];
+                if (errorMessage != null &&
+                    errorMessage.toString().trim().isNotEmpty) {
+                  return ServerFailure(errorMessage.toString());
+                }
+              }
+
+              if (detail is String && detail.trim().isNotEmpty) {
+                return ServerFailure(detail.trim());
+              }
+
+              final message = responseData['message'];
+              if (message is String && message.trim().isNotEmpty) {
+                return ServerFailure(message.trim());
+              }
+            }
+          } catch (parseError, stackTrace) {
+            _logger.w(
+              'Failed to parse 400 error response',
+              error: parseError,
+              stackTrace: stackTrace,
+            );
+          }
+          return ServerFailure(
+            e.response!.statusMessage ??
+                e.message ??
+                ErrorMessages.unknownServerError,
+          );
         case HttpConstants.statusValidationError:
           try {
             final details =
