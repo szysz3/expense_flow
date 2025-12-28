@@ -41,6 +41,7 @@ coverage.xml
 .env.local
 .env.*.local
 .fcm-key.json
+scripts/backup.env
 
 # Log files
 *.log
