@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -170,8 +170,8 @@ async def create_receipt(
             ],
             total=request.total_price,
             transaction_datetime=request.transaction_datetime
-            or datetime.utcnow(),
-            added_datetime=datetime.utcnow(),
+            or datetime.now(timezone.utc),
+            added_datetime=datetime.now(timezone.utc),
         )
 
         receipt_id = await repository.insert_receipt(receipt)

@@ -151,6 +151,12 @@ class AzureDocumentProcessor:
         fields = docs[0].get('fields', {})
         date = fields.get('TransactionDate', {}).get('valueDate', '')
         time = fields.get('TransactionTime', {}).get('valueTime', '')
+        if date and time:
+            transaction_datetime = f"{date} {time}"
+        elif date:
+            transaction_datetime = date
+        else:
+            transaction_datetime = ""
         
         json_data = {
             "merchant": {
@@ -161,7 +167,7 @@ class AzureDocumentProcessor:
                 self._process_item(item) for item in fields.get('Items', {}).get('valueArray', [])
             ],
             "total": fields.get('Total', {}).get('valueCurrency', {}).get('amount', 0),
-            "transaction_datetime": f"{date} {time}" if date and time else ""
+            "transaction_datetime": transaction_datetime
         }
         
         return json.loads(json.dumps(json_data, ensure_ascii=True))

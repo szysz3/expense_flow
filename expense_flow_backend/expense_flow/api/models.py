@@ -1,10 +1,13 @@
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator, model_validator, validator
 from decimal import Decimal
 import uuid
 import math
+
+# Default values for optional fields
+DEFAULT_QUANTITY: float = 1.0
 
 class LLMType(str, Enum):
     LOCAL = "local"
@@ -45,7 +48,7 @@ class UnregisterDeviceRequest(BaseModel):
 
 class ReceiptItem(BaseModel):
     description: str
-    quantity: float
+    quantity: float = Field(default=DEFAULT_QUANTITY)
     total_price: Decimal
     category: Category
 
@@ -54,18 +57,46 @@ class ReceiptItem(BaseModel):
             Decimal: float
         }
 
+    @field_validator("quantity", mode="before")
+    @classmethod
+    def default_missing_quantity(cls, value: Optional[float]) -> float:
+        if value is None:
+            return DEFAULT_QUANTITY
+        return value
+
+def _utc_now() -> datetime:
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
+
+
 class Receipt(BaseModel):
     id: Optional[str] = Field(default=None)
-    merchant: Merchant
+    merchant: Merchant = Field(default_factory=Merchant)
     items: List[ReceiptItem]
     total: Decimal
-    transaction_datetime: datetime
-    added_datetime: datetime = Field(default_factory=datetime.utcnow)
+    transaction_datetime: datetime = Field(default_factory=_utc_now)
+    added_datetime: datetime = Field(default_factory=_utc_now)
 
     class Config:
         json_encoders = {
             Decimal: float
         }
+
+    @field_validator("merchant", mode="before")
+    @classmethod
+    def default_missing_merchant(cls, value: Optional[Merchant]) -> Merchant:
+        if value is None:
+            return Merchant()
+        return value
+
+    @field_validator("transaction_datetime", mode="before")
+    @classmethod
+    def default_missing_transaction_datetime(
+        cls, value: Optional[datetime]
+    ) -> datetime:
+        if value is None:
+            return _utc_now()
+        return value
 
 class ProcessReceiptRequest(BaseModel):
     llm_type: LLMType = Field(default=LLMType.LOCAL)
@@ -207,13 +238,13 @@ class ReceiptResponse(BaseModel):
 
 class CreateReceiptRequest(BaseModel):
     description: str
-    quantity: float
+    quantity: float = Field(default=DEFAULT_QUANTITY)
     total_price: Decimal
     category: Category
     merchant: Optional[Merchant] = Field(
         default_factory=lambda: Merchant(name="", address="")
     )
-    transaction_datetime: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    transaction_datetime: Optional[datetime] = Field(default_factory=_utc_now)
 
     class Config:
         json_encoders = {
@@ -237,27 +268,22 @@ class ReceiptStatus(str, Enum):
 
 
 class TempReceiptMerchant(BaseModel):
-    name: str
-    address: str
+    name: Optional[str] = None
+    address: Optional[str] = None
 
-    @field_validator("name")
+    @field_validator("name", "address", mode="before")
     @classmethod
-    def validate_name(cls, value: str) -> str:
-        if not value or not value.strip():
-            raise ValueError("merchant.name must not be empty")
-        return value
-
-    @field_validator("address")
-    @classmethod
-    def validate_address(cls, value: str) -> str:
-        if not value or not value.strip():
-            raise ValueError("merchant.address must not be empty")
+    def normalize_optional_text(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        if isinstance(value, str) and not value.strip():
+            return None
         return value
 
 
 class TempReceiptItemPayload(BaseModel):
     description: str
-    quantity: Decimal = Field(..., ge=0)
+    quantity: Optional[Decimal] = Field(default=None)
     total_price: Decimal = Field(..., ge=0)
 
     @field_validator("description")
@@ -267,21 +293,32 @@ class TempReceiptItemPayload(BaseModel):
             raise ValueError("items[].description must not be empty")
         return value
 
-    @field_validator("quantity", "total_price", mode="before")
+    @field_validator("quantity", mode="before")
     @classmethod
-    def ensure_numeric(cls, value: Decimal) -> Decimal:
+    def validate_quantity(cls, value: Optional[Decimal]) -> Optional[Decimal]:
         if value is None:
-            raise ValueError("numeric values must not be null")
+            return None
         if isinstance(value, float) and math.isnan(value):
-            raise ValueError("numeric values must be finite")
+            raise ValueError("quantity must be finite")
+        if value < 0:
+            raise ValueError("quantity must be non-negative")
+        return value
+
+    @field_validator("total_price", mode="before")
+    @classmethod
+    def validate_total_price(cls, value: Decimal) -> Decimal:
+        if value is None:
+            raise ValueError("total_price must not be null")
+        if isinstance(value, float) and math.isnan(value):
+            raise ValueError("total_price must be finite")
         return value
 
 
 class TempReceiptPayload(BaseModel):
-    merchant: TempReceiptMerchant
+    merchant: Optional[TempReceiptMerchant] = None
     items: List[TempReceiptItemPayload]
     total: Decimal = Field(..., ge=0)
-    transaction_datetime: datetime
+    transaction_datetime: Optional[datetime] = None
 
     @field_validator("total", mode="before")
     @classmethod
@@ -290,6 +327,17 @@ class TempReceiptPayload(BaseModel):
             raise ValueError("total must not be null")
         if isinstance(value, float) and math.isnan(value):
             raise ValueError("total must be finite")
+        return value
+
+    @field_validator("transaction_datetime", mode="before")
+    @classmethod
+    def normalize_transaction_datetime(
+        cls, value: Optional[datetime]
+    ) -> Optional[datetime]:
+        if value is None:
+            return None
+        if isinstance(value, str) and not value.strip():
+            return None
         return value
 
     @model_validator(mode="after")
@@ -302,7 +350,7 @@ class TempReceipt(BaseModel):
     id: str
     raw_data: Dict[str, Any]
     status: ReceiptStatus = ReceiptStatus.PENDING
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utc_now)
     error_message: Optional[str] = None
 
 class UnprocessedReceiptsResponse(BaseModel):
@@ -328,7 +376,7 @@ class ChatMessage(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     content: str
     sender: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=_utc_now)
     
     class Config:
         json_encoders = {

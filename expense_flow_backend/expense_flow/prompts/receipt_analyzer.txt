@@ -9,11 +9,10 @@ Output:
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["merchant", "items", "total", "transaction_datetime"],
+  "required": ["items", "total"],
   "properties": {
     "merchant": {
       "type": "object",
-      "required": ["name", "address"],
       "properties": {
         "name": {
           "type": "string",
@@ -29,7 +28,7 @@ Output:
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["description", "quantity", "total_price", "category"],
+        "required": ["description", "total_price", "category"],
         "properties": {
           "description": {
             "type": "string",

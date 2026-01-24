@@ -110,10 +110,11 @@ class LLMService:
                 except (ValueError, json.JSONDecodeError) as e:
                     raise ProcessingError(f"Invalid JSON response: {str(e)}")
             
-            if not self.validator.validate(data, result):
+            is_valid, normalized_result = self.validator.validate(data, result)
+            if not is_valid:
                 raise ProcessingError("Validation failed: Result contains modified or invalid data")
-                
-            return result
+
+            return normalized_result
         
         total_start_time = datetime.now()
         result = await retry_async(
