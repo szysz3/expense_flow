@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:domain/model/failure/failures.dart';
-import 'package:domain/model/savings_settings.dart';
 import 'package:domain/model/settings.dart';
 import 'package:domain/repository/settings_repository.dart';
 import 'package:domain/use_case/settings/settings_save_savings_use_case.dart';

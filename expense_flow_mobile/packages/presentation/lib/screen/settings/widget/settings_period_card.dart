@@ -106,7 +106,7 @@ class SettingsPeriodCard extends StatelessWidget {
                         .read<SettingsBloc>()
                         .add(SettingsEvent.toggleOpenEnded(period.id));
                   },
-                  activeColor: theme.colorScheme.primary,
+                  activeThumbColor: theme.colorScheme.primary,
                   activeTrackColor:
                       theme.colorScheme.primary.withValues(alpha: 0.5),
                 ),
