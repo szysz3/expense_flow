@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:localization/app_localizations.dart';
 
 import '../../../core/widget/animated_square_button.dart';
+import '../../../core/widget/app_spacing.dart';
 import '../../receipt_filtering/receipt_filtering_screen.dart';
 import '../bloc/receipt_browse_bloc.dart';
 import '../bloc/receipt_browse_event.dart';
@@ -30,13 +31,17 @@ class ReceiptBrowseEmptyState extends StatelessWidget {
                 'packages/presentation/assets/icon_scan.svg',
                 width: 64,
                 height: 64,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.onSurface,
+                  BlendMode.srcIn,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 AppLocalizations.of(context).appBarBrowseReceiptsTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 AppLocalizations.of(context).noReceiptsFound,
                 textAlign: TextAlign.center,
@@ -47,7 +52,7 @@ class ReceiptBrowseEmptyState extends StatelessWidget {
                           .withValues(alpha: 0.6),
                     ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
               AnimatedSquareButton(
                 isProcessing: false,
                 onPressed: () {
@@ -58,12 +63,12 @@ class ReceiptBrowseEmptyState extends StatelessWidget {
                 width: 124.0,
                 height: 52.0,
                 iconSize: 20.0,
-                borderColor: Colors.white,
-                backgroundColor: Colors.black,
+                borderColor: Theme.of(context).colorScheme.outline,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 icon: Text(
                   AppLocalizations.of(context).refresh,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -89,6 +94,10 @@ class ReceiptBrowseEmptyState extends StatelessWidget {
           'packages/presentation/assets/icon_search.svg',
           width: 40,
           height: 40,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.onSurface,
+            BlendMode.srcIn,
+          ),
         ),
         size: 64,
         iconSize: 40,
@@ -140,12 +149,12 @@ class ReceiptBrowseEmptyFilteredState extends StatelessWidget {
                     .onSurface
                     .withValues(alpha: 0.5),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 AppLocalizations.of(context).noItemsMatchFiltersLabel,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 AppLocalizations.of(context).adjustFiltersHintLabel,
                 textAlign: TextAlign.center,
@@ -156,7 +165,7 @@ class ReceiptBrowseEmptyFilteredState extends StatelessWidget {
                           .withValues(alpha: 0.6),
                     ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
               AnimatedSquareButton(
                 isProcessing: false,
                 onPressed: () {
@@ -167,12 +176,12 @@ class ReceiptBrowseEmptyFilteredState extends StatelessWidget {
                 width: 124.0,
                 height: 52.0,
                 iconSize: 20.0,
-                borderColor: Colors.white,
-                backgroundColor: Colors.black,
+                borderColor: Theme.of(context).colorScheme.outline,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 icon: Text(
                   AppLocalizations.of(context).clearFiltersLabel,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -198,6 +207,10 @@ class ReceiptBrowseEmptyFilteredState extends StatelessWidget {
           'packages/presentation/assets/icon_search.svg',
           width: 40,
           height: 40,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.onSurface,
+            BlendMode.srcIn,
+          ),
         ),
         size: 64,
         iconSize: 40,

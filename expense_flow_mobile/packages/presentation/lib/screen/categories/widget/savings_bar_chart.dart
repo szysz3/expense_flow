@@ -2,6 +2,7 @@ import 'package:domain/model/daily_expense.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
 import '../../../theme/expense_flow_colors.dart';
@@ -127,8 +128,8 @@ class SavingsBarChart extends StatelessWidget {
       maxY: maxY,
       barTouchData: _createBarTooltipData(dailyExpenses, colorScheme, context),
       titlesData: _createAxisTitles(daysInMonth, currentDay),
-      gridData: _createGridData(),
-      borderData: _createBorderData(),
+      gridData: _createGridData(colorScheme),
+      borderData: _createBorderData(colorScheme),
       barGroups: _createBarGroups(dailyExpenses, currentDay, colorScheme),
     );
   }
@@ -138,7 +139,8 @@ class SavingsBarChart extends StatelessWidget {
     return BarTouchData(
       enabled: true,
       touchTooltipData: BarTouchTooltipData(
-        getTooltipColor: (_) => Colors.black.withValues(alpha: 0.6),
+        getTooltipColor: (_) =>
+            colorScheme.surface.withValues(alpha: 0.85),
         getTooltipItem: (group, _, rod, __) {
           final dayIndex = group.x;
           if (dayIndex >= dailyExpenses.length) return null;
@@ -148,8 +150,8 @@ class SavingsBarChart extends StatelessWidget {
 
           return BarTooltipItem(
             label,
-            const TextStyle(
-              color: Colors.white,
+            TextStyle(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
             children: <TextSpan>[
@@ -312,13 +314,13 @@ class SavingsBarChart extends StatelessWidget {
     );
   }
 
-  FlGridData _createGridData() {
+  FlGridData _createGridData(ColorScheme colorScheme) {
     return FlGridData(
       show: true,
       getDrawingHorizontalLine: (value) {
         if (value % 500 == 0) {
           return FlLine(
-            color: Colors.grey.shade300,
+            color: colorScheme.outline.withValues(alpha: 0.4),
             strokeWidth: 1,
             dashArray: [5, 5],
           );
@@ -329,7 +331,7 @@ class SavingsBarChart extends StatelessWidget {
       getDrawingVerticalLine: (value) {
         if (value % 5 == 0) {
           return FlLine(
-            color: Colors.grey.shade300,
+            color: colorScheme.outline.withValues(alpha: 0.35),
             strokeWidth: 0.5,
             dashArray: [5, 5],
           );
@@ -339,12 +341,14 @@ class SavingsBarChart extends StatelessWidget {
     );
   }
 
-  FlBorderData _createBorderData() {
+  FlBorderData _createBorderData(ColorScheme colorScheme) {
     return FlBorderData(
       show: true,
       border: Border(
-        bottom: BorderSide(color: Colors.grey.shade300, width: 1),
-        left: BorderSide(color: Colors.grey.shade300, width: 1),
+        bottom:
+            BorderSide(color: colorScheme.outline.withValues(alpha: 0.5), width: 1),
+        left:
+            BorderSide(color: colorScheme.outline.withValues(alpha: 0.5), width: 1),
       ),
     );
   }
@@ -364,57 +368,63 @@ class SavingsBarChart extends StatelessWidget {
         : ExpenseFlowColors.chartMutedRed;
     final localizations = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.4)),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withValues(alpha: 0.4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: GlassContainer(
+        blur: 16,
+        tintOpacity: 0.5,
+        borderRadius: BorderRadius.circular(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
           _buildSummaryRow(
             localizations.totalChartData,
             currencyFormatter.formatCurrency(totalExpenses),
             Theme.of(context).colorScheme.primary,
             isBold: true,
             textTheme: textTheme,
+            colorScheme: colorScheme,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _buildSummaryRow(
             localizations.maxAllowedExpenses,
             currencyFormatter.formatCurrency(maxAllowedExpenses),
-            Colors.white,
+            Theme.of(context).colorScheme.onSurface,
             textTheme: textTheme,
+            colorScheme: colorScheme,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _buildSummaryRow(
             localizations.balance,
             currencyFormatter
                 .formatCurrency(maxAllowedExpenses - totalExpenses),
             savingsColor,
             textTheme: textTheme,
+            colorScheme: colorScheme,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _buildSavingsRow(
             localizations.currentSavings,
             currencyFormatter.formatCurrency(currentSavings),
             savingsColor,
             isSavingsOnTrack,
             textTheme,
+            colorScheme,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LinearProgressIndicator(
             value: _calculateSavingsProgress(currentSavings),
             minHeight: 6,
-            backgroundColor: Colors.grey.withValues(alpha: 0.3),
+            backgroundColor:
+                Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
             valueColor: AlwaysStoppedAnimation<Color>(savingsColor),
             borderRadius: BorderRadius.circular(3),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -425,9 +435,10 @@ class SavingsBarChart extends StatelessWidget {
     Color valueColor, {
     bool isBold = false,
     required TextTheme textTheme,
+    required ColorScheme colorScheme,
   }) {
     final labelStyle = textTheme.bodyMedium?.copyWith(
-      color: Colors.white.withValues(alpha: 0.9),
+      color: colorScheme.onSurface.withValues(alpha: 0.9),
       fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
     );
 
@@ -451,9 +462,10 @@ class SavingsBarChart extends StatelessWidget {
     Color valueColor,
     bool isSavingsOnTrack,
     TextTheme textTheme,
+    ColorScheme colorScheme,
   ) {
     final labelStyle = textTheme.bodyMedium?.copyWith(
-      color: Colors.white.withValues(alpha: 0.9),
+      color: colorScheme.onSurface.withValues(alpha: 0.9),
       fontWeight: FontWeight.bold,
     );
 

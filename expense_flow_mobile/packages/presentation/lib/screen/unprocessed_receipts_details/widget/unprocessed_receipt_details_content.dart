@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/app_localizations.dart';
 import 'package:presentation/screen/receipt_details/widget/receipt_details_section_widget.dart';
+import 'package:presentation/core/widget/app_spacing.dart';
 
 import '../bloc/unprocessed_receipt_edit_bloc.dart';
 import '../bloc/unprocessed_receipt_edit_event.dart';
@@ -78,7 +79,7 @@ class _UnprocessedReceiptDetailsContentState
           l10n.unprocessedReceiptDetails,
           style: theme.textTheme.headlineMedium,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         ReceiptDetailsSectionWidget(
           title: l10n.status,
           child: UnprocessedReceiptStatusWidget(
@@ -115,15 +116,15 @@ class _UnprocessedReceiptDetailsContentState
             },
           ),
         ),
+        const SizedBox(height: AppSpacing.md),
         Text(
           l10n.items,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
             color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         Expanded(
           child: UnprocessedReceiptItemsListWidget(
             receipt: _convertToReceipt(widget.receipt),

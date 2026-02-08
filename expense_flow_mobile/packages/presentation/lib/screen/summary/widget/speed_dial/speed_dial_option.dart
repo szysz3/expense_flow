@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../../../../core/widget/animated_square_button.dart';
 
@@ -27,16 +28,18 @@ class SpeedDialOption extends StatelessWidget {
           if (label.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: Container(
+              child: GlassContainer(
+                blur: 12,
+                tintOpacity: 0.6,
+                borderRadius: BorderRadius.circular(10.0),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(4.0),
-                ),
                 child: Text(
                   label,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -47,13 +50,17 @@ class SpeedDialOption extends StatelessWidget {
             width: 48.0,
             height: 48.0,
             iconSize: iconSize,
-            borderColor: Colors.white,
-            backgroundColor: Colors.black,
+            borderColor: Theme.of(context).colorScheme.outline,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             opacity: 1,
             icon: SvgPicture.asset(
               svgPath,
               width: iconSize,
               height: iconSize,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.onSurface,
+                BlendMode.srcIn,
+              ),
             ),
           ),
         ],

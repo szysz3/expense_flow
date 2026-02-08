@@ -11,8 +11,8 @@ import 'package:presentation/screen/unprocessed_receipts_details/widget/unproces
 import '../../../core/error/error_utils.dart';
 import '../../../core/widget/receipt_details_action_buttons.dart';
 import '../../../di/di.dart';
+import '../../core/widget/full_screen_loading_overlay.dart';
 import '../../core/widget/receipt/base_receipt_details_screen.dart';
-import '../../theme/expense_flow_colors.dart';
 import '../unprocessed_receipts/bloc/unprocessed_receipts_bloc.dart';
 import '../unprocessed_receipts/bloc/unprocessed_receipts_event.dart';
 import 'bloc/unprocessed_receipt_detail_bloc.dart';
@@ -22,7 +22,7 @@ import 'bloc/unprocessed_receipt_edit_bloc.dart';
 import 'bloc/unprocessed_receipt_edit_event.dart';
 import 'bloc/unprocessed_receipt_edit_state.dart';
 
-class UnprocessedReceiptDetailScreen extends StatelessWidget {
+class UnprocessedReceiptDetailScreen extends StatefulWidget {
   final UnprocessedReceipt receipt;
 
   const UnprocessedReceiptDetailScreen({
@@ -62,6 +62,23 @@ class UnprocessedReceiptDetailScreen extends StatelessWidget {
   }
 
   @override
+  State<UnprocessedReceiptDetailScreen> createState() =>
+      _UnprocessedReceiptDetailScreenState();
+}
+
+class _UnprocessedReceiptDetailScreenState
+    extends State<UnprocessedReceiptDetailScreen> {
+  static const _successDisplayDuration = Duration(milliseconds: 1500);
+
+  final _loadingOverlay = FullScreenLoadingOverlay();
+
+  @override
+  void dispose() {
+    _loadingOverlay.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
@@ -79,10 +96,9 @@ class UnprocessedReceiptDetailScreen extends StatelessWidget {
           return BlocBuilder<UnprocessedReceiptDetailBloc,
               UnprocessedReceiptDetailState>(
             builder: (context, detailState) {
-              final l10n = AppLocalizations.of(context);
-
-              final currentReceipt = editState.receipt ?? receipt;
-              final isProcessing = currentReceipt.status == UnprocessedReceiptStatus.processing;
+              final currentReceipt = editState.receipt ?? widget.receipt;
+              final isProcessing =
+                  currentReceipt.status == UnprocessedReceiptStatus.processing;
 
               return BaseReceiptDetailScreen(
                 content: UnprocessedReceiptDetailsContent(
@@ -92,28 +108,26 @@ class UnprocessedReceiptDetailScreen extends StatelessWidget {
                 actionButtons: ReceiptDetailsActionButtons(
                   isEditMode: editState.isEditMode,
                   isDisabled: isProcessing,
-                  deleteConfirmMessage:
-                      l10n.deleteUnprocessedReceiptConfirmMessage,
+                  deleteConfirmMessage: AppLocalizations.of(context)
+                      .deleteUnprocessedReceiptConfirmMessage,
                   onCancel: () =>
                       context.read<UnprocessedReceiptEditBloc>().add(
                             const UnprocessedReceiptEditEvent.cancelEdit(),
                           ),
-                  onDelete: () => context
-                      .read<UnprocessedReceiptDetailBloc>()
-                      .add(
-                        UnprocessedReceiptDetailEvent.deleteReceipt(receipt.id),
-                      ),
-                  onEdit: () => context.read<UnprocessedReceiptEditBloc>().add(
-                        const UnprocessedReceiptEditEvent.toggleEditMode(),
-                      ),
-                  onSave: () => context.read<UnprocessedReceiptEditBloc>().add(
-                        const UnprocessedReceiptEditEvent.saveChanges(),
-                      ),
+                  onDelete: () =>
+                      context.read<UnprocessedReceiptDetailBloc>().add(
+                            UnprocessedReceiptDetailEvent.deleteReceipt(
+                                widget.receipt.id),
+                          ),
+                  onEdit: () =>
+                      context.read<UnprocessedReceiptEditBloc>().add(
+                            const UnprocessedReceiptEditEvent.toggleEditMode(),
+                          ),
+                  onSave: () =>
+                      context.read<UnprocessedReceiptEditBloc>().add(
+                            const UnprocessedReceiptEditEvent.saveChanges(),
+                          ),
                 ),
-                isDeleting: detailState.isDeleting,
-                isSaving: editState.isSaving,
-                deletingMessage: l10n.deletingUnprocessedReceipt,
-                savingMessage: l10n.savingUnprocessedReceipt,
               );
             },
           );
@@ -124,34 +138,63 @@ class UnprocessedReceiptDetailScreen extends StatelessWidget {
 
   void _handleDetailStateChanges(
       BuildContext context, UnprocessedReceiptDetailState state) {
-    if (state.error != null) {
-      ErrorUtils.showErrorSnackBar(context, state.error!);
+    if (state.isDeleted) {
+      _loadingOverlay.update(isSuccess: true);
+      if (!_loadingOverlay.isShowing) {
+        _loadingOverlay.show(context);
+      }
+      final navigator = Navigator.of(context);
+      final receiptsBloc = context.read<UnprocessedReceiptsBloc>();
+      Future.delayed(_successDisplayDuration, () {
+        if (!mounted) return;
+        _loadingOverlay.hide();
+        receiptsBloc.add(const UnprocessedReceiptsEvent.refresh());
+        navigator.pop();
+      });
+      return;
     }
 
-    if (state.isDeleted) {
-      context.read<UnprocessedReceiptsBloc>().add(
-            const UnprocessedReceiptsEvent.refresh(),
-          );
-      Navigator.of(context).pop();
+    if (state.isDeleting) {
+      if (!_loadingOverlay.isShowing) {
+        _loadingOverlay.show(context);
+      }
+      return;
+    }
+
+    _loadingOverlay.hide();
+
+    if (state.error != null) {
+      ErrorUtils.showErrorSnackBar(context, state.error!);
     }
   }
 
   void _handleEditStateChanges(
       BuildContext context, UnprocessedReceiptEditState state) {
-    if (state.error != null) {
-      ErrorUtils.showErrorSnackBar(context, state.error!);
+    if (state.isSaved) {
+      _loadingOverlay.update(isSuccess: true);
+      if (!_loadingOverlay.isShowing) {
+        _loadingOverlay.show(context);
+      }
+      final receiptsBloc = context.read<UnprocessedReceiptsBloc>();
+      Future.delayed(_successDisplayDuration, () {
+        if (!mounted) return;
+        _loadingOverlay.hide();
+        receiptsBloc.add(const UnprocessedReceiptsEvent.refresh());
+      });
+      return;
     }
 
-    if (state.isSaved) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).unprocessedReceiptUpdated),
-          backgroundColor: ExpenseFlowColors.chartMutedGreen,
-        ),
-      );
-      context.read<UnprocessedReceiptsBloc>().add(
-            const UnprocessedReceiptsEvent.refresh(),
-          );
+    if (state.isSaving) {
+      if (!_loadingOverlay.isShowing) {
+        _loadingOverlay.show(context);
+      }
+      return;
+    }
+
+    _loadingOverlay.hide();
+
+    if (state.error != null) {
+      ErrorUtils.showErrorSnackBar(context, state.error!);
     }
   }
 }

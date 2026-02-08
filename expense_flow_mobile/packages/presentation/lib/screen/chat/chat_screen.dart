@@ -11,6 +11,10 @@ import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
+import '../../core/widget/glass_container.dart';
+import '../../core/widget/loading_indicator_widget.dart';
+import '../../core/widget/staggered_slide_fade.dart';
+import '../../core/widget/app_spacing.dart';
 import '../../di/di.dart';
 import 'bloc/chat_bloc.dart';
 import 'bloc/chat_event.dart';
@@ -85,27 +89,24 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: Container(
+        child: GlassContainer(
           height: MediaQuery.of(context).size.height * 0.8,
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16.0),
-              topRight: Radius.circular(16.0),
-            ),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24.0),
+            topRight: Radius.circular(24.0),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildModalHeader(context),
-                Expanded(
-                  child: _buildMessageList(),
-                ),
-                _buildInputField(),
-                const SizedBox(height: 16),
-              ],
-            ),
+          tintOpacity: 0.7,
+          blur: 24,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            children: [
+              _buildModalHeader(context),
+              Expanded(
+                child: _buildMessageList(),
+              ),
+              _buildInputField(),
+              const SizedBox(height: AppSpacing.md),
+            ],
           ),
         ),
       ),
@@ -114,17 +115,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildModalHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 40,
-            height: 5,
-            decoration: BoxDecoration(
-              color: Theme.of(context).dividerColor,
-              borderRadius: BorderRadius.circular(10),
-            ),
+          GlassContainer(
+            width: 46,
+            height: 6,
+            blur: 10,
+            tintOpacity: 0.4,
+            borderRadius: BorderRadius.circular(10),
+            padding: EdgeInsets.zero,
+            child: const SizedBox(),
           ),
         ],
       ),
@@ -136,7 +138,7 @@ class _ChatScreenState extends State<ChatScreen> {
       listener: _handleStateChanges,
       builder: (context, state) {
         if (state.isLoading && state.messages.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingIndicatorWidget(sizeFactor: 0.12));
         }
 
         if (state.messages.isEmpty && !state.isLoading) {
@@ -150,9 +152,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
         return ListView.builder(
           reverse: true,
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(12.0),
           itemCount: state.messages.length,
-          itemBuilder: (context, index) => _buildMessageItem(context, index),
+          itemBuilder: (context, index) => StaggeredSlideFade(
+            index: index,
+            maxStaggeredItems: 6,
+            child: _buildMessageItem(context, index),
+          ),
         );
       },
     );

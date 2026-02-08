@@ -62,9 +62,13 @@ dev_dependencies:
   mockito: ^5.4.2
 
 flutter_native_splash:
-  # Background color
-  color: "#44475A"
+  background_image: assets/splash_background.png
+  background_image_dark: assets/splash_background.png
   image: assets/icon_app_splash.png
+  android_12:
+    background_image: assets/splash_background.png
+    background_image_dark: assets/splash_background.png
+    image: assets/icon_app_splash.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

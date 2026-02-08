@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 class DescriptionAutocompleteWidget extends StatefulWidget {
   final TextEditingController controller;
@@ -117,54 +118,61 @@ class _CustomAutocompleteInputState
           child: Material(
             elevation: 4.0,
             color: Colors.transparent,
-            child: Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-              ),
-              child: widget.isLoadingSuggestions
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: CircularProgressIndicator(),
+            child: GlassContainer(
+              blur: 16,
+              tintOpacity: 0.6,
+              borderRadius: BorderRadius.circular(14),
+              padding: EdgeInsets.zero,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 220),
+                child: widget.isLoadingSuggestions
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: _currentSuggestions.length,
+                        itemBuilder: (context, index) {
+                          final suggestion = _currentSuggestions[index];
+                          return InkWell(
+                            onTap: () {
+                              _selectSuggestion(suggestion);
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: index != _currentSuggestions.length - 1
+                                    ? Border(
+                                        bottom: BorderSide(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.3),
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              child: Text(
+                                suggestion,
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.9),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      itemCount: _currentSuggestions.length,
-                      itemBuilder: (context, index) {
-                        final suggestion = _currentSuggestions[index];
-                        return InkWell(
-                          onTap: () {
-                            _selectSuggestion(suggestion);
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: index != _currentSuggestions.length - 1
-                                  ? Border(
-                                      bottom: BorderSide(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.1),
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            child: Text(
-                              suggestion,
-                              style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9)),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+              ),
             ),
           ),
         ),
@@ -201,13 +209,11 @@ class _CustomAutocompleteInputState
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
       link: layerLink,
-      child: Container(
+      child: GlassContainer(
+        blur: 16,
+        tintOpacity: 0.5,
+        borderRadius: BorderRadius.circular(14),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.black.withValues(alpha: 0.4),
-        ),
         child: TextField(
           controller: widget.controller,
           focusNode: _focusNode,

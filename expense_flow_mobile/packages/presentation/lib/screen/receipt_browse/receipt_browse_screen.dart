@@ -3,12 +3,12 @@ import 'package:domain/use_case/receipt/receipt_get_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:localization/app_localizations.dart';
 import 'package:localization/localization_service.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/error_display_widget.dart';
+import '../../core/widget/loading_indicator_widget.dart';
 import '../../di/di.dart';
 import 'bloc/receipt_browse_bloc.dart';
 import 'bloc/receipt_browse_event.dart';
@@ -50,21 +50,12 @@ class ReceiptBrowseView extends StatelessWidget {
         if (state.error != null) {
           ErrorUtils.showErrorSnackBar(context, state.error!);
         }
-
-        if (state.isDeleted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context).receiptDeleted),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-            ),
-          );
-        }
       },
       builder: (context, state) {
         if (state.isLoading &&
             state.receipts.isEmpty &&
             state.filteredItems.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingIndicatorWidget(sizeFactor: 0.15));
         }
 
         if (state.error != null &&

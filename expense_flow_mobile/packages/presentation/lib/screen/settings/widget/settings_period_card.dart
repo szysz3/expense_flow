@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../../../core/widget/input_widget.dart';
 import '../bloc/settings_bloc.dart';
@@ -35,15 +36,11 @@ class SettingsPeriodCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return Container(
+    return GlassContainer(
+      blur: 18,
+      tintOpacity: 0.55,
+      borderRadius: BorderRadius.circular(18),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

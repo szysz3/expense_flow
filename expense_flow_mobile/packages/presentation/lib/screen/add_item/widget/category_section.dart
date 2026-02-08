@@ -15,21 +15,24 @@ class CategorySection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 4,
-        mainAxisSpacing: 4,
-        crossAxisSpacing: 4,
-        childAspectRatio: 1,
-        children: Category.all.map((categoryId) {
-          final isSelected = selectedCategory == categoryId;
-          return CategoryButton(
-            icon: CategoryUtils.getIconPath(categoryId),
-            label: CategoryUtils.getDisplayName(categoryId, context),
-            isSelected: isSelected,
-            onPressed: () => onCategorySelected(categoryId),
-          );
-        }).toList(),
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 4,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 0.95,
+          children: Category.all.map((categoryId) {
+            final isSelected = selectedCategory == categoryId;
+            return CategoryButton(
+              icon: CategoryUtils.getIconPath(categoryId),
+              label: CategoryUtils.getDisplayName(categoryId, context),
+              isSelected: isSelected,
+              onPressed: () => onCategorySelected(categoryId),
+            );
+          }).toList(),
+        ),
       );
 }

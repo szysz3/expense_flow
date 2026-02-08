@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 class InputWidget extends StatelessWidget {
   final TextEditingController controller;
@@ -67,13 +68,10 @@ class InputWidget extends StatelessWidget {
   }
 
   Widget _buildRegularInput(BuildContext context) {
-    return Container(
+    return GlassContainer(
+      borderRadius: BorderRadius.circular(16),
+      tintOpacity: 0.45,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withValues(alpha: 0.4),
-      ),
       child: TextField(
         controller: controller,
         onChanged: onDescriptionChanged,
@@ -93,13 +91,10 @@ class InputWidget extends StatelessWidget {
     FocusNode focusNode,
     Function(String) onChanged,
   ) {
-    return Container(
+    return GlassContainer(
+      borderRadius: BorderRadius.circular(16),
+      tintOpacity: 0.45,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withValues(alpha: 0.4),
-      ),
       child: TextField(
         controller: fieldController,
         focusNode: focusNode,
@@ -124,45 +119,53 @@ class InputWidget extends StatelessWidget {
       child: Material(
         elevation: 4.0,
         color: Colors.transparent,
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          constraints: const BoxConstraints(maxHeight: 200),
-          margin: const EdgeInsets.only(top: 8),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-          ),
-          child: ListView.builder(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            itemCount: options.length,
-            itemBuilder: (BuildContext context, int index) {
-              final option = options.elementAt(index);
-              return InkWell(
-                onTap: () => onSelected(option),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: index != options.length - 1
-                        ? Border(
-                            bottom: BorderSide(
-                              color: Colors.white.withValues(alpha: 0.1),
-                            ),
-                          )
-                        : null,
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Text(
-                    option,
-                    style:
-                        TextStyle(color: Colors.white.withValues(alpha: 0.9)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              );
-            },
+        child: GlassContainer(
+          borderRadius: BorderRadius.circular(18),
+          tintOpacity: 0.6,
+          padding: EdgeInsets.zero,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 220),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final option = options.elementAt(index);
+                  return InkWell(
+                    onTap: () => onSelected(option),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: index != options.length - 1
+                            ? Border(
+                                bottom: BorderSide(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outline
+                                      .withValues(alpha: 0.3),
+                                ),
+                              )
+                            : null,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Text(
+                        option,
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.9),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),

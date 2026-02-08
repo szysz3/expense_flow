@@ -45,8 +45,8 @@ class _SpeedDialMenuState extends State<SpeedDialMenu> {
         AnimatedSquareButton.square(
           isProcessing: false,
           onPressed: _toggleDial,
-          borderColor: Colors.white,
-          backgroundColor: Colors.black,
+          borderColor: Theme.of(context).colorScheme.outline,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           opacity:
               _isDialOpen ? 1 : AnimatedSquareButtonConstants.defaultOpacity,
           icon: SvgPicture.asset(
@@ -55,6 +55,10 @@ class _SpeedDialMenuState extends State<SpeedDialMenu> {
                 : 'packages/presentation/assets/icon_menu.svg',
             width: 40,
             height: 40,
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).colorScheme.onSurface,
+              BlendMode.srcIn,
+            ),
           ),
           size: 64,
           iconSize: 40,

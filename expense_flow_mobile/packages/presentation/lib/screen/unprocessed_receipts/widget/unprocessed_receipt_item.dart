@@ -2,6 +2,7 @@ import 'package:domain/model/unprocessed_receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 import 'package:presentation/theme/expense_flow_colors.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
@@ -22,18 +23,12 @@ class UnprocessedReceiptItem extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
+        borderRadius: BorderRadius.circular(14),
+        child: GlassContainer(
+          blur: 16,
+          tintOpacity: 0.45,
+          borderRadius: BorderRadius.circular(14),
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.1),
-            ),
-            borderRadius: BorderRadius.circular(8),
-          ),
           child: Row(
             children: [
               _buildStatusIcon(context),
@@ -94,13 +89,13 @@ class UnprocessedReceiptItem extends StatelessWidget {
         break;
     }
 
-    return Container(
+    return GlassContainer(
+      blur: 10,
+      tint: iconColor,
+      tintOpacity: 0.2,
+      borderRadius: BorderRadius.circular(10),
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        border: Border.all(color: iconColor.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(8),
-        color: iconColor.withValues(alpha: 0.1),
-      ),
+      border: Border.all(color: iconColor.withValues(alpha: 0.35)),
       child: SvgPicture.asset(
         'packages/presentation/assets/$iconName',
         width: 24,

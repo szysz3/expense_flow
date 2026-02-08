@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:markdown_widget/config/all.dart';
 import 'package:markdown_widget/widget/markdown_block.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 class ChatMessageItem extends StatelessWidget {
   final ChatMessage message;
@@ -22,23 +23,23 @@ class ChatMessageItem extends StatelessWidget {
     final dateFormat = DateFormat('HH:mm');
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         mainAxisAlignment:
             isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isCurrentUser) _buildAvatar(context),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isCurrentUser
-                    ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                    : theme.colorScheme.secondary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
+            child: GlassContainer(
+              blur: 14,
+              tint: isCurrentUser
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.secondary,
+              tintOpacity: isCurrentUser ? 0.28 : 0.18,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -58,7 +59,7 @@ class ChatMessageItem extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           if (isCurrentUser) _buildAvatar(context),
         ],
       ),
@@ -74,8 +75,8 @@ class ChatMessageItem extends StatelessWidget {
           : theme.colorScheme.secondary.withValues(alpha: 0.5),
       child: Text(
         isCurrentUser ? 'U' : 'A',
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: theme.colorScheme.onSurface,
           fontWeight: FontWeight.bold,
           fontSize: 12,
         ),

@@ -27,16 +27,22 @@ class BaseReceiptItemWidget extends StatelessWidget {
     final content = _buildItemContent(context, theme);
 
     if (isEditMode) {
-      return InkWell(
-        onTap: () => onEdit(item),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
-          child: content,
+      return Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => onEdit(item),
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+            child: content,
+          ),
         ),
       );
     } else {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
         child: content,
       );
     }
@@ -50,7 +56,7 @@ class BaseReceiptItemWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         iconBuilder(context, theme),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +68,9 @@ class BaseReceiptItemWidget extends StatelessWidget {
                     Expanded(
                       child: Text(
                         item.description,
-                        style: theme.textTheme.bodyLarge,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     categoryBuilder!(context, theme),
@@ -71,9 +79,11 @@ class BaseReceiptItemWidget extends StatelessWidget {
               else
                 Text(
                   item.description,
-                  style: theme.textTheme.bodyLarge,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Row(
                 children: [
                   Text(

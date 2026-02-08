@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
+import 'package:presentation/core/widget/app_spacing.dart';
 
 class ReceiptFilteringSearchSection extends StatelessWidget {
   const ReceiptFilteringSearchSection({super.key});
@@ -15,9 +17,10 @@ class ReceiptFilteringSearchSection extends StatelessWidget {
           l10n.searchLabel,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
               ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         const SearchTextField(),
       ],
     );
@@ -30,14 +33,13 @@ class SearchTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withValues(alpha: 0.4),
-      ),
+    return GlassContainer(
+      blur: 16,
+      tintOpacity: 0.5,
+      borderRadius: BorderRadius.circular(14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: TextField(
         textInputAction: TextInputAction.done,
         onSubmitted: (value) {
@@ -49,12 +51,13 @@ class SearchTextField extends StatelessWidget {
           border: InputBorder.none,
           prefixIcon: Icon(
             Icons.search,
-            color: Colors.white.withValues(alpha: 0.7),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            size: 20,
           ),
           suffixIcon: IconButton(
             icon: Icon(
               Icons.clear,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             onPressed: () {
               FocusScope.of(context).unfocus();

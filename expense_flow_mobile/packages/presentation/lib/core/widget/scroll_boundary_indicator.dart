@@ -15,10 +15,10 @@ class ScrollBoundaryIndicator extends StatelessWidget {
       children: isTop
           ? [
               _buildBorder(context),
-              _buildShadow(isDownward: true),
+              _buildShadow(context, isDownward: true),
             ]
           : [
-              _buildShadow(isDownward: false),
+              _buildShadow(context, isDownward: false),
               _buildBorder(context),
             ],
     );
@@ -47,14 +47,17 @@ class ScrollBoundaryIndicator extends StatelessWidget {
     );
   }
 
-  Widget _buildShadow({required bool isDownward}) {
+  Widget _buildShadow(BuildContext context, {required bool isDownward}) {
     return Container(
       height: 6,
       width: double.infinity,
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(50),
+            color: Theme.of(context)
+                .colorScheme
+                .shadow
+                .withValues(alpha: 0.4),
             blurRadius: 8,
             spreadRadius: 2,
             offset: Offset(0, isDownward ? 2 : -2),

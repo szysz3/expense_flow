@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:presentation/core/widget/app_spacing.dart';
 
 class ReceiptDetailsSectionWidget extends StatelessWidget {
   final String title;
@@ -15,7 +16,7 @@ class ReceiptDetailsSectionWidget extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -27,7 +28,7 @@ class ReceiptDetailsSectionWidget extends StatelessWidget {
               color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           child,
         ],
       ),

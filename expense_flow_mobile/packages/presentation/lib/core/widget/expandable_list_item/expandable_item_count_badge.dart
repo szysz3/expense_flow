@@ -13,18 +13,18 @@ class ExpandableItemCountBadge extends StatelessWidget {
     if (count <= 1) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onSurface.withAlpha(100),
-        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         'x$count',
         style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
           overflow: TextOverflow.ellipsis,
-          color: Theme.of(context).colorScheme.onSecondaryContainer,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );

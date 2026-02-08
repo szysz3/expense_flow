@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 class CategoryButton extends StatelessWidget {
   final String icon;
@@ -16,28 +17,27 @@ class CategoryButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => SizedBox(
         width: 80,
         height: 80,
-        margin: const EdgeInsets.all(4),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: onPressed,
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: isSelected
-                      ? Colors.white
-                      : Colors.white.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
+            child: GlassContainer(
+              blur: 14,
+              tintOpacity: isSelected ? 0.6 : 0.4,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
                 color: isSelected
-                    ? Colors.white.withValues(alpha: 0.2)
-                    : Colors.black.withValues(alpha: 0.4),
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.4),
               ),
+              padding: const EdgeInsets.all(6),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -45,6 +45,10 @@ class CategoryButton extends StatelessWidget {
                     icon,
                     width: 24,
                     height: 24,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface,
+                      BlendMode.srcIn,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Padding(
@@ -53,8 +57,11 @@ class CategoryButton extends StatelessWidget {
                       label,
                       style: TextStyle(
                         color: isSelected
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.7),
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.7),
                         fontSize: 12,
                       ),
                       textAlign: TextAlign.center,

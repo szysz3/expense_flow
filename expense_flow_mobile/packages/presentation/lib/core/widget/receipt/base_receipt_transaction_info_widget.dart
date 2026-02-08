@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
 
@@ -105,12 +106,13 @@ class BaseReceiptTransactionInfoWidget extends StatelessWidget {
     final locale = Localizations.localeOf(context).toString();
     var currencyFormatter = CurrencyTextFormatter(locale: locale);
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return GlassContainer(
+      width: double.infinity,
+      blur: 14,
+      tintOpacity: 0.5,
+      borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      alignment: Alignment.centerLeft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

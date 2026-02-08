@@ -2,6 +2,9 @@ import 'package:domain/model/filtered_receipt_item.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:presentation/core/utils/string_utils.dart';
+import 'package:presentation/core/widget/glass_container.dart';
+import 'package:presentation/core/widget/app_spacing.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
 
@@ -21,13 +24,11 @@ class FilteredReceiptItemWidget extends StatelessWidget {
     final locale = Localizations.localeOf(context).toString();
     final currencyFormatter = CurrencyTextFormatter(locale: locale);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withValues(alpha: 0.4),
-      ),
+    return GlassContainer(
+      blur: 16,
+      tintOpacity: 0.5,
+      borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -52,7 +53,7 @@ class FilteredReceiptItemWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
               if (item.category != null) ...[
@@ -88,12 +89,11 @@ class FilteredReceiptItemWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final displayName = StringUtils.formatCategoryName(category);
 
-    return Container(
+    return GlassContainer(
+      blur: 8,
+      tintOpacity: 0.35,
+      borderRadius: BorderRadius.circular(6),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
       child: Text(
         displayName,
         style: theme.textTheme.bodySmall?.copyWith(

@@ -124,6 +124,7 @@ class _LoadingIndicatorWidgetState extends State<LoadingIndicatorWidget>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final size = screenWidth * widget.sizeFactor;
+    final scheme = Theme.of(context).colorScheme;
 
     return AnimatedBuilder(
       animation: _entranceController,
@@ -148,6 +149,13 @@ class _LoadingIndicatorWidgetState extends State<LoadingIndicatorWidget>
                             outerRotation: _outerRotation.value,
                             middleRotation: _middleRotation.value,
                             innerRotation: _innerRotation.value,
+                            outerColor:
+                                scheme.primary.withValues(alpha: 0.5),
+                            middleColor:
+                                scheme.secondary.withValues(alpha: 0.6),
+                            innerColor:
+                                scheme.onSurface.withValues(alpha: 0.9),
+                            accentColor: scheme.tertiary,
                           ),
                           size: Size(size, size),
                         );
@@ -159,7 +167,12 @@ class _LoadingIndicatorWidgetState extends State<LoadingIndicatorWidget>
                   FadeTransition(
                     opacity: _successOpacity,
                     child: CustomPaint(
-                      painter: SuccessPainter(),
+                      painter: SuccessPainter(
+                        outerColor: scheme.primary.withValues(alpha: 0.5),
+                        middleColor: scheme.secondary.withValues(alpha: 0.6),
+                        innerColor: scheme.onSurface.withValues(alpha: 0.9),
+                        accentColor: scheme.tertiary,
+                      ),
                       size: Size(size, size),
                     ),
                   ),
@@ -185,11 +198,19 @@ class LoadingPainter extends CustomPainter {
   final double outerRotation;
   final double middleRotation;
   final double innerRotation;
+  final Color outerColor;
+  final Color middleColor;
+  final Color innerColor;
+  final Color accentColor;
 
   LoadingPainter({
     required this.outerRotation,
     required this.middleRotation,
     required this.innerRotation,
+    required this.outerColor,
+    required this.middleColor,
+    required this.innerColor,
+    required this.accentColor,
   });
 
   @override
@@ -198,22 +219,22 @@ class LoadingPainter extends CustomPainter {
     final scale = size.width / 100;
 
     final outerPaint = Paint()
-      ..color = const Color(0xFFFF00FF).withValues(alpha: 0.4)
+      ..color = outerColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8 * scale;
 
     final middlePaint = Paint()
-      ..color = const Color(0xFF00FFFF).withValues(alpha: 0.6)
+      ..color = middleColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6 * scale;
 
     final innerPaint = Paint()
-      ..color = Colors.white
+      ..color = innerColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4 * scale;
 
     final accentPaint = Paint()
-      ..color = const Color(0xFF00FF99)
+      ..color = accentColor
       ..style = PaintingStyle.fill;
 
     canvas.save();
@@ -261,32 +282,48 @@ class LoadingPainter extends CustomPainter {
   bool shouldRepaint(LoadingPainter oldDelegate) =>
       oldDelegate.outerRotation != outerRotation ||
       oldDelegate.middleRotation != middleRotation ||
-      oldDelegate.innerRotation != innerRotation;
+      oldDelegate.innerRotation != innerRotation ||
+      oldDelegate.outerColor != outerColor ||
+      oldDelegate.middleColor != middleColor ||
+      oldDelegate.innerColor != innerColor ||
+      oldDelegate.accentColor != accentColor;
 }
 
 class SuccessPainter extends CustomPainter {
+  final Color outerColor;
+  final Color middleColor;
+  final Color innerColor;
+  final Color accentColor;
+
+  SuccessPainter({
+    required this.outerColor,
+    required this.middleColor,
+    required this.innerColor,
+    required this.accentColor,
+  });
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final scale = size.width / 100;
 
     final outerCheckmark = Paint()
-      ..color = const Color(0xFFFF00FF).withValues(alpha: 0.4)
+      ..color = outerColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8 * scale;
 
     final middleCheckmark = Paint()
-      ..color = const Color(0xFF00FFFF).withValues(alpha: 0.6)
+      ..color = middleColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6 * scale;
 
     final mainCheckmark = Paint()
-      ..color = Colors.white
+      ..color = innerColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4 * scale;
 
     final accentPaint = Paint()
-      ..color = const Color(0xFF00FF99)
+      ..color = accentColor
       ..style = PaintingStyle.fill;
 
     _drawCheckmark(canvas, center, -5 * scale, outerCheckmark, scale);
@@ -319,5 +356,9 @@ class SuccessPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(SuccessPainter oldDelegate) => false;
+  bool shouldRepaint(SuccessPainter oldDelegate) =>
+      oldDelegate.outerColor != outerColor ||
+      oldDelegate.middleColor != middleColor ||
+      oldDelegate.innerColor != innerColor ||
+      oldDelegate.accentColor != accentColor;
 }

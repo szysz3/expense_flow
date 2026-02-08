@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 class ChatInputField extends StatelessWidget {
   final TextEditingController controller;
@@ -22,15 +23,10 @@ class ChatInputField extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-        ),
-      ),
+    return GlassContainer(
+      borderRadius: BorderRadius.circular(24),
+      tintOpacity: 0.55,
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
       child: Row(
         children: [
           Expanded(
@@ -45,7 +41,7 @@ class ChatInputField extends StatelessWidget {
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
               ),
               maxLines: null,
               textInputAction: TextInputAction.send,
@@ -54,12 +50,12 @@ class ChatInputField extends StatelessWidget {
           ),
           Material(
             color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: isLoading ? null : onSend,
-              child: Container(
-                padding: const EdgeInsets.all(10.0),
-                child: isLoading
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: isLoading ? null : onSend,
+                child: Container(
+                  padding: const EdgeInsets.all(8.0),
+                  child: isLoading
                     ? SizedBox(
                         width: 24,
                         height: 24,

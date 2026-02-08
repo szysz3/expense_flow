@@ -10,7 +10,8 @@ import 'package:presentation/screen/add_item/widget/description_autocomplete_wid
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
-import '../../core/widget/loading_indicator_widget.dart';
+import '../../core/widget/full_screen_loading_overlay.dart';
+import '../../core/widget/app_spacing.dart';
 import '../../di/di.dart';
 import 'bloc/add_item_bloc.dart';
 import 'bloc/add_item_event.dart';
@@ -53,9 +54,11 @@ class _AddItemViewState extends State<AddItemView> {
   final _descriptionController = TextEditingController();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
+  final _loadingOverlay = FullScreenLoadingOverlay();
 
   @override
   void dispose() {
+    _loadingOverlay.dispose();
     _descriptionController.dispose();
     _quantityController.dispose();
     _priceController.dispose();
@@ -75,6 +78,15 @@ class _AddItemViewState extends State<AddItemView> {
       _priceController.clear();
     }
 
+    if (state.isSubmitting || state.isSuccess) {
+      _loadingOverlay.update(isSuccess: state.isSuccess);
+      if (!_loadingOverlay.isShowing) {
+        _loadingOverlay.show(context);
+      }
+    } else {
+      _loadingOverlay.hide();
+    }
+
     if (state.error != null) {
       ErrorUtils.showErrorSnackBar(context, state.error!);
       context.read<AddItemBloc>().add(const AddItemEvent.clearError());
@@ -84,88 +96,75 @@ class _AddItemViewState extends State<AddItemView> {
   Widget _buildContent(BuildContext context, AddItemState state) =>
       GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints:
-                          const BoxConstraints(maxWidth: double.infinity),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            CategorySection(
-                              selectedCategory: state.selectedCategory,
-                              onCategorySelected: (category) {
-                                context.read<AddItemBloc>().add(
-                                      AddItemEvent.categorySelected(category),
-                                    );
-                              },
-                            ),
-                            const SizedBox(height: 24),
-                            DescriptionAutocompleteWidget(
-                              controller: _descriptionController,
-                              onTextChanged: (value) {
-                                context.read<AddItemBloc>().add(
-                                      AddItemEvent.descriptionChanged(value),
-                                    );
-                              },
-                              labelText:
-                                  AppLocalizations.of(context).description,
-                              hintText: AppLocalizations.of(context)
-                                  .enterItemDescription,
-                              suggestions: state.suggestions,
-                              isLoadingSuggestions: state.isLoadingSuggestions,
-                              onSuggestionSelected: (suggestion) {
-                                context.read<AddItemBloc>().add(
-                                      const AddItemEvent.clearSuggestions(),
-                                    );
-
-                                context.read<AddItemBloc>().add(
-                                      AddItemEvent.descriptionChanged(
-                                          suggestion),
-                                    );
-                              },
-                            ),
-                            const SizedBox(height: 24),
-                            QuantityPriceSection(
-                              quantityController: _quantityController,
-                              priceController: _priceController,
-                              onQuantityChanged: (value) {
-                                context.read<AddItemBloc>().add(
-                                      AddItemEvent.quantityChanged(value),
-                                    );
-                              },
-                              onPriceChanged: (value) {
-                                context.read<AddItemBloc>().add(
-                                      AddItemEvent.priceChanged(value),
-                                    );
-                              },
-                            ),
-                          ],
+        child: Padding(
+          padding: AppSpacing.page,
+          child: Column(
+            children: [
+              Expanded(
+                child: ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(maxWidth: double.infinity),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        CategorySection(
+                          selectedCategory: state.selectedCategory,
+                          onCategorySelected: (category) {
+                            context.read<AddItemBloc>().add(
+                                  AddItemEvent.categorySelected(category),
+                                );
+                          },
                         ),
-                      ),
+                        const SizedBox(height: AppSpacing.lg),
+                        DescriptionAutocompleteWidget(
+                          controller: _descriptionController,
+                          onTextChanged: (value) {
+                            context.read<AddItemBloc>().add(
+                                  AddItemEvent.descriptionChanged(value),
+                                );
+                          },
+                          labelText:
+                              AppLocalizations.of(context).description,
+                          hintText: AppLocalizations.of(context)
+                              .enterItemDescription,
+                          suggestions: state.suggestions,
+                          isLoadingSuggestions: state.isLoadingSuggestions,
+                          onSuggestionSelected: (suggestion) {
+                            context.read<AddItemBloc>().add(
+                                  const AddItemEvent.clearSuggestions(),
+                                );
+
+                            context.read<AddItemBloc>().add(
+                                  AddItemEvent.descriptionChanged(
+                                      suggestion),
+                                );
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        QuantityPriceSection(
+                          quantityController: _quantityController,
+                          priceController: _priceController,
+                          onQuantityChanged: (value) {
+                            context.read<AddItemBloc>().add(
+                                  AddItemEvent.quantityChanged(value),
+                                );
+                          },
+                          onPriceChanged: (value) {
+                            context.read<AddItemBloc>().add(
+                                  AddItemEvent.priceChanged(value),
+                                );
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-                  _buildAddButton(state, context),
-                ],
-              ),
-            ),
-            if (state.isSubmitting || state.isSuccess)
-              Container(
-                color: Colors.black54,
-                child: Center(
-                  child: LoadingIndicatorWidget(
-                    isSuccess: state.isSuccess,
                   ),
                 ),
               ),
-          ],
+              _buildAddButton(state, context),
+            ],
+          ),
         ),
       );
 
@@ -181,6 +180,10 @@ class _AddItemViewState extends State<AddItemView> {
               'packages/presentation/assets/icon_add.svg',
               width: 40,
               height: 40,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.onSurface,
+                BlendMode.srcIn,
+              ),
             ),
             size: 64,
             iconSize: 40,

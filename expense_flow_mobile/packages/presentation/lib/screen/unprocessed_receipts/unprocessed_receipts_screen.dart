@@ -9,6 +9,10 @@ import 'package:logger/logger.dart';
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
 import '../../core/widget/error_display_widget.dart';
+import '../../core/widget/glass_container.dart';
+import '../../core/widget/loading_indicator_widget.dart';
+import '../../core/widget/staggered_slide_fade.dart';
+import '../../core/widget/app_spacing.dart';
 import '../../di/di.dart';
 import '../unprocessed_receipts_details/unprocessed_receipt_detail_screen.dart';
 import 'bloc/unprocessed_receipts_bloc.dart';
@@ -37,21 +41,20 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
           )..add(const UnprocessedReceiptsEvent.init()),
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: Container(
+        child: GlassContainer(
           height: MediaQuery.of(context).size.height * 0.6,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            ),
+          blur: 24,
+          tintOpacity: 0.75,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
           child: Column(
             children: [
               _buildModalHeader(context),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: AppSpacing.page,
                   child: _buildContent(context),
                 ),
               ),
@@ -62,20 +65,18 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
 
   Widget _buildModalHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 40,
-            height: 5,
-            decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2.5),
-            ),
+          GlassContainer(
+            width: 46,
+            height: 6,
+            blur: 10,
+            tintOpacity: 0.4,
+            borderRadius: BorderRadius.circular(10),
+            padding: EdgeInsets.zero,
+            child: const SizedBox(),
           ),
         ],
       ),
@@ -99,7 +100,7 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
               l10n.appBarUnprocessedReceiptsTitle,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             Expanded(
               child: _buildReceiptsList(context, state),
             ),
@@ -112,7 +113,7 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
   Widget _buildReceiptsList(
       BuildContext context, UnprocessedReceiptsState state) {
     if (state.isLoading && state.receipts.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: LoadingIndicatorWidget(sizeFactor: 0.12));
     }
 
     if (state.error != null && state.receipts.isEmpty) {
@@ -133,9 +134,12 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
         separatorBuilder: (context, index) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
           final receipt = state.receipts[index];
-          return UnprocessedReceiptItem(
-            receipt: receipt,
-            onTap: () => _navigateToUnprocessedReceiptDetail(context, receipt),
+          return StaggeredSlideFade(
+            index: index,
+            child: UnprocessedReceiptItem(
+              receipt: receipt,
+              onTap: () => _navigateToUnprocessedReceiptDetail(context, receipt),
+            ),
           );
         },
       ),
@@ -155,13 +159,17 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
             'packages/presentation/assets/icon_unprocessed.svg',
             width: 64,
             height: 64,
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).colorScheme.onSurface,
+              BlendMode.srcIn,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           Text(
             AppLocalizations.of(context).noUnprocessedReceipts,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             AppLocalizations.of(context).allReceiptsProcessed,
             textAlign: TextAlign.center,
@@ -172,7 +180,7 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
                       .withValues(alpha: 0.6),
                 ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.lg),
           AnimatedSquareButton(
             isProcessing: false,
             onPressed: () {
@@ -183,12 +191,12 @@ class UnprocessedReceiptsScreen extends StatelessWidget {
             width: 124.0,
             height: 52.0,
             iconSize: 20.0,
-            borderColor: Colors.white,
-            backgroundColor: Colors.black,
+            borderColor: Theme.of(context).colorScheme.outline,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             icon: Text(
               AppLocalizations.of(context).refresh,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),

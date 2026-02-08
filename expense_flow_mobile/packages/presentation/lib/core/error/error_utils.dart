@@ -39,7 +39,7 @@ class ErrorUtils {
       action: error.isRetryable && error.onRetry != null
           ? SnackBarAction(
               label: AppLocalizations.of(context).retry,
-              textColor: Colors.white,
+              textColor: Theme.of(context).colorScheme.onError,
               onPressed: error.onRetry!,
             )
           : null,

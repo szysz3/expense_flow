@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 class SettingsDateButton extends StatelessWidget {
   final String label;
@@ -16,11 +17,6 @@ class SettingsDateButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final enabled = onPressed != null;
-    final borderColor = enabled
-        ? Colors.grey.withValues(alpha: 0.7)
-        : Colors.grey.withValues(alpha: 0.3);
-    final backgroundColor =
-        Colors.black.withValues(alpha: enabled ? 0.28 : 0.16);
     final textStyle = theme.textTheme.bodyMedium?.copyWith(
       color: enabled
           ? theme.colorScheme.onSurface.withValues(alpha: 0.9)
@@ -41,14 +37,16 @@ class SettingsDateButton extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: onPressed,
-            child: Container(
+            child: GlassContainer(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: borderColor),
-                borderRadius: BorderRadius.circular(12),
-                color: backgroundColor,
+              blur: 14,
+              tintOpacity: enabled ? 0.45 : 0.25,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.outline
+                    .withValues(alpha: enabled ? 0.7 : 0.3),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

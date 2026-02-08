@@ -11,8 +11,8 @@ import 'package:presentation/screen/receipt_details/widget/receipt_details_conte
 import '../../../core/error/error_utils.dart';
 import '../../../core/widget/receipt_details_action_buttons.dart';
 import '../../../di/di.dart';
+import '../../core/widget/full_screen_loading_overlay.dart';
 import '../../core/widget/receipt/base_receipt_details_screen.dart';
-import '../../theme/expense_flow_colors.dart';
 import '../receipt_browse/bloc/receipt_browse_bloc.dart';
 import '../receipt_browse/bloc/receipt_browse_event.dart';
 import 'bloc/receipt_detail_bloc.dart';
@@ -22,7 +22,7 @@ import 'bloc/receipt_edit_bloc.dart';
 import 'bloc/receipt_edit_event.dart';
 import 'bloc/receipt_edit_state.dart';
 
-class ReceiptDetailScreen extends StatelessWidget {
+class ReceiptDetailScreen extends StatefulWidget {
   final Receipt receipt;
 
   const ReceiptDetailScreen({
@@ -62,6 +62,21 @@ class ReceiptDetailScreen extends StatelessWidget {
   }
 
   @override
+  State<ReceiptDetailScreen> createState() => _ReceiptDetailScreenState();
+}
+
+class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
+  static const _successDisplayDuration = Duration(milliseconds: 1500);
+
+  final _loadingOverlay = FullScreenLoadingOverlay();
+
+  @override
+  void dispose() {
+    _loadingOverlay.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
@@ -76,23 +91,23 @@ class ReceiptDetailScreen extends StatelessWidget {
         builder: (context, editState) {
           return BlocBuilder<ReceiptDetailBloc, ReceiptDetailState>(
             builder: (context, detailState) {
-              final l10n = AppLocalizations.of(context);
-
               return BaseReceiptDetailScreen(
                 content: ReceiptDetailsContent(
-                  receipt: editState.receipt ?? receipt,
+                  receipt: editState.receipt ?? widget.receipt,
                   isEditMode: editState.isEditMode,
                 ),
                 actionButtons: ReceiptDetailsActionButtons(
                   isEditMode: editState.isEditMode,
-                  deleteConfirmMessage: l10n.deleteReceiptConfirmMessage,
+                  deleteConfirmMessage:
+                      AppLocalizations.of(context).deleteReceiptConfirmMessage,
                   onCancel: () => context.read<ReceiptEditBloc>().add(
                         const ReceiptEditEvent.cancelEdit(),
                       ),
                   onDelete: () {
-                    if (receipt.id != null) {
+                    if (widget.receipt.id != null) {
                       context.read<ReceiptDetailBloc>().add(
-                            ReceiptDetailEvent.deleteReceipt(receipt.id!),
+                            ReceiptDetailEvent.deleteReceipt(
+                                widget.receipt.id!),
                           );
                     }
                   },
@@ -103,10 +118,6 @@ class ReceiptDetailScreen extends StatelessWidget {
                         const ReceiptEditEvent.saveChanges(),
                       ),
                 ),
-                isDeleting: detailState.isDeleting,
-                isSaving: editState.isSaving,
-                deletingMessage: l10n.deletingReceipt,
-                savingMessage: l10n.savingReceipt,
               );
             },
           );
@@ -117,33 +128,66 @@ class ReceiptDetailScreen extends StatelessWidget {
 
   void _handleDetailStateChanges(
       BuildContext context, ReceiptDetailState state) {
-    if (state.error != null) {
-      ErrorUtils.showErrorSnackBar(context, state.error!);
+    if (state.isDeleted) {
+      _loadingOverlay.update(isSuccess: true);
+      if (!_loadingOverlay.isShowing) {
+        _loadingOverlay.show(context);
+      }
+      final navigator = Navigator.of(context);
+      final browseBloc = context.read<ReceiptBrowseBloc>();
+      Future.delayed(_successDisplayDuration, () {
+        if (!mounted) return;
+        _loadingOverlay.hide();
+        if (widget.receipt.id != null) {
+          browseBloc.add(
+            ReceiptBrowseEvent.notifyReceiptDeleted(widget.receipt.id!),
+          );
+        }
+        navigator.pop();
+      });
+      return;
     }
 
-    if (state.isDeleted && receipt.id != null) {
-      context.read<ReceiptBrowseBloc>().add(
-            ReceiptBrowseEvent.notifyReceiptDeleted(receipt.id!),
-          );
-      Navigator.of(context).pop();
+    if (state.isDeleting) {
+      if (!_loadingOverlay.isShowing) {
+        _loadingOverlay.show(context);
+      }
+      return;
+    }
+
+    _loadingOverlay.hide();
+
+    if (state.error != null) {
+      ErrorUtils.showErrorSnackBar(context, state.error!);
     }
   }
 
   void _handleEditStateChanges(BuildContext context, ReceiptEditState state) {
-    if (state.error != null) {
-      ErrorUtils.showErrorSnackBar(context, state.error!);
+    if (state.isSaved) {
+      _loadingOverlay.update(isSuccess: true);
+      if (!_loadingOverlay.isShowing) {
+        _loadingOverlay.show(context);
+      }
+      final browseBloc = context.read<ReceiptBrowseBloc>();
+      Future.delayed(_successDisplayDuration, () {
+        if (!mounted) return;
+        _loadingOverlay.hide();
+        browseBloc.add(ReceiptBrowseEvent.refresh());
+      });
+      return;
     }
 
-    if (state.isSaved) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).receiptUpdated),
-          backgroundColor: ExpenseFlowColors.chartMutedGreen,
-        ),
-      );
-      context.read<ReceiptBrowseBloc>().add(
-            ReceiptBrowseEvent.refresh(),
-          );
+    if (state.isSaving) {
+      if (!_loadingOverlay.isShowing) {
+        _loadingOverlay.show(context);
+      }
+      return;
+    }
+
+    _loadingOverlay.hide();
+
+    if (state.error != null) {
+      ErrorUtils.showErrorSnackBar(context, state.error!);
     }
   }
 }

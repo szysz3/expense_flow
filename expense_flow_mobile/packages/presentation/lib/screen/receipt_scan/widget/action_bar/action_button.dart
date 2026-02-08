@@ -27,6 +27,10 @@ class ActionButton extends StatelessWidget {
                 iconPath,
                 width: iconSize,
                 height: iconSize,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.onSurface,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:domain/model/receipt_item.dart';
 import 'package:flutter/material.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../../../core/widget/receipt/base_receipt_item_widget.dart';
 
@@ -24,15 +25,14 @@ class UnprocessedReceiptItemWidget extends StatelessWidget {
       isEditMode: isEditMode,
       index: index,
       onEdit: onEdit,
-      iconBuilder: (context, theme) => Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(8),
-        ),
+      iconBuilder: (context, theme) => GlassContainer(
+        blur: 12,
+        tintOpacity: 0.5,
+        borderRadius: BorderRadius.circular(10),
+        padding: const EdgeInsets.all(6),
         child: Icon(
           Icons.receipt_long,
-          size: 24,
+          size: 22,
           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       ),

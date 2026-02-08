@@ -1,6 +1,7 @@
 import 'package:domain/model/receipt_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../../../core/utils/category_utils.dart';
 import '../../../core/widget/receipt/base_receipt_item_widget.dart';
@@ -29,16 +30,19 @@ class ReceiptDetailsItemWidget extends StatelessWidget {
       isEditMode: isEditMode,
       index: index,
       onEdit: onEdit,
-      iconBuilder: (context, theme) => Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(8),
-        ),
+      iconBuilder: (context, theme) => GlassContainer(
+        blur: 12,
+        tintOpacity: 0.5,
+        borderRadius: BorderRadius.circular(10),
+        padding: const EdgeInsets.all(6),
         child: SvgPicture.asset(
           categoryIconPath,
-          width: 24,
-          height: 24,
+          width: 22,
+          height: 22,
+          colorFilter: ColorFilter.mode(
+            theme.colorScheme.onSurface,
+            BlendMode.srcIn,
+          ),
         ),
       ),
       categoryBuilder: (context, theme) => Text(

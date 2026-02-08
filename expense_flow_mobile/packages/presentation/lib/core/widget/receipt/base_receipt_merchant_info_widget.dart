@@ -1,6 +1,7 @@
 import 'package:domain/model/merchant.dart';
 import 'package:flutter/material.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 class BaseReceiptMerchantInfoWidget extends StatelessWidget {
   final Merchant merchant;
@@ -85,12 +86,13 @@ class BaseReceiptMerchantInfoWidget extends StatelessWidget {
   }
 
   Widget _buildReadOnlyView(BuildContext context, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return GlassContainer(
+      width: double.infinity,
+      blur: 14,
+      tintOpacity: 0.5,
+      borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      alignment: Alignment.centerLeft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

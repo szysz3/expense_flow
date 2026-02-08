@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../error/app_error.dart';
 import 'animated_square_button.dart';
@@ -75,12 +76,12 @@ class ErrorDisplayWidget extends StatelessWidget {
   }
 
   Widget _buildInlineError(BuildContext context) {
-    return Container(
+    return GlassContainer(
+      blur: 14,
+      tint: Theme.of(context).colorScheme.error,
+      tintOpacity: 0.18,
+      borderRadius: BorderRadius.circular(12),
       padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -91,6 +92,10 @@ class ErrorDisplayWidget extends StatelessWidget {
                 'packages/presentation/assets/icon_failure.svg',
                 width: 24,
                 height: 24,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.onErrorContainer,
+                  BlendMode.srcIn,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -148,12 +153,12 @@ class ErrorDisplayWidget extends StatelessWidget {
       height: height,
       width: width,
       iconSize: iconSize,
-      borderColor: Colors.white,
-      backgroundColor: Colors.black,
+      borderColor: Theme.of(context).colorScheme.outline,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       icon: Text(
         label,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface,
           fontWeight: FontWeight.bold,
           fontSize: 16,
         ),

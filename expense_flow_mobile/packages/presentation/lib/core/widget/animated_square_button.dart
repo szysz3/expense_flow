@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 class AnimatedSquareButtonConstants {
   static const Duration animationDuration = Duration(milliseconds: 400);
@@ -16,8 +17,8 @@ class AnimatedSquareButton extends StatelessWidget {
   final double width;
   final double height;
   final double iconSize;
-  final Color borderColor;
-  final Color backgroundColor;
+  final Color? borderColor;
+  final Color? backgroundColor;
   final double opacity;
 
   /// Creates an animated square button with customizable properties.
@@ -28,8 +29,8 @@ class AnimatedSquareButton extends StatelessWidget {
   /// [width] button width (defaults to 64.0)
   /// [height] button height (defaults to 64.0)
   /// [iconSize] size of the icon (defaults to 40.0)
-  /// [borderColor] color of button border (defaults to white)
-  /// [backgroundColor] color of button background (defaults to black)
+  /// [borderColor] color of button border (defaults to theme outline)
+  /// [backgroundColor] color of button background (defaults to theme surface)
   /// [opacity] opacity of the background color (defaults to 0.4)
   const AnimatedSquareButton({
     super.key,
@@ -39,8 +40,8 @@ class AnimatedSquareButton extends StatelessWidget {
     this.width = AnimatedSquareButtonConstants.defaultSize,
     this.height = AnimatedSquareButtonConstants.defaultSize,
     this.iconSize = AnimatedSquareButtonConstants.defaultIconSize,
-    this.borderColor = Colors.white,
-    this.backgroundColor = Colors.black,
+    this.borderColor,
+    this.backgroundColor,
     this.opacity = AnimatedSquareButtonConstants.defaultOpacity,
   });
 
@@ -55,8 +56,8 @@ class AnimatedSquareButton extends StatelessWidget {
     required Widget icon,
     double size = AnimatedSquareButtonConstants.defaultSize,
     double iconSize = AnimatedSquareButtonConstants.defaultIconSize,
-    Color borderColor = Colors.white,
-    Color backgroundColor = Colors.black,
+    Color? borderColor,
+    Color? backgroundColor,
     double opacity = AnimatedSquareButtonConstants.defaultOpacity,
   }) {
     return AnimatedSquareButton(
@@ -93,13 +94,21 @@ class AnimatedSquareButton extends StatelessWidget {
   Widget _buildButtonContainer(BuildContext context) => Container(
         width: width,
         height: height,
-        decoration: BoxDecoration(
-          border: Border.all(color: borderColor),
-          borderRadius:
-              BorderRadius.circular(AnimatedSquareButtonConstants.borderRadius),
-          color: backgroundColor.withValues(alpha: opacity),
+        child: GlassContainer(
+          width: width,
+          height: height,
+          blur: 16,
+          tint: backgroundColor ?? Theme.of(context).colorScheme.surface,
+          tintOpacity: opacity,
+          borderRadius: BorderRadius.circular(
+            AnimatedSquareButtonConstants.borderRadius,
+          ),
+          border: Border.all(
+            color: borderColor ?? Theme.of(context).colorScheme.outline,
+          ),
+          padding: EdgeInsets.zero,
+          child: _buildButtonContent(),
         ),
-        child: _buildButtonContent(),
       );
 
   Widget _buildButtonContent() => Material(

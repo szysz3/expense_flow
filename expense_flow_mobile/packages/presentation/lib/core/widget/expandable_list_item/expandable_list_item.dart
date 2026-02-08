@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:presentation/core/utils/currency_text_formatter.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import 'expandable_header_data.dart';
 import 'expandable_item_count_badge.dart';
@@ -29,8 +30,8 @@ class ExpandableListItem<T extends ExpandableHeaderData,
     this.itemTrailing,
     this.headerColumns,
     this.itemContent,
-    this.headerPadding = const EdgeInsets.only(left: 16),
-    this.itemPadding = const EdgeInsets.fromLTRB(32, 0, 16, 0),
+    this.headerPadding = const EdgeInsets.symmetric(horizontal: 16),
+    this.itemPadding = const EdgeInsets.fromLTRB(32, 8, 16, 8),
   });
 
   @override
@@ -95,14 +96,25 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
   }
 
   Widget _buildHeader() {
-    return InkWell(
-      onTap: widget.onToggle,
-      child: Container(
-        height: 60,
-        padding: widget.headerPadding,
-        child: widget.headerData.useVerticalLayout
-            ? _buildVerticalHeader()
-            : _buildHorizontalHeader(),
+    const radius = 14.0;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(radius),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(radius),
+        onTap: widget.onToggle,
+        child: GlassContainer(
+          blur: 14,
+          tintOpacity: 0.45,
+          borderRadius: BorderRadius.circular(radius),
+          padding: widget.headerPadding,
+          child: SizedBox(
+            height: 60,
+            child: widget.headerData.useVerticalLayout
+                ? _buildVerticalHeader()
+                : _buildHorizontalHeader(),
+          ),
+        ),
       ),
     );
   }
@@ -120,9 +132,10 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
       Expanded(
         child: Text(
           widget.headerData.title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),
@@ -141,6 +154,10 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
           'packages/presentation/assets/icon_right_chevron.svg',
           width: 24,
           height: 24,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.onSurface,
+            BlendMode.srcIn,
+          ),
         ),
       ),
     ];
@@ -168,18 +185,23 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
           children: [
             Text(
               widget.headerData.monthName ?? widget.headerData.title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               overflow: TextOverflow.ellipsis,
             ),
             if (widget.headerData.yearName != null)
               Text(
                 widget.headerData.yearName!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.normal,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7),
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -201,6 +223,10 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
           'packages/presentation/assets/icon_right_chevron.svg',
           width: 24,
           height: 24,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.onSurface,
+            BlendMode.srcIn,
+          ),
         ),
       ),
     ];
@@ -211,15 +237,20 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
   }
 
   Widget _buildItemsList() {
-    return ListView.builder(
+    return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       itemCount: widget.items.length,
-      itemBuilder: (context, index) {
-        final item = widget.items[index];
-        return _buildItemRow(item);
-      },
+      itemBuilder: (context, index) => _buildItemRow(widget.items[index]),
+      separatorBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.only(left: 32),
+        child: Divider(
+          height: 1,
+          color:
+              Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+        ),
+      ),
     );
   }
 
@@ -232,36 +263,38 @@ class _ExpandableListItemState<T extends ExpandableHeaderData,
     }
 
     final textColor = Theme.of(context).colorScheme.onSurface.withAlpha(150);
-    return Container(
-      height: 50,
+    return Padding(
       padding: widget.itemPadding,
-      child: Row(
-        children: [
-          if (widget.itemLeading != null) widget.itemLeading!(item),
-          Expanded(
-            child: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    item.name.toLowerCase(),
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 14, color: textColor),
+      child: SizedBox(
+        height: 46,
+        child: Row(
+          children: [
+            if (widget.itemLeading != null) widget.itemLeading!(item),
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      item.name.toLowerCase(),
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 14, color: textColor),
+                    ),
                   ),
-                ),
-                item.count > 0
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ExpandableItemCountBadge(count: item.count))
-                    : const SizedBox.shrink(),
-              ],
+                  item.count > 0
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: ExpandableItemCountBadge(count: item.count))
+                      : const SizedBox.shrink(),
+                ],
+              ),
             ),
-          ),
-          if (widget.itemTrailing != null) widget.itemTrailing!(item),
-          Text(
-            currencyFormatter.formatCurrency(item.amount),
-            style: TextStyle(fontSize: 14, color: textColor),
-          ),
-        ],
+            if (widget.itemTrailing != null) widget.itemTrailing!(item),
+            Text(
+              currencyFormatter.formatCurrency(item.amount),
+              style: TextStyle(fontSize: 14, color: textColor),
+            ),
+          ],
+        ),
       ),
     );
   }

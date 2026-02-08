@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/app_localizations.dart';
 
 import '../../core/error/error_utils.dart';
+import '../../core/widget/glass_container.dart';
 import '../receipt_filtering/bloc/receipt_filtering_bloc.dart';
 import '../receipt_filtering/bloc/receipt_filtering_event.dart';
 import '../receipt_filtering/bloc/receipt_filtering_state.dart';
@@ -11,6 +12,7 @@ import '../receipt_filtering/widget/receipt_filtering_action_buttons.dart';
 import '../receipt_filtering/widget/receipt_filtering_categories_section.dart';
 import '../receipt_filtering/widget/receipt_filtering_date_range_section.dart';
 import '../receipt_filtering/widget/receipt_filtering_modal_header.dart';
+import '../../core/widget/app_spacing.dart';
 
 class ReceiptFilteringScreen extends StatelessWidget {
   final ReceiptFilterParams? initialParams;
@@ -41,24 +43,23 @@ class ReceiptFilteringScreen extends StatelessWidget {
         ..add(ReceiptFilteringEvent.init(initialParams: initialParams)),
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: Container(
+        child: GlassContainer(
           height: MediaQuery.of(context).size.height * 0.9,
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            ),
+          blur: 24,
+          tintOpacity: 0.75,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
           child: Column(
             children: [
               const ReceiptFilteringModalHeader(),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: AppSpacing.page,
                   child: _buildContent(context),
                 ),
               ),
@@ -86,7 +87,7 @@ class ReceiptFilteringScreen extends StatelessWidget {
                 l10n.filterReceiptsTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
               Expanded(
                 child: _buildFilterList(context, state),
               ),
@@ -107,7 +108,7 @@ class ReceiptFilteringScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const ReceiptFilteringCategoriesSection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.lg),
           const ReceiptFilteringDateRangeSection(),
           // TODO: Add search section, FTS not implemented yet
           // const SizedBox(height: 24),

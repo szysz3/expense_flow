@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
 
@@ -18,13 +19,11 @@ class QuantityPriceSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => GlassContainer(
+        blur: 16,
+        tintOpacity: 0.5,
+        borderRadius: BorderRadius.circular(14),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.black.withValues(alpha: 0.4),
-        ),
         child: Row(
           children: [
             Expanded(

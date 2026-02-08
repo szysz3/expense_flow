@@ -26,7 +26,7 @@ class SummaryBarChart extends StatelessWidget {
         Expanded(
           child: Padding(
             padding:
-                const EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 100),
+                const EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 96),
             child: Column(
               children: [
                 Expanded(
@@ -44,10 +44,10 @@ class SummaryBarChart extends StatelessWidget {
 
   Widget _buildTitle(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Text(
         AppLocalizations.of(context).monthlySummaryChartTitle,
-        style: Theme.of(context).textTheme.headlineSmall,
+        style: Theme.of(context).textTheme.titleLarge,
       ),
     );
   }
@@ -62,8 +62,8 @@ class SummaryBarChart extends StatelessWidget {
       maxY: maxY,
       barTouchData: _createTooltipData(displayMonths, colorScheme),
       titlesData: _createTitlesData(displayMonths),
-      gridData: _createGridData(),
-      borderData: _createBorderData(),
+      gridData: _createGridData(colorScheme),
+      borderData: _createBorderData(colorScheme),
       barGroups: _generateBarGroups(displayMonths, colorScheme),
     );
   }
@@ -75,12 +75,13 @@ class SummaryBarChart extends StatelessWidget {
     return BarTouchData(
       enabled: true,
       touchTooltipData: BarTouchTooltipData(
-        getTooltipColor: (touchedSpot) => Colors.black.withValues(alpha: 0.4),
+        getTooltipColor: (touchedSpot) =>
+            colorScheme.surface.withValues(alpha: 0.85),
         getTooltipItem: (group, groupIndex, rod, rodIndex) {
           return BarTooltipItem(
             '${displayMonths[groupIndex].monthName}\n',
-            const TextStyle(
-              color: Colors.white,
+            TextStyle(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
             children: <TextSpan>[
@@ -154,13 +155,13 @@ class SummaryBarChart extends StatelessWidget {
     );
   }
 
-  FlGridData _createGridData() {
+  FlGridData _createGridData(ColorScheme colorScheme) {
     return FlGridData(
       show: true,
       getDrawingHorizontalLine: (value) {
         if (value % 100 == 0) {
           return FlLine(
-            color: Colors.grey.shade300,
+            color: colorScheme.outline.withValues(alpha: 0.4),
             strokeWidth: 1,
             dashArray: [5, 5],
           );
@@ -173,12 +174,12 @@ class SummaryBarChart extends StatelessWidget {
     );
   }
 
-  FlBorderData _createBorderData() {
+  FlBorderData _createBorderData(ColorScheme colorScheme) {
     return FlBorderData(
       show: true,
       border: Border(
-        bottom: BorderSide(color: Colors.grey.shade300, width: 1),
-        left: BorderSide(color: Colors.grey.shade300, width: 1),
+        bottom: BorderSide(color: colorScheme.outline.withValues(alpha: 0.5), width: 1),
+        left: BorderSide(color: colorScheme.outline.withValues(alpha: 0.5), width: 1),
       ),
     );
   }

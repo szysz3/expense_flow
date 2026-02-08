@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../core/widget/animated_square_button.dart';
-import '../../../../core/widget/loading_indicator_widget.dart';
 import '../../model/camera_preview_state.dart';
 import '../action_bar/action_bar.dart';
 import '../preview_container.dart';
@@ -25,32 +24,20 @@ class CameraPreviewWidget extends StatelessWidget {
           if ([
             CameraPreviewState.cameraPreview,
             CameraPreviewState.photoPreview,
-            CameraPreviewState.photoProcessing
-          ].contains(state.previewState))
-            _buildMainContent(context),
-          if ([
+            CameraPreviewState.photoProcessing,
             CameraPreviewState.loading,
             CameraPreviewState.uploadFailure,
-            CameraPreviewState.uploadSuccess
+            CameraPreviewState.uploadSuccess,
           ].contains(state.previewState))
-            _buildLoadingIndicator(context),
+            _buildMainContent(context),
           if ([
             CameraPreviewState.idle,
             CameraPreviewState.cameraPreview,
             CameraPreviewState.photoProcessing
           ].contains(state.previewState))
-            _buildCameraButton(),
+            _buildCameraButton(context),
         ],
       );
-
-  Widget _buildLoadingIndicator(BuildContext context) {
-    return Center(
-      child: LoadingIndicatorWidget(
-        isSuccess: state.previewState == CameraPreviewState.uploadSuccess,
-        sizeFactor: 0.5,
-      ),
-    );
-  }
 
   Widget _buildMainContent(BuildContext context) => Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -69,7 +56,7 @@ class CameraPreviewWidget extends StatelessWidget {
         ],
       );
 
-  Widget _buildCameraButton() => Positioned(
+  Widget _buildCameraButton(BuildContext context) => Positioned(
         bottom: 8,
         left: 0,
         right: 0,
@@ -85,6 +72,10 @@ class CameraPreviewWidget extends StatelessWidget {
             height: 40,
             key: ValueKey(
                 state.previewState == CameraPreviewState.cameraPreview),
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).colorScheme.onSurface,
+              BlendMode.srcIn,
+            ),
           ),
           size: 64,
           iconSize: 40,

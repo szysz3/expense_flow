@@ -18,7 +18,12 @@ class PreviewContainer extends StatelessWidget {
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (context, constraints) => Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
+            border: Border.all(
+              color: Theme.of(context)
+                  .colorScheme
+                  .outline
+                  .withValues(alpha: 0.6),
+            ),
             borderRadius: _getPreviewBorderRadius(),
           ),
           child: ClipRRect(

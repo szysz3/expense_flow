@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localization/app_localizations.dart';
 import 'package:presentation/core/utils/category_utils.dart';
+import 'package:presentation/core/widget/app_spacing.dart';
 
 import '../bloc/receipt_filtering_bloc.dart';
 import '../bloc/receipt_filtering_event.dart';
@@ -22,9 +23,10 @@ class ReceiptFilteringCategoriesSection extends StatelessWidget {
           l10n.categoriesFilterLabel,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
               ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         BlocBuilder<ReceiptFilteringBloc, ReceiptFilteringState>(
           builder: (context, state) {
             return Wrap(
@@ -38,12 +40,16 @@ class ReceiptFilteringCategoriesSection extends StatelessWidget {
 
                 return FilterChip(
                   selected: isSelected,
+                  showCheckmark: false,
                   label: Text(
                     displayName,
                     style: TextStyle(
                       color: isSelected
-                          ? Colors.black
-                          : Colors.white.withValues(alpha: 0.9),
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.9),
                       fontSize: 14,
                     ),
                   ),
@@ -52,13 +58,19 @@ class ReceiptFilteringCategoriesSection extends StatelessWidget {
                           ReceiptFilteringEvent.toggleCategory(categoryId),
                         );
                   },
-                  backgroundColor: Colors.black.withValues(alpha: 0.4),
-                  selectedColor: Colors.white.withValues(alpha: 0.9),
-                  checkmarkColor: Colors.black,
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .surface
+                      .withValues(alpha: 0.6),
+                  selectedColor: Theme.of(context).colorScheme.primary,
+                  checkmarkColor: Theme.of(context).colorScheme.onPrimary,
                   side: BorderSide(
                     color: isSelected
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.3),
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context)
+                            .colorScheme
+                            .outline
+                            .withValues(alpha: 0.4),
                     width: 1,
                   ),
                   shape: RoundedRectangleBorder(

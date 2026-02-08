@@ -11,6 +11,10 @@ import 'package:logger/logger.dart';
 import '../../core/error/error_utils.dart';
 import '../../core/utils/currency_text_formatter.dart';
 import '../../core/widget/error_display_widget.dart';
+import '../../core/widget/glass_container.dart';
+import '../../core/widget/loading_indicator_widget.dart';
+import '../../core/widget/app_spacing.dart';
+import '../../core/widget/fading_edge.dart';
 import '../../di/di.dart';
 import '../../theme/expense_flow_colors.dart';
 import '../summary/widget/speed_dial/speed_dial_menu.dart';
@@ -62,7 +66,7 @@ class CategoriesScreenView extends StatelessWidget {
       },
       builder: (context, state) {
         if (state.isLoading && state.categories.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingIndicatorWidget(sizeFactor: 0.15));
         }
 
         if (state.error != null && state.categories.isEmpty) {
@@ -81,13 +85,14 @@ class CategoriesScreenView extends StatelessWidget {
     final locale = Localizations.localeOf(context).toString();
     var currencyFormatter = CurrencyTextFormatter(locale: locale);
 
-    final colorScheme = Theme.of(context).colorScheme;
     var toSpend = ((state.income - state.savingsAmount) - state.totalExpenses);
     return Stack(
       children: [
         Padding(
           padding: const EdgeInsets.only(
-              left: 16.0, right: 16.0, top: 16.0, bottom: 112),
+              left: AppSpacing.md,
+              right: AppSpacing.md,
+              bottom: 112),
           child: _buildDisplayContent(context, state),
         ),
         if (state.displayType == CategoryDisplayType.list)
@@ -96,57 +101,50 @@ class CategoriesScreenView extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Shadow part
-                Container(
-                  height: 6,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(50),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                ),
-                // Border part
-                Container(
-                  height: 112,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(50),
-                    border: Border(
-                      top: BorderSide(
-                        color: colorScheme.outline.withAlpha(50),
-                        width: 1,
-                      ),
-                    ),
-                  ),
+                SafeArea(
+                  top: false,
                   child: Padding(
-                    padding: EdgeInsets.only(left: 80),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context).balance,
-                          style: TextStyle(
-                            color: Colors.white,
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: GlassContainer(
+                      width: double.infinity,
+                      height: 100,
+                      blur: 20,
+                      tintOpacity: 0.55,
+                      borderRadius: BorderRadius.circular(24),
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context).balance,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelLarge
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.8),
+                                ),
                           ),
-                        ),
-                        Text(
-                          currencyFormatter.formatCurrency(toSpend),
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: toSpend < 0
-                                ? ExpenseFlowColors.chartMutedRed
-                                : ExpenseFlowColors.chartMutedGreen,
+                          const SizedBox(height: 4),
+                          Text(
+                            currencyFormatter.formatCurrency(toSpend),
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: toSpend < 0
+                                  ? ExpenseFlowColors.chartMutedRed
+                                  : ExpenseFlowColors.chartMutedGreen,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -194,7 +192,7 @@ class CategoriesScreenView extends StatelessWidget {
 
   Widget _buildDailyExpenses(BuildContext context, CategoriesState state) {
     if (state.dailyExpenses.isEmpty && state.isLoadingDailyExpenses) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: LoadingIndicatorWidget(sizeFactor: 0.15));
     }
 
     return SavingsBarChart(
@@ -207,19 +205,23 @@ class CategoriesScreenView extends StatelessWidget {
   }
 
   Widget _buildCategoryList(BuildContext context, CategoriesState state) {
-    return RefreshIndicator(
-      onRefresh: () => context.read<CategoriesBloc>().refresh(),
-      child: ListView.builder(
-        itemCount: state.categories.length,
-        itemBuilder: (context, index) {
-          final category = state.categories[index];
-          return CategoryListItem(
-            category: category,
-            onToggle: () => context.read<CategoriesBloc>().add(
-                  CategoriesEvent.toggleCategory(category.id),
-                ),
-          );
-        },
+    return FadingEdge(
+      child: RefreshIndicator(
+        onRefresh: () => context.read<CategoriesBloc>().refresh(),
+        child: ListView.separated(
+          padding: const EdgeInsets.only(top: AppSpacing.md),
+          itemCount: state.categories.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final category = state.categories[index];
+            return CategoryListItem(
+              category: category,
+              onToggle: () => context.read<CategoriesBloc>().add(
+                    CategoriesEvent.toggleCategory(category.id),
+                  ),
+            );
+          },
+        ),
       ),
     );
   }

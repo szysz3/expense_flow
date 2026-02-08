@@ -5,6 +5,7 @@ import 'package:localization/app_localizations.dart';
 import 'package:presentation/navigation/bloc/navigation_bloc.dart';
 import 'package:presentation/navigation/bloc/navigation_event.dart';
 import 'package:presentation/navigation/bloc/navigation_state.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 class BottomNavigation extends StatelessWidget {
   const BottomNavigation({super.key});
@@ -30,59 +31,60 @@ class BottomNavigation extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return BlocBuilder<NavigationBloc, NavigationState>(
       builder: (context, state) {
-        return Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(50),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
-            border: Border(
-              top: BorderSide(
-                color: colorScheme.outline.withAlpha(50),
-                width: 1,
+        return SafeArea(
+          top: false,
+          minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: SizedBox(
+            height: kBottomNavigationBarHeight + 8,
+            child: GlassContainer(
+              height: kBottomNavigationBarHeight + 8,
+              borderRadius: BorderRadius.circular(24),
+              blur: 20,
+              tintOpacity: 0.55,
+              padding: EdgeInsets.zero,
+              child: BottomNavigationBar(
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+                selectedItemColor: colorScheme.onSurface,
+                unselectedItemColor: colorScheme.onSurface.withAlpha(120),
+                showSelectedLabels: true,
+                showUnselectedLabels: true,
+                currentIndex: state.currentIndex,
+                onTap: (index) {
+                  context
+                      .read<NavigationBloc>()
+                      .add(NavigationEvent.navigateToIndex(index));
+                },
+                items: _getNavigationItems(context)
+                    .map(
+                      (item) => BottomNavigationBarItem(
+                        icon: _buildSvgIcon(
+                          item.$2,
+                          colorScheme.onSurface.withAlpha(140),
+                        ),
+                        activeIcon: _buildSvgIcon(
+                          item.$2,
+                          colorScheme.onSurface,
+                        ),
+                        backgroundColor: Colors.transparent,
+                        label: item.$1,
+                      ),
+                    )
+                    .toList(),
               ),
             ),
-          ),
-          child: BottomNavigationBar(
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            selectedItemColor: colorScheme.onSurface,
-            unselectedItemColor: colorScheme.onSurface.withAlpha(100),
-            currentIndex: state.currentIndex,
-            onTap: (index) {
-              context
-                  .read<NavigationBloc>()
-                  .add(NavigationEvent.navigateToIndex(index));
-            },
-            items: _getNavigationItems(context)
-                .map(
-                  (item) => BottomNavigationBarItem(
-                    icon: _buildSvgIcon(
-                      item.$2,
-                    ),
-                    activeIcon: _buildSvgIcon(
-                      item.$2,
-                    ),
-                    backgroundColor: Colors.transparent,
-                    label: item.$1,
-                  ),
-                )
-                .toList(),
           ),
         );
       },
     );
   }
 
-  Widget _buildSvgIcon(String assetName) {
+  Widget _buildSvgIcon(String assetName, Color color) {
     return SvgPicture.asset(
       'packages/presentation/assets/$assetName',
       width: 24,
       height: 24,
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
     );
   }
 }

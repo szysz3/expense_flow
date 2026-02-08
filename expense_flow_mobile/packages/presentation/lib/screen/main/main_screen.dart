@@ -7,7 +7,10 @@ import 'package:logger/logger.dart';
 
 import '../../core/service/camera/camera_service.dart';
 import '../../core/service/notification/notification_service.dart';
+import '../../core/widget/app_atmosphere_background.dart';
+import '../../core/widget/glass_container.dart';
 import '../../di/di.dart';
+import '../../theme/expense_flow_colors.dart';
 import '../../navigation/bloc/navigation_bloc.dart';
 import '../../navigation/bloc/navigation_event.dart';
 import '../../navigation/bloc/navigation_state.dart';
@@ -103,7 +106,7 @@ class _MainScreenState extends State<MainScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Receipt processed: ${message.data['merchant_name'] ?? 'Unknown'}'),
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: ExpenseFlowColors.darkSuccess,
             ),
           );
         }
@@ -120,86 +123,100 @@ class _MainScreenState extends State<MainScreen> {
             create: (context) => CameraPreviewBloc(getIt<CameraService>())
               ..add(const CameraPreviewEvent.initialize())),
       ],
-      child: Scaffold(
-        extendBody: true,
-        drawer: const DrawerMenu(),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(50),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).colorScheme.outline.withAlpha(50),
-                  width: 1,
-                ),
-              ),
-            ),
-            child: AppBar(
-              title: BlocBuilder<NavigationBloc, NavigationState>(
-                builder: (context, state) {
-                  switch (state.currentIndex) {
-                    case 0:
-                      return Text(
-                          AppLocalizations.of(context).appBarScanReceiptsTitle);
-                    case 1:
-                      return Text(
-                          AppLocalizations.of(context).appBarAddItemTitle);
-                    case 2:
-                      return Text(
-                          AppLocalizations.of(context).appBarCategoriesTitle);
-                    case 3:
-                      return Text(
-                          AppLocalizations.of(context).appBarSummaryTitle);
-                    case 4:
-                      return Text(AppLocalizations.of(context)
-                          .appBarBrowseReceiptsTitle);
-                    default:
-                      return const Text('');
-                  }
-                },
-              ),
-              leading: Builder(
-                builder: (context) => IconButton(
-                  icon: SvgPicture.asset(
-                    'packages/presentation/assets/icon_menu.svg',
-                    width: 24,
-                    height: 24,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const Positioned.fill(child: AppAtmosphereBackground()),
+          Scaffold(
+            extendBody: true,
+            extendBodyBehindAppBar: true,
+            backgroundColor: Colors.transparent,
+            drawer: const DrawerMenu(),
+            appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(kToolbarHeight),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GlassContainer(
+                    borderRadius: BorderRadius.circular(24),
+                    blur: 20,
+                    tintOpacity: 0.6,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
+                    child: AppBar(
+                      toolbarHeight: kToolbarHeight,
+                      title: BlocBuilder<NavigationBloc, NavigationState>(
+                        builder: (context, state) {
+                          switch (state.currentIndex) {
+                            case 0:
+                              return Text(AppLocalizations.of(context)
+                                  .appBarScanReceiptsTitle);
+                            case 1:
+                              return Text(AppLocalizations.of(context)
+                                  .appBarAddItemTitle);
+                            case 2:
+                              return Text(AppLocalizations.of(context)
+                                  .appBarCategoriesTitle);
+                            case 3:
+                              return Text(AppLocalizations.of(context)
+                                  .appBarSummaryTitle);
+                            case 4:
+                              return Text(AppLocalizations.of(context)
+                                  .appBarBrowseReceiptsTitle);
+                            default:
+                              return const Text('');
+                          }
+                        },
+                      ),
+                      leading: Builder(
+                        builder: (context) => IconButton(
+                          icon: SvgPicture.asset(
+                            'packages/presentation/assets/icon_menu.svg',
+                            width: 24,
+                            height: 24,
+                            colorFilter: ColorFilter.mode(
+                              Theme.of(context).colorScheme.onSurface,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                          tooltip: MaterialLocalizations.of(context)
+                              .openAppDrawerTooltip,
+                        ),
+                      ),
+                      centerTitle: true,
+                      elevation: 0,
+                      scrolledUnderElevation: 0,
+                      surfaceTintColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      backgroundColor: Colors.transparent,
+                    ),
                   ),
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                  tooltip:
-                      MaterialLocalizations.of(context).openAppDrawerTooltip,
                 ),
               ),
-              centerTitle: true,
-              elevation: 0,
-              backgroundColor: Colors.transparent,
             ),
+            body: BlocBuilder<NavigationBloc, NavigationState>(
+              builder: (context, state) {
+                return SafeArea(
+                  child: IndexedStack(
+                    index: state.currentIndex,
+                    children: const [
+                      ReceiptScanScreen(),
+                      AddItemScreen(),
+                      CategoriesScreen(),
+                      SummaryScreen(),
+                      ReceiptBrowseScreen(),
+                    ],
+                  ),
+                );
+              },
+            ),
+            bottomNavigationBar: const BottomNavigation(),
           ),
-        ),
-        body: BlocBuilder<NavigationBloc, NavigationState>(
-          builder: (context, state) {
-            return SafeArea(
-                child: IndexedStack(
-              index: state.currentIndex,
-              children: const [
-                ReceiptScanScreen(),
-                AddItemScreen(),
-                CategoriesScreen(),
-                SummaryScreen(),
-                ReceiptBrowseScreen(),
-              ],
-            ));
-          },
-        ),
-        bottomNavigationBar: const BottomNavigation(),
+        ],
       ),
     );
   }

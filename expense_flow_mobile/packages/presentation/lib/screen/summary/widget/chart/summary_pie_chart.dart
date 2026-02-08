@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
+import 'package:presentation/core/widget/app_spacing.dart';
 
 import '../../../../core/utils/currency_text_formatter.dart';
 import '../../../../theme/expense_flow_colors.dart';
@@ -26,7 +28,7 @@ class SummaryPieChart extends StatelessWidget {
       children: [
         _buildChartTitle(context),
         _buildPieChart(displayMonths, totalExpenses, chartColors),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         Expanded(
           child: SingleChildScrollView(
             child: Column(
@@ -44,10 +46,10 @@ class SummaryPieChart extends StatelessWidget {
 
   Widget _buildChartTitle(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Text(
         AppLocalizations.of(context).monthlySummaryChartTitle,
-        style: Theme.of(context).textTheme.headlineSmall,
+        style: Theme.of(context).textTheme.titleLarge,
       ),
     );
   }
@@ -61,14 +63,20 @@ class SummaryPieChart extends StatelessWidget {
         _createPieChartSections(months, totalExpenses, chartColors);
 
     return Container(
-      height: 300,
-      padding: const EdgeInsets.all(16.0),
-      child: PieChart(
-        PieChartData(
-          sections: sections,
-          centerSpaceRadius: 40,
-          sectionsSpace: 2,
-          startDegreeOffset: 270,
+      height: 340,
+      padding: const EdgeInsets.all(12.0),
+      child: GlassContainer(
+        blur: 16,
+        tintOpacity: 0.45,
+        borderRadius: BorderRadius.circular(20),
+        padding: const EdgeInsets.all(12),
+        child: PieChart(
+          PieChartData(
+            sections: sections,
+            centerSpaceRadius: 40,
+            sectionsSpace: 2,
+            startDegreeOffset: 270,
+          ),
         ),
       ),
     );
@@ -117,23 +125,33 @@ class SummaryPieChart extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
           child: Row(
             children: [
-              Container(
-                width: 16,
-                height: 16,
-                color: chartColors[i % chartColors.length],
+              GlassContainer(
+                width: 18,
+                height: 18,
+                blur: 8,
+                tint: chartColors[i % chartColors.length],
+                tintOpacity: 0.9,
+                borderRadius: BorderRadius.circular(6),
+                padding: EdgeInsets.zero,
+                child: const SizedBox(),
               ),
               const SizedBox(width: 8),
               Text(
                 months[i].monthName,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.85),
+                ),
               ),
               const Spacer(),
               Text(
                 currencyFormatter
                     .formatCurrency(_calculateMonthTotal(months[i])),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -148,27 +166,26 @@ class SummaryPieChart extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: ExpenseFlowColors.darkSurface,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
+      child: GlassContainer(
+        blur: 14,
+        tintOpacity: 0.5,
+        borderRadius: BorderRadius.circular(10.0),
+        padding: const EdgeInsets.all(10.0),
         child: Row(
           children: [
             Text(
               AppLocalizations.of(context).totalChartData,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const Spacer(),
             Text(
               currencyFormatter.formatCurrency(totalExpenses),
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: ExpenseFlowColors.darkPrimary,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ],
@@ -189,16 +206,15 @@ class SummaryPieChart extends StatelessWidget {
 
   Widget _buildEmptyChart(BuildContext context) {
     return Center(
-      child: Container(
+      child: GlassContainer(
+        blur: 14,
+        tintOpacity: 0.5,
+        borderRadius: BorderRadius.circular(12.0),
         padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: ExpenseFlowColors.darkSurface,
-          borderRadius: BorderRadius.circular(8.0),
-        ),
         child: Text(
           AppLocalizations.of(context).noDataChartTitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: ExpenseFlowColors.darkPrimary,
+                color: Theme.of(context).colorScheme.primary,
               ),
         ),
       ),

@@ -10,7 +10,11 @@ import 'package:logger/logger.dart';
 
 import '../../core/error/error_utils.dart';
 import '../../core/widget/animated_square_button.dart';
+import '../../core/widget/glass_container.dart';
+import '../../core/widget/loading_indicator_widget.dart';
 import '../../core/widget/scroll_boundary_indicator.dart';
+import '../../core/widget/app_spacing.dart';
+import '../../core/widget/staggered_slide_fade.dart';
 import '../../di/di.dart';
 import 'bloc/settings_bloc.dart';
 import 'bloc/settings_event.dart';
@@ -47,23 +51,22 @@ class SettingsScreen extends StatelessWidget {
             ),
             child: Container(
               height: MediaQuery.of(context).size.height * 0.95,
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surface
-                    .withValues(alpha: 0.9),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+              child: const GlassContainer(
+                blur: 24,
+                tintOpacity: 0.75,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
                 ),
-              ),
-              child: const Column(
+                padding: EdgeInsets.zero,
+                child: Column(
                 children: [
                   SettingsModalHeader(),
                   Expanded(
                     child: SettingsScreenView(),
                   ),
                 ],
+                ),
               ),
             ),
           ),
@@ -117,7 +120,7 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
         _syncControllersWithState(state);
 
         if (state.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingIndicatorWidget(sizeFactor: 0.12));
         }
 
         return _buildSettingsContent(context, state);
@@ -132,7 +135,10 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
+          padding: const EdgeInsets.only(
+              left: AppSpacing.md,
+              right: AppSpacing.md,
+              top: AppSpacing.sm),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -140,10 +146,10 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
                 l10n.settings,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               if (state.validationMessage != null) ...[
                 SettingsValidationBanner(message: state.validationMessage!),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
               ],
               Row(
                 children: [
@@ -163,11 +169,15 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
                       'packages/presentation/assets/icon_tick.svg',
                       width: 24,
                       height: 24,
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.onSurface,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
             ],
           ),
         ),
@@ -175,39 +185,33 @@ class _SettingsScreenViewState extends State<SettingsScreenView> {
           child: Stack(
             children: [
               ListView.separated(
-                padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
+                padding: const EdgeInsets.only(
+                    left: AppSpacing.md,
+                    right: AppSpacing.md,
+                    top: AppSpacing.md,
+                    bottom: AppSpacing.md),
                 itemBuilder: (context, index) {
                   final period = state.periods.reversed.toList()[index];
                   // Only the last (most recent) period can be open-ended.
                   // Since the list is reversed, index 0 represents the last period.
                   final canBeOpenEnded = index == 0;
-                  return SettingsPeriodCard(
-                    period: period,
-                    incomeController: _incomeControllers[period.id]!,
-                    savingsController: _savingsControllers[period.id]!,
-                    formatMonthYear: _formatMonthYear,
-                    parseNumberInput: _parseNumberInput,
-                    onStartDatePress: () => _selectStartDate(context, period),
-                    onEndDatePress: () => _selectEndDate(context, period),
-                    canBeOpenEnded: canBeOpenEnded,
+                  return StaggeredSlideFade(
+                    index: index,
+                    child: SettingsPeriodCard(
+                      period: period,
+                      incomeController: _incomeControllers[period.id]!,
+                      savingsController: _savingsControllers[period.id]!,
+                      formatMonthYear: _formatMonthYear,
+                      parseNumberInput: _parseNumberInput,
+                      onStartDatePress: () => _selectStartDate(context, period),
+                      onEndDatePress: () => _selectEndDate(context, period),
+                      canBeOpenEnded: canBeOpenEnded,
+                    ),
                   );
                 },
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                separatorBuilder: (_, __) =>
+                    const SizedBox(height: AppSpacing.md),
                 itemCount: state.periods.length,
-              ),
-              // Top shadow and border
-              const Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: ScrollBoundaryIndicator.top(),
-              ),
-              // Bottom shadow and border
-              const Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: ScrollBoundaryIndicator.bottom(),
               ),
             ],
           ),

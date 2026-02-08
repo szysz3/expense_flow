@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../core/widget/animated_square_button.dart';
+import '../../../core/widget/app_spacing.dart';
+import '../../../core/widget/fading_edge.dart';
 import '../../receipt_details/receipt_details_screen.dart';
 import '../../receipt_filtering/receipt_filtering_screen.dart';
 import '../../receipt_filtering/widget/filtered_receipt_item_widget.dart';
@@ -27,7 +29,9 @@ class ReceiptBrowseContent extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(
-              left: 16.0, right: 16.0, top: 16.0, bottom: 112),
+              left: AppSpacing.md,
+              right: AppSpacing.md,
+              bottom: 112),
           child: state.isFiltered
               ? _buildFilteredItemsList(context)
               : _buildReceiptsList(context),
@@ -39,55 +43,61 @@ class ReceiptBrowseContent extends StatelessWidget {
   }
 
   Widget _buildFilteredItemsList(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () => context.read<ReceiptBrowseBloc>().refresh(),
-      child: ListView.builder(
-        itemCount: state.filteredItems.length,
-        itemBuilder: (context, index) {
-          final item = state.filteredItems[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
-            child: FilteredReceiptItemWidget(item: item),
-          );
-        },
+    return FadingEdge(
+      child: RefreshIndicator(
+        onRefresh: () => context.read<ReceiptBrowseBloc>().refresh(),
+        child: ListView.builder(
+          padding: const EdgeInsets.only(top: AppSpacing.md),
+          itemCount: state.filteredItems.length,
+          itemBuilder: (context, index) {
+            final item = state.filteredItems[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: FilteredReceiptItemWidget(item: item),
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _buildReceiptsList(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () => context.read<ReceiptBrowseBloc>().refresh(),
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification scrollInfo) {
-          if (scrollInfo.metrics.pixels >=
-                  scrollInfo.metrics.maxScrollExtent * 0.8 &&
-              !state.isLoadingMore &&
-              state.hasMoreReceipts) {
-            context
-                .read<ReceiptBrowseBloc>()
-                .add(const ReceiptBrowseEvent.loadMore());
-          }
-          return false;
-        },
-        child: ListView.builder(
-          itemCount: state.receipts.length + (state.isLoadingMore ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index == state.receipts.length) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(child: CircularProgressIndicator()),
-              );
+    return FadingEdge(
+      child: RefreshIndicator(
+        onRefresh: () => context.read<ReceiptBrowseBloc>().refresh(),
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification scrollInfo) {
+            if (scrollInfo.metrics.pixels >=
+                    scrollInfo.metrics.maxScrollExtent * 0.8 &&
+                !state.isLoadingMore &&
+                state.hasMoreReceipts) {
+              context
+                  .read<ReceiptBrowseBloc>()
+                  .add(const ReceiptBrowseEvent.loadMore());
             }
-
-            final receipt = state.receipts[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: ReceiptHeaderWidget(
-                receipt: receipt,
-                onTap: () => _navigateToReceiptDetail(context, receipt),
-              ),
-            );
+            return false;
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.only(top: AppSpacing.md),
+            itemCount: state.receipts.length + (state.isLoadingMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == state.receipts.length) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              final receipt = state.receipts[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: ReceiptHeaderWidget(
+                  receipt: receipt,
+                  onTap: () => _navigateToReceiptDetail(context, receipt),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -108,6 +118,10 @@ class ReceiptBrowseContent extends StatelessWidget {
           'packages/presentation/assets/icon_search.svg',
           width: 40,
           height: 40,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.onSurface,
+            BlendMode.srcIn,
+          ),
         ),
         size: 64,
         iconSize: 40,

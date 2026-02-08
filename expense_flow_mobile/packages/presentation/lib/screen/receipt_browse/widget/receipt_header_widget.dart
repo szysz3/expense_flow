@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:localization/app_localizations.dart';
 import 'package:presentation/core/utils/string_utils.dart';
+import 'package:presentation/core/widget/glass_container.dart';
+import 'package:presentation/core/widget/app_spacing.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
 
@@ -27,27 +29,25 @@ class ReceiptHeaderWidget extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: _buildContainer(context, theme),
       ),
     );
   }
 
   Widget _buildContainer(BuildContext context, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.black.withValues(alpha: 0.4),
-      ),
+    return GlassContainer(
+      blur: 16,
+      tintOpacity: 0.5,
+      borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeaderRow(theme, context),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _buildDateTimeRow(theme),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _buildInfoRow(context, theme),
         ],
       ),
@@ -176,12 +176,11 @@ class ReceiptHeaderWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final displayName = StringUtils.formatCategoryName(category);
 
-    return Container(
+    return GlassContainer(
+      blur: 8,
+      tintOpacity: 0.35,
+      borderRadius: BorderRadius.circular(6),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
       child: Text(
         displayName,
         style: theme.textTheme.bodySmall?.copyWith(

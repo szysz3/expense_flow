@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:localization/app_localizations.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
+import '../../widget/glass_container.dart';
 
 class BaseReceiptEditDialog extends StatefulWidget {
   final ReceiptItem item;
@@ -56,59 +57,81 @@ class _BaseReceiptEditDialogState extends State<BaseReceiptEditDialog> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return AlertDialog(
-      title: Text(
-        l10n.editItem,
-        style: theme.textTheme.titleLarge,
-      ),
-      content: SingleChildScrollView(
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: GlassContainer(
+        blur: 24,
+        tintOpacity: 0.75,
+        borderRadius: BorderRadius.circular(24),
+        padding: const EdgeInsets.all(18),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildTextField(
-              controller: _descController,
-              labelText: l10n.description,
-              theme: theme,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                l10n.editItem,
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTextField(
+                    controller: _descController,
+                    labelText: l10n.description,
+                    theme: theme,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _quantityController,
+                    labelText: l10n.quantity,
+                    theme: theme,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [CurrencyTextFormatter(locale: locale)],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _priceController,
+                    labelText: l10n.totalPrice,
+                    theme: theme,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [CurrencyTextFormatter(locale: locale)],
+                  ),
+                  if (widget.categorySelector != null) ...[
+                    const SizedBox(height: 12),
+                    widget.categorySelector!(context, theme),
+                  ],
+                  if (widget.infoNote != null) ...[
+                    const SizedBox(height: 12),
+                    widget.infoNote!(context, theme),
+                  ],
+                ],
+              ),
             ),
             const SizedBox(height: 16),
-            _buildTextField(
-              controller: _quantityController,
-              labelText: l10n.quantity,
-              theme: theme,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [CurrencyTextFormatter(locale: locale)],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                const SizedBox(width: 12),
+                TextButton(
+                  onPressed: () => _saveItem(context),
+                  child: Text(l10n.save),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _priceController,
-              labelText: l10n.totalPrice,
-              theme: theme,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [CurrencyTextFormatter(locale: locale)],
-            ),
-            if (widget.categorySelector != null) ...[
-              const SizedBox(height: 16),
-              widget.categorySelector!(context, theme),
-            ],
-            if (widget.infoNote != null) ...[
-              const SizedBox(height: 16),
-              widget.infoNote!(context, theme),
-            ],
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancel),
-        ),
-        TextButton(
-          onPressed: () => _saveItem(context),
-          child: Text(l10n.save),
-        ),
-      ],
     );
   }
 

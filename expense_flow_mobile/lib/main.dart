@@ -60,6 +60,7 @@ class ExpenseFlowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: FlavorConfig.title,
+      scrollBehavior: const NoGlowScrollBehavior(),
       theme: ExpenseFlowTheme.darkTheme,
       darkTheme: ExpenseFlowTheme.darkTheme,
       themeMode: ThemeMode.dark,
@@ -74,5 +75,23 @@ class ExpenseFlowApp extends StatelessWidget {
           : MainScreen(),
       debugShowCheckedModeBanner: false,
     );
+  }
+}
+
+class NoGlowScrollBehavior extends ScrollBehavior {
+  const NoGlowScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
+    return child;
+  }
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const ClampingScrollPhysics();
   }
 }

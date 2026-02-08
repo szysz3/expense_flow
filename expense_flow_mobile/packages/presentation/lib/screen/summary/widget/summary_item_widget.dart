@@ -32,6 +32,10 @@ class SummaryItemWidget extends StatelessWidget {
         item.category.iconName,
         width: 24,
         height: 24,
+        colorFilter: ColorFilter.mode(
+          Theme.of(context).colorScheme.onSurface,
+          BlendMode.srcIn,
+        ),
       ),
       itemTrailing: (item) => _buildCategoryChangeIndicator(item.category),
     );
@@ -43,28 +47,33 @@ class SummaryItemWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Expanded(
-        flex: 2,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              l10n.total,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.normal,
+        flex: 3,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                l10n.total,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.7),
+                    ),
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              currencyFormatter.formatCurrency(month.totalAmount),
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+              Text(
+                currencyFormatter.formatCurrency(month.totalAmount),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
         ));
   }
 
@@ -90,10 +99,12 @@ class SummaryItemWidget extends StatelessWidget {
         children: [
           Text(
             l10n.savingsTitle,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.normal,
-            ),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7),
+                ),
             overflow: TextOverflow.ellipsis,
           ),
           Text(
@@ -119,7 +130,7 @@ class SummaryItemWidget extends StatelessWidget {
         month.isIncrease ? Icons.arrow_upward : Icons.arrow_downward;
 
     return Expanded(
-        flex: 2,
+        flex: 1,
         child: Opacity(
           opacity: month.previousMonthAmount <= 0 ? 0 : 1,
           child: Column(

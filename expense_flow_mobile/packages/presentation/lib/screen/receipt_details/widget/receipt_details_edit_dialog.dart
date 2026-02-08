@@ -3,6 +3,7 @@ import 'package:domain/model/receipt_item.dart';
 import 'package:flutter/material.dart';
 import 'package:localization/app_localizations.dart';
 import 'package:presentation/core/utils/category_utils.dart';
+import 'package:presentation/core/widget/glass_container.dart';
 
 import '../../../core/utils/currency_text_formatter.dart';
 
@@ -54,86 +55,111 @@ class _ReceiptDetailsEditDialogState extends State<ReceiptDetailsEditDialog> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return AlertDialog(
-      title: Text(
-        l10n.editItem,
-        style: theme.textTheme.titleLarge,
-      ),
-      content: SingleChildScrollView(
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: GlassContainer(
+        blur: 24,
+        tintOpacity: 0.75,
+        borderRadius: BorderRadius.circular(24),
+        padding: const EdgeInsets.all(18),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: _descController,
-              decoration: InputDecoration(
-                labelText: l10n.description,
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                l10n.editItem,
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _descController,
+                    decoration: InputDecoration(
+                      labelText: l10n.description,
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color:
+                              theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _quantityController,
+                    decoration: InputDecoration(
+                      labelText: l10n.quantity,
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color:
+                              theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [CurrencyTextFormatter(locale: locale)],
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _priceController,
+                    decoration: InputDecoration(
+                      labelText: l10n.totalPrice,
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color:
+                              theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [CurrencyTextFormatter(locale: locale)],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCategoryDropdown(context),
+                ],
               ),
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _quantityController,
-              decoration: InputDecoration(
-                labelText: l10n.quantity,
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-                  ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                  ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: _saveItem,
+                  child: Text(l10n.save),
                 ),
-              ),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [CurrencyTextFormatter(locale: locale)],
+              ],
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _priceController,
-              decoration: InputDecoration(
-                labelText: l10n.totalPrice,
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-                  ),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                  ),
-                ),
-              ),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [CurrencyTextFormatter(locale: locale)],
-            ),
-            const SizedBox(height: 16),
-            _buildCategoryDropdown(context),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancel),
-        ),
-        TextButton(
-          onPressed: _saveItem,
-          child: Text(l10n.save),
-        ),
-      ],
     );
   }
 

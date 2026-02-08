@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:localization/app_localizations.dart';
+import 'package:presentation/core/widget/glass_container.dart';
+import 'package:presentation/core/widget/app_spacing.dart';
 
 import '../bloc/receipt_filtering_bloc.dart';
 import '../bloc/receipt_filtering_event.dart';
@@ -21,18 +23,17 @@ class ReceiptFilteringDateRangeSection extends StatelessWidget {
           l10n.dateRangeLabel,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
               ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         BlocBuilder<ReceiptFilteringBloc, ReceiptFilteringState>(
           builder: (context, state) {
-            return Container(
+            return GlassContainer(
+              blur: 16,
+              tintOpacity: 0.5,
+              borderRadius: BorderRadius.circular(14),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.black.withValues(alpha: 0.4),
-              ),
               child: Column(
                 children: [
                   Row(
@@ -60,7 +61,7 @@ class ReceiptFilteringDateRangeSection extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   QuickDateOptions(
                     selectedRange: state.selectedQuickRange,
                     onRangeSelected: (rangeType) {
@@ -97,10 +98,10 @@ class ReceiptFilteringDateRangeSection extends StatelessWidget {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: Colors.white,
-                  onPrimary: Colors.black,
-                  surface: Colors.grey[900],
-                  onSurface: Colors.white,
+                  primary: Theme.of(context).colorScheme.primary,
+                  onPrimary: Theme.of(context).colorScheme.onPrimary,
+                  surface: Theme.of(context).colorScheme.surface,
+                  onSurface: Theme.of(context).colorScheme.onSurface,
                 ),
           ),
           child: child!,
@@ -140,44 +141,50 @@ class DateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 12,
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  fontSize: 12,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    selectedDate != null
-                        ? _dateFormat.format(selectedDate!)
-                        : hint,
-                    style: TextStyle(
-                      color: selectedDate != null
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.5),
-                      fontSize: 16,
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      selectedDate != null
+                          ? _dateFormat.format(selectedDate!)
+                          : hint,
+                      style: TextStyle(
+                        color: selectedDate != null
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                ),
-                Icon(
-                  Icons.calendar_today,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  size: 20,
-                ),
-              ],
-            ),
-          ],
+                  Icon(
+                    Icons.calendar_today,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    size: 20,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -197,6 +204,7 @@ class QuickDateOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     final quickOptions = [
       (QuickDateRangeType.thisMonth, l10n.thisMonthOption),
@@ -218,17 +226,17 @@ class QuickDateOptions extends StatelessWidget {
               option.$2,
               style: TextStyle(
                 color: isSelected
-                    ? Colors.black
-                    : Colors.white.withValues(alpha: 0.9),
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.9),
                 fontSize: 12,
               ),
             ),
             onPressed: () => onRangeSelected(option.$1),
             backgroundColor: isSelected
-                ? Colors.white.withValues(alpha: 0.9)
+                ? theme.colorScheme.primary
                 : Colors.transparent,
             side: BorderSide(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: theme.colorScheme.outline.withValues(alpha: 0.4),
               width: 1,
             ),
             shape: RoundedRectangleBorder(
