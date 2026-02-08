@@ -23,6 +23,7 @@ class ReceiptDetailsTransactionInfoWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return BaseReceiptTransactionInfoWidget(
       transactionDateTime: receipt.transactionDateTime,
+      fallbackDateTime: receipt.addedDateTime,
       total: receipt.total,
       isEditMode: isEditMode,
       totalController: totalController,

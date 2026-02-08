@@ -112,8 +112,13 @@ class UnprocessedReceiptItem extends StatelessWidget {
 
   Widget _buildDateTime(BuildContext context) {
     final dateFormat = DateFormat('d MMM, HH:mm');
+    final transactionDate = receipt.rawData.transactionDatetime;
+    final displayText = transactionDate != null
+        ? dateFormat.format(transactionDate)
+        : dateFormat.format(receipt.createdAt);
+
     return Text(
-      dateFormat.format(receipt.rawData.transactionDatetime),
+      displayText,
       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color:
                 Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),

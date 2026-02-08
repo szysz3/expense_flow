@@ -5,7 +5,8 @@ import 'package:localization/app_localizations.dart';
 import '../../../core/utils/currency_text_formatter.dart';
 
 class BaseReceiptTransactionInfoWidget extends StatelessWidget {
-  final DateTime transactionDateTime;
+  final DateTime? transactionDateTime;
+  final DateTime fallbackDateTime;
   final double total;
   final bool isEditMode;
   final TextEditingController totalController;
@@ -15,12 +16,15 @@ class BaseReceiptTransactionInfoWidget extends StatelessWidget {
   const BaseReceiptTransactionInfoWidget({
     super.key,
     required this.transactionDateTime,
+    required this.fallbackDateTime,
     required this.total,
     required this.isEditMode,
     required this.totalController,
     required this.onDateTimeSelected,
     required this.onTotalChanged,
   });
+
+  DateTime get _effectiveDateTime => transactionDateTime ?? fallbackDateTime;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +60,7 @@ class BaseReceiptTransactionInfoWidget extends StatelessWidget {
               ),
             ),
             child: Text(
-              dateFormat.format(transactionDateTime),
+              dateFormat.format(_effectiveDateTime),
               style: theme.textTheme.bodyMedium,
             ),
           ),
@@ -114,7 +118,7 @@ class BaseReceiptTransactionInfoWidget extends StatelessWidget {
             context,
             theme,
             label: l10n.transactionDate,
-            value: dateFormat.format(transactionDateTime),
+            value: dateFormat.format(_effectiveDateTime),
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
@@ -158,7 +162,7 @@ class BaseReceiptTransactionInfoWidget extends StatelessWidget {
   }
 
   void _showDateTimePicker(BuildContext context) async {
-    final currentDate = transactionDateTime;
+    final currentDate = _effectiveDateTime;
 
     final date = await showDatePicker(
       context: context,

@@ -11,6 +11,21 @@ class UnprocessedReceiptUpdateUseCase {
 
   Future<Either<Failure, UnprocessedReceipt>> call(
       UnprocessedReceipt receipt) async {
-    return await _repository.updateUnprocessedReceipt(receipt);
+    final normalizedReceipt = _normalizeTransactionDate(receipt);
+    return await _repository.updateUnprocessedReceipt(normalizedReceipt);
+  }
+
+  /// Ensures transactionDatetime is never null when persisting.
+  /// Falls back to createdAt if the original date was invalid/missing.
+  UnprocessedReceipt _normalizeTransactionDate(UnprocessedReceipt receipt) {
+    if (receipt.rawData.transactionDatetime != null) {
+      return receipt;
+    }
+
+    return receipt.copyWith(
+      rawData: receipt.rawData.copyWith(
+        transactionDatetime: receipt.createdAt,
+      ),
+    );
   }
 }

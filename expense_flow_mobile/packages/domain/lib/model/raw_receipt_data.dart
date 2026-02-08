@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_annotation_target
 import 'package:domain/model/receipt_item.dart';
+import 'package:domain/model/safe_datetime_converter.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'merchant.dart';
@@ -14,7 +15,8 @@ class RawReceiptData with _$RawReceiptData {
     required List<ReceiptItem> items,
     required double total,
     @JsonKey(name: "transaction_datetime")
-    required DateTime transactionDatetime,
+    @SafeDateTimeConverter()
+    DateTime? transactionDatetime,
   }) = _RawReceiptData;
 
   factory RawReceiptData.fromJson(Map<String, dynamic> json) =>

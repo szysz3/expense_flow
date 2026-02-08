@@ -154,7 +154,8 @@ class _UnprocessedReceiptDetailsContentState
       merchant: unprocessedReceipt.rawData.merchant,
       items: unprocessedReceipt.rawData.items,
       total: unprocessedReceipt.rawData.total,
-      transactionDateTime: unprocessedReceipt.rawData.transactionDatetime,
+      transactionDateTime: unprocessedReceipt.rawData.transactionDatetime ??
+          unprocessedReceipt.createdAt,
       addedDateTime: unprocessedReceipt.createdAt,
     );
   }
