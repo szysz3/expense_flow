@@ -13,7 +13,7 @@ class Receipt with _$Receipt {
     String? id,
     required Merchant merchant,
     required List<ReceiptItem> items,
-    required double total,
+    @JsonKey(defaultValue: 0) required double total,
     @JsonKey(name: 'transaction_datetime')
     required DateTime transactionDateTime,
     @JsonKey(name: 'added_datetime') required DateTime addedDateTime,

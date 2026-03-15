@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'category_summary.freezed.dart';
@@ -9,8 +10,8 @@ class CategorySummary with _$CategorySummary {
     required String id,
     required String name,
     required String iconName,
-    required double amount,
-    required double previousMonthAmount,
+    @JsonKey(defaultValue: 0) required double amount,
+    @JsonKey(defaultValue: 0) required double previousMonthAmount,
   }) = _CategorySummary;
 
   factory CategorySummary.fromJson(Map<String, dynamic> json) =>

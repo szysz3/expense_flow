@@ -7,8 +7,8 @@ part 'daily_expense.g.dart';
 @freezed
 class DailyExpense with _$DailyExpense {
   const factory DailyExpense({
-    required int day,
-    required double total,
+    @JsonKey(defaultValue: 0) required int day,
+    @JsonKey(defaultValue: 0) required double total,
     @JsonKey(name: 'transaction_datetime')
     required DateTime transactionDatetime,
   }) = _DailyExpense;

@@ -13,7 +13,7 @@ class RawReceiptData with _$RawReceiptData {
   const factory RawReceiptData({
     required Merchant merchant,
     required List<ReceiptItem> items,
-    required double total,
+    @JsonKey(defaultValue: 0) required double total,
     @JsonKey(name: "transaction_datetime")
     @SafeDateTimeConverter()
     DateTime? transactionDatetime,

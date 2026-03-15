@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_annotation_target
 import 'package:domain/model/receipt.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -8,7 +9,7 @@ part 'receipt_get_response.g.dart';
 class ReceiptGetResponse with _$ReceiptGetResponse {
   const factory ReceiptGetResponse({
     required List<Receipt> receipts,
-    required int totalCount,
+    @JsonKey(defaultValue: 0) required int totalCount,
   }) = _ReceiptGetResponse;
 
   factory ReceiptGetResponse.fromJson(Map<String, dynamic> json) =>

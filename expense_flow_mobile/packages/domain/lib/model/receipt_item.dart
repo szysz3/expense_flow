@@ -8,8 +8,8 @@ part 'receipt_item.g.dart';
 class ReceiptItem with _$ReceiptItem {
   const factory ReceiptItem({
     required String description,
-    required double quantity,
-    @JsonKey(name: 'total_price') required double totalPrice,
+    @JsonKey(defaultValue: 0) required double quantity,
+    @JsonKey(name: 'total_price', defaultValue: 0) required double totalPrice,
     String? category,
   }) = _ReceiptItem;
 

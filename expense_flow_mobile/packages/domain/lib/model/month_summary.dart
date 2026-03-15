@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'category_summary.dart';
@@ -9,9 +10,9 @@ part 'month_summary.g.dart';
 class MonthSummary with _$MonthSummary {
   const factory MonthSummary({
     required String id,
-    required int monthNumber,
-    required int year,
-    required double previousMonthTotal,
+    @JsonKey(defaultValue: 0) required int monthNumber,
+    @JsonKey(defaultValue: 0) required int year,
+    @JsonKey(defaultValue: 0) required double previousMonthTotal,
     required List<CategorySummary> categories,
   }) = _MonthSummary;
 

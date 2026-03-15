@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../util/date_comparison_utils.dart';
@@ -8,8 +9,8 @@ part 'savings_settings.g.dart';
 @freezed
 class SavingsSettings with _$SavingsSettings {
   const factory SavingsSettings({
-    required int startMonth,
-    required int startYear,
+    @JsonKey(defaultValue: 0) required int startMonth,
+    @JsonKey(defaultValue: 0) required int startYear,
     int? endMonth,
     int? endYear,
     @Default(0.0) double savingsAmount,
